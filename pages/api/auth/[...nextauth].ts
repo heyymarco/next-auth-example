@@ -36,8 +36,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         if (!credentials) return null;
-        // const user = await adapter.getUserByEmail?.(credentials.username);
-        console.log('credentials: ', credentials);
+        // const userDetail = await adapter.getUserByEmail?.(credentials.username);
         const userDetail = await prisma.user.findUnique({
           where  : {
             [credentials.username.includes('@') ? 'email' : 'username'] : credentials.username,
@@ -161,8 +160,8 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
           const { user } = params;
           
           const sessionToken  = randomUUID();
-          const maxAge        = 24 * 3600 * 1000; // a day
-          const sessionExpiry = new Date(Date.now() + maxAge);
+          const sessionMaxAge = 24 * 3600 * 1000; // a day
+          const sessionExpiry = new Date(Date.now() + sessionMaxAge);
           
           await adapter.createSession?.({
             sessionToken : sessionToken,
@@ -184,20 +183,14 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     },
     jwt : {
       async encode(params) {
-        if (isCredentialsCallback()) {
-          const cookies = new Cookies(req, res);
-          const cookie = cookies.get('next-auth.session-token');
-          return cookie ?? '';
-        } // if
+        if (isCredentialsCallback()) return ''; // force not to use jwt token => fallback to database token
         
         
         
         return encode(params);
       },
       async decode(params) {
-        if (isCredentialsCallback()) {
-          return null;
-        } // if
+        if (isCredentialsCallback()) return null; // force not to use jwt token => fallback to database token
         
         
         
@@ -206,4 +199,3 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 }
-// export default NextAuth(authOptions)
