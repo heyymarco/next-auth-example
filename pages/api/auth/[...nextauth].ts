@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (!userDetail) return null;
         const {password, ...userInfo} = userDetail;
-        if (!(await bcrypt.compare(password ?? '', credentials.password))) return null;
+        if (!(await bcrypt.compare(credentials.password, password ?? ''))) return null;
         return userInfo;
       },
     }),
