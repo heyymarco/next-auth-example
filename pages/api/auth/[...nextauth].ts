@@ -1,19 +1,23 @@
-import NextAuth, { NextAuthOptions, User } from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
-import FacebookProvider from "next-auth/providers/facebook"
-import GithubProvider from "next-auth/providers/github"
-import TwitterProvider from "next-auth/providers/twitter"
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
-import { AdapterUser } from "next-auth/adapters"
-import { NextApiRequest, NextApiResponse } from "next"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { randomUUID } from "crypto"
+import NextAuth, { NextAuthOptions, User } from 'next-auth'
+import GoogleProvider from 'next-auth/providers/google'
+import FacebookProvider from 'next-auth/providers/facebook'
+import GithubProvider from 'next-auth/providers/github'
+import TwitterProvider from 'next-auth/providers/twitter'
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
+import { AdapterUser } from 'next-auth/adapters'
+import { NextApiRequest, NextApiResponse } from 'next'
+import CredentialsProvider from 'next-auth/providers/credentials'
+
+import { randomUUID } from 'crypto'
 import Cookies from 'cookies'
+import { encode, decode } from 'next-auth/jwt'
+import bcrypt from 'bcrypt'
 
-
-
-const prisma = new PrismaClient();
+// ORMs:
+import {
+    prisma,
+}                           from '@/libs/prisma.server'
 
 
 
@@ -31,11 +35,35 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        console.log('authorizing: ', credentials);
         if (!credentials) return null;
-        const user = await adapter.getUserByEmail?.(credentials.username);
-        console.log('authorized: ', user);
-        return user ?? null;
+        // const user = await adapter.getUserByEmail?.(credentials.username);
+        console.log('credentials: ', credentials);
+        const userDetail = await prisma.user.findUnique({
+          where  : {
+            [credentials.username.includes('@') ? 'email' : 'username'] : credentials.username,
+          } as any,
+          select : {
+            id       : true,
+            
+            name     : true,
+            email    : true,
+            image    : true,
+            
+            username : true,
+            password : true,
+            
+            accounts : {
+              where  : {
+                type : 'credentials',
+              },
+              take   : 1,
+            },
+          },
+        });
+        if (!userDetail) return null;
+        const {password, accounts, ...userInfo} = userDetail;
+        if (!!password && !(await bcrypt.compare(password, credentials.password))) return null;
+        return userInfo;
       },
     }),
     FacebookProvider({
@@ -114,55 +142,66 @@ export const authOptions: NextAuthOptions = {
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === 'HEAD') return res.status(200);
   
+  const isCredentialsCallback = () => (
+    (req.method === 'POST')
+    &&
+    req.query.nextauth
+    &&
+    req.query.nextauth.includes('callback')
+    &&
+    req.query.nextauth.includes('credentials')
+  );
+  
   await NextAuth(req, res, {
     ...authOptions,
     callbacks : {
       ...authOptions.callbacks,
       async signIn(params) {
-        const { user, account, profile, email, credentials } = params;
-        console.log('CREATE SESSION: ', {
-          incCallback: req.query.nextauth?.includes('callback'),
-          incCred : req.query.nextauth?.includes('credentials'),
-          method: req.method,
-          user, account, profile, email, credentials,
-        })
-        if (credentials) {
-          console.log('credentials: ', credentials);
+        if (isCredentialsCallback()) {
+          const { user } = params;
           
           const sessionToken  = randomUUID();
-          const sessionExpiry = new Date(Date.now() + (24 * 3600 * 1000));
+          const maxAge        = 24 * 3600 * 1000; // a day
+          const sessionExpiry = new Date(Date.now() + maxAge);
+          
           await adapter.createSession?.({
             sessionToken : sessionToken,
-            userId       : user.id,
             expires      : sessionExpiry,
+            
+            userId       : user.id,
           });
           
-          
-          
-          const cookies = new Cookies(req,res);
+          const cookies = new Cookies(req, res);
           cookies.set('next-auth.session-token', sessionToken, {
             expires: sessionExpiry
           });
-          
-          
-          
-          console.log('created session: ', { sessionToken, sessionExpiry });
-          return true;
         } // if
         
         
         
-        return await authOptions.callbacks?.signIn?.(params) ?? false;
+        return await authOptions.callbacks?.signIn?.(params) ?? true;
       },
     },
     jwt : {
       async encode(params) {
-        const cookies = new Cookies(req,res);
-        const cookie = cookies.get('next-auth.session-token');
-        return cookie ?? '';
+        if (isCredentialsCallback()) {
+          const cookies = new Cookies(req, res);
+          const cookie = cookies.get('next-auth.session-token');
+          return cookie ?? '';
+        } // if
+        
+        
+        
+        return encode(params);
       },
       async decode(params) {
-        return null;
+        if (isCredentialsCallback()) {
+          return null;
+        } // if
+        
+        
+        
+        return decode(params);
       }
     },
   });
