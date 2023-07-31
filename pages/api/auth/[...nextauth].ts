@@ -42,20 +42,21 @@ export const authOptions: NextAuthOptions = {
             [credentials.username.includes('@') ? 'email' : 'username'] : credentials.username,
           } as any,
           select : {
-            id       : true,
+            id            : true,
             
-            name     : true,
-            email    : true,
-            image    : true,
+            name          : true,
+            email         : true,
+            emailVerified : true,
+            image         : true,
             
-            username : true,
-            password : true,
+            username      : true,
+            password      : true,
             
-            accounts : {
-              where  : {
-                type : 'credentials',
+            accounts      : {
+              where       : {
+                type      : 'credentials',
               },
-              take   : 1,
+              take        : 1,
             },
           },
         });
