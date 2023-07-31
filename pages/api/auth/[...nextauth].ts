@@ -61,17 +61,10 @@ export const authOptions: NextAuthOptions = {
             
             username      : true,
             password      : true,
-            
-            accounts      : {
-              where       : {
-                type      : 'credentials',
-              },
-              take        : 1,
-            },
           },
         });
         if (!userDetail) return null;
-        const {password, accounts, ...userInfo} = userDetail;
+        const {password, ...userInfo} = userDetail;
         if (!!password && !(await bcrypt.compare(password, credentials.password))) return null;
         return userInfo;
       },
