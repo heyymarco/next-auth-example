@@ -47,10 +47,17 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials, req) {
         if (!credentials) return null;
         // const userDetail = await adapter.getUserByEmail?.(credentials.username);
-        const userDetail = await prisma.user.findUnique({
-          where  : {
-            [credentials.username.includes('@') ? 'email' : 'username'] : credentials.username,
-          } as any,
+        const userDetail = await prisma.user.findFirst({
+          where  :
+            credentials.username.includes('@')
+            ? {
+              email : credentials.username,
+            }
+            : {
+              credentials   : {
+                username    : credentials.username,
+              },
+            },
           select : {
             id            : true,
             
@@ -59,13 +66,17 @@ export const authOptions: NextAuthOptions = {
             emailVerified : true,
             image         : true,
             
-            username      : true,
-            password      : true,
+            credentials   : {
+              select : {
+                password  : true,
+              },
+            },
           },
         });
         if (!userDetail) return null;
-        const {password, ...userInfo} = userDetail;
-        if (!(await bcrypt.compare(credentials.password, password ?? ''))) return null;
+        const { credentials : credentials2, ...userInfo } = userDetail;
+        if (!credentials2) return null;
+        if (!(await bcrypt.compare(credentials.password, credentials2.password ?? ''))) return null;
         return userInfo;
       },
     }),

@@ -47,11 +47,19 @@ model User {
   emailVerified DateTime?
   image         String?
   
+  accounts      Account[]
+  sessions      Session[]
+  credentials   Credentials?
+}
+
+model Credentials {
+  id            String    @id @default(cuid())
+  
   username      String?   @unique
   password      String?
   
-  accounts      Account[]
-  sessions      Session[]
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
