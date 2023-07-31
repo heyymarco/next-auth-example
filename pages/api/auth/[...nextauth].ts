@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions, User } from 'next-auth'
+import NextAuth, { NextAuthOptions, SessionOptions, User } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
 import GithubProvider from 'next-auth/providers/github'
@@ -24,10 +24,20 @@ import {
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
 const adapter = PrismaAdapter(prisma);
+const session : SessionOptions = {
+  strategy  : 'database',
+  
+  maxAge    : 1 * 24 * 60 * 60, // 1 day
+  updateAge :      6 * 60 * 60, // 6 hours
+  
+  generateSessionToken() {
+    return randomUUID();
+  },
+};
 export const authOptions: NextAuthOptions = {
-  adapter: adapter as any,
-  // https://next-auth.js.org/configuration/providers/oauth
-  providers: [
+  adapter   : adapter as any,
+  session   : session,
+  providers : [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -86,7 +96,7 @@ export const authOptions: NextAuthOptions = {
     //   version: "2.0",
     // }),
   ],
-  callbacks: {
+  callbacks : {
     async signIn({ user, account, profile, email, credentials }) {
       if (!('emailVerified' in user)) {
         const newUser : User = user;
@@ -157,11 +167,11 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     callbacks : {
       ...authOptions.callbacks,
       async signIn(params) {
-        if (isCredentialsCallback()) {
+        if ((session.strategy === 'database') && isCredentialsCallback()) {
           const { user } = params;
           
-          const sessionToken  = randomUUID();
-          const sessionMaxAge = 24 * 3600 * 1000; // a day
+          const sessionToken  = await session.generateSessionToken();
+          const sessionMaxAge = session.maxAge * 1000; // convert to milliseconds
           const sessionExpiry = new Date(Date.now() + sessionMaxAge);
           
           await adapter.createSession?.({
@@ -173,7 +183,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
           
           const cookies = new Cookies(req, res);
           cookies.set('next-auth.session-token', sessionToken, {
-            expires: sessionExpiry
+            expires      : sessionExpiry
           });
         } // if
         
@@ -184,14 +194,14 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     },
     jwt : {
       async encode(params) {
-        if (isCredentialsCallback()) return ''; // force not to use jwt token => fallback to database token
+        if ((session.strategy === 'database') && isCredentialsCallback()) return ''; // force not to use jwt token => fallback to database token
         
         
         
         return encode(params);
       },
       async decode(params) {
-        if (isCredentialsCallback()) return null; // force not to use jwt token => fallback to database token
+        if ((session.strategy === 'database') && isCredentialsCallback()) return null; // force not to use jwt token => fallback to database token
         
         
         
