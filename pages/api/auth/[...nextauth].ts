@@ -18,6 +18,7 @@ import bcrypt from 'bcrypt'
 import {
     prisma,
 }                           from '@/libs/prisma.server'
+import { useRouter } from 'next/router'
 
 
 
@@ -153,8 +154,34 @@ export const authOptions: NextAuthOptions = {
   },
 }
 
+async function handlePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+  if (req.method !== 'POST') return false;
+  if (req.query.nextauth?.[0] !== path) return false;
+  
+  
+  
+  const {
+    username,
+  } = req.body;
+  if (!username || (typeof(username) !== 'string')) {
+    res.status(400).end();
+    return true;
+  } // if
+  
+  
+  
+  res.json({
+    ok: true,
+    username,
+    message: 'password reset sent!',
+  });
+  return true;
+}
+
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === 'HEAD') return res.status(200);
+  
+  if (await handlePasswordReset('reset', req, res)) return;
   
   const isCredentialsCallback = () => (
     (req.method === 'POST')
