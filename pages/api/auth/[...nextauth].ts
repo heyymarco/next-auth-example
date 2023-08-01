@@ -170,9 +170,51 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
   
   
   
+  const user = await prisma.user.findFirst({
+    where  :
+      username.includes('@')
+      ? {
+        email : username,
+      }
+      : {
+        credentials   : {
+          username    : username,
+        },
+      },
+    select : {
+      id : true,
+    },
+  });
+  if (!user) {
+    res.status(404).json({
+      message: 'user not found!',
+    });
+    return true;
+  } // if
+  
+  
+  
+  const resetMaxAge = (1 * 24 * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
+  const resetExpiry = new Date(Date.now() + resetMaxAge);
+  const result = await prisma.resetPasswordToken.upsert({
+    where : {
+      userId : user.id,
+    },
+    create : {
+      userId : user.id,
+      
+      expiresAt : resetExpiry,
+      token     : '<TOKEN>',
+    },
+    update : {
+      expiresAt : resetExpiry,
+      token     : '<TOKEN>',
+    }
+  });
   res.json({
     ok: true,
     username,
+    result,
     message: 'password reset sent!',
   });
   return true;
