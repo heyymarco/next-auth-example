@@ -38,8 +38,11 @@ function TabLogin() {
                 Login
             </Button>
             <hr />
-            <Button>
+            <Button onClick={() => signIn('facebook', { callbackUrl: '/' })}>
                 Login with Facebook
+            </Button>
+            <Button onClick={() => signIn('github', { callbackUrl: '/' })}>
+                Login with Github
             </Button>
             <ModalStatus theme='danger'>
                 {!!error && <>
@@ -48,12 +51,19 @@ function TabLogin() {
                         <CloseButton onClick={() => setError('')} />
                     </CardHeader>
                     <CardBody>
-                        {error === 'CredentialsSignin' && <p>
-                            Login error. Please try again.
-                        </p>}
-                        {error === 'Default' && <p>
-                            Unknown. Please try again.
-                        </p>}
+                        {((): JSX.Element|null => {
+                            switch (error) {
+                                case 'CredentialsSignin': return <p>
+                                    Login error. Please try again.
+                                </p>
+                                case 'Callback': return <p>
+                                    Login error. Please try again.
+                                </p>
+                                default: return <p>
+                                    Unknown. Please try again.
+                                </p>
+                            } // switch
+                        })()}
                     </CardBody>
                 </>}
             </ModalStatus>
@@ -73,24 +83,32 @@ function TabForget() {
 }
 export default function Login() {
     const [tabIndex, setTabIndex] = useState(0);
+    const router = useRouter();
     return (
         <Content theme='primary'>
             <Tab
                 expandedTabIndex={tabIndex}
-                listComponent={<></>}
-                listItemComponent={<></>}
+                // listComponent={<></>}
+                // listItemComponent={<></>}
                 bodyComponent={<Content mild={true} />}
+                id='tabbbb'
             >
-                <TabPanel>
+                <TabPanel label='Login'>
                     <TabLogin />
                     <ButtonIcon icon='lock_open' buttonStyle='link' onClick={() => setTabIndex(1)}>
                         Forgot password?
                     </ButtonIcon>
+                    <ButtonIcon icon='home' buttonStyle='link' onClick={() => router.push('/')}>
+                        Back to Home
+                    </ButtonIcon>
                 </TabPanel>
-                <TabPanel>
+                <TabPanel label='Recovery'>
                     <TabForget />
                     <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
                         Back to Login Page
+                    </ButtonIcon>
+                    <ButtonIcon icon='home' buttonStyle='link' onClick={() => router.push('/')}>
+                        Back to Home
                     </ButtonIcon>
                 </TabPanel>
             </Tab>
