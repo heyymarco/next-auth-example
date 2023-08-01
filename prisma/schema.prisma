@@ -20,12 +20,12 @@ model Account {
     providerAccountId   String
     @@unique([provider, providerAccountId])
     
-    // jwt token sessions:
+    // jwt sessions:
     refresh_token       String?
     access_token        String?
     expires_at          Int?
     
-    // jwt token meta:
+    // jwt meta:
     token_type          String?
     scope               String?
     id_token            String?
