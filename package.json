@@ -23,6 +23,7 @@
     "@cssfn/cssfn-react": "^3.1.0",
     "@prisma/client": "^5.0.0",
     "@reusable-ui/components": "^6.0.6",
+    "@reusable-ui/core": "^6.0.6",
     "bcrypt": "^5.1.0",
     "cookies": "^0.8.0",
     "next": "latest",
