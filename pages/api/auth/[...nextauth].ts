@@ -18,7 +18,6 @@ import bcrypt from 'bcrypt'
 import {
     prisma,
 }                           from '@/libs/prisma.server'
-import { useRouter } from 'next/router'
 
 
 
@@ -105,6 +104,7 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile, email, credentials }) {
       if (!('emailVerified' in user)) {
         const newUser : User = user;
+        if (!newUser.email) return false; // the email field is required to be stored to model User
         console.log('SIGN UP', { user, account, profile, email, credentials });
       }
       else {
@@ -169,52 +169,56 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
   } // if
   
   
-  
-  const user = await prisma.user.findFirst({
-    where  :
-      username.includes('@')
-      ? {
-        email : username,
-      }
-      : {
-        credentials   : {
-          username    : username,
+  const email = await prisma.$transaction(async (prismaTransaction) => {
+    const { id: userId } = await prisma.user.findFirst({
+      where  :
+        username.includes('@')
+        ? {
+          email : username,
+        }
+        : {
+          credentials   : {
+            username    : username,
+          },
+        },
+      select : {
+        id : true,
+      },
+    }) ?? {};
+    if (userId === undefined) return false;
+    
+    
+    
+    const resetMaxAge = (1 * 24 * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
+    const resetExpiry = new Date(Date.now() + resetMaxAge);
+    const {user: {email}} = await prisma.resetPasswordToken.upsert({
+      where : {
+        userId : userId,
+      },
+      create : {
+        userId : userId,
+        
+        expiresAt : resetExpiry,
+        token     : '<TOKEN>',
+      },
+      update : {
+        expiresAt : resetExpiry,
+        token     : '<TOKEN>',
+      },
+      select : {
+        user : {
+          select : {
+            email : true,
+          },
         },
       },
-    select : {
-      id : true,
-    },
-  });
-  if (!user) {
-    res.status(404).json({
-      message: 'user not found!',
     });
-    return true;
-  } // if
-  
-  
-  
-  const resetMaxAge = (1 * 24 * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
-  const resetExpiry = new Date(Date.now() + resetMaxAge);
-  const result = await prisma.resetPasswordToken.upsert({
-    where : {
-      userId : user.id,
-    },
-    create : {
-      userId : user.id,
-      
-      expiresAt : resetExpiry,
-      token     : '<TOKEN>',
-    },
-    update : {
-      expiresAt : resetExpiry,
-      token     : '<TOKEN>',
-    }
+    return email;
   });
   res.json({
     ok: true,
     username,
-    result,
+    email: email,
     message: 'password reset sent!',
   });
   return true;
