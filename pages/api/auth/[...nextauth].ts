@@ -41,8 +41,8 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
-        password: { label: "Password", type: "password" },
+        username: { label: 'Username or Email', type: 'text'    , placeholder: 'jsmith' },
+        password: { label: 'Password'         , type: 'password'                        },
       },
       async authorize(credentials, req) {
         if (!credentials) return null;
@@ -97,7 +97,7 @@ export const authOptions: NextAuthOptions = {
     // TwitterProvider({
     //   clientId: process.env.TWITTER_ID,
     //   clientSecret: process.env.TWITTER_SECRET,
-    //   version: "2.0",
+    //   version: '2.0',
     // }),
   ],
   callbacks : {
@@ -130,7 +130,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, account, profile, user }) {
       console.log('jwt: ', { token, account, profile });
       if (account) { // if `account` exist, this means that the callback is being invoked for the first time (i.e. the user is being signed in).
-        token.userRole = "admin"
+        token.userRole ='admin'
       } // if
       return token;
     },
