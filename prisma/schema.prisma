@@ -2,83 +2,105 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
 model Account {
-  id                 String      @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+    // records:
+    id                  String              @id @default(cuid())
+    
+    // provider types:
+    type                String
+    provider            String
+    providerAccountId   String
+    @@unique([provider, providerAccountId])
+    
+    // jwt token sessions:
+    refresh_token       String?
+    access_token        String?
+    expires_at          Int?
+    
+    // jwt token meta:
+    token_type          String?
+    scope               String?
+    id_token            String?
+    session_state       String?
+    
+    // relations:
+    userId              String
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Session {
-  id                 String      @id @default(cuid())
-  expires            DateTime
-  
-  sessionToken       String      @unique
-  
-  userId             String
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    // records:
+    id                  String              @id @default(cuid())
+    expires             DateTime
+    
+    // data:
+    sessionToken        String              @unique
+    
+    // relations:
+    userId              String
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id                 String      @id @default(cuid())
-  
-  name               String?
-  email              String      @unique
-  emailVerified      DateTime?
-  image              String?
-  
-  accounts           Account[]
-  sessions           Session[]
-  
-  credentials        Credentials?
-  resetPasswordToken ResetPasswordToken?
+    // records:
+    id                  String              @id @default(cuid())
+    createdAt           DateTime            @default(now())
+    updatedAt           DateTime            @updatedAt
+    
+    // data:
+    name                String?
+    email               String              @unique
+    emailVerified       DateTime?
+    image               String?
+    
+    // relations:
+    accounts            Account[]
+    sessions            Session[]
+    credentials         Credentials?
+    resetPasswordToken  ResetPasswordToken?
 }
 
 model Credentials {
-  id                 String      @id @default(cuid())
-  
-  username           String?     @unique
-  password           String?
-  
-  userId             String      @unique
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    // records:
+    id                  String              @id @default(cuid())
+    
+    // data:
+    username            String?             @unique
+    password            String?
+    
+    // relations:
+    userId              String              @unique
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ResetPasswordToken {
-  id                 String      @id @default(cuid())
-  expiresAt          DateTime
-  
-  token              String
-  
-  userId             String      @unique
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    // records:
+    id                  String              @id @default(cuid())
+    updatedAt           DateTime            @updatedAt
+    expiresAt           DateTime
+    
+    // data:
+    token               String
+    
+    // relations:
+    userId              String              @unique
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model VerificationToken {
-  expires            DateTime
-  
-  identifier         String
-  token              String      @unique
-
-  @@unique([identifier, token])
-}
+// model VerificationToken {
+//     // records:
+//     expires             DateTime
+//     
+//     // data:
+//     identifier          String
+//     token               String              @unique
+//     @@unique([identifier, token])
+// }
