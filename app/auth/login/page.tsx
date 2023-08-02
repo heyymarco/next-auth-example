@@ -51,7 +51,7 @@ function TabLogin(props: TabLoginProps) {
                     }
                     catch (error: any) {
                         setBusy(busy = false);
-                        props.onError('unknown');
+                        props.onError(error?.response?.data?.error ?? error);
                     } // try
                 }}>
                     Login
@@ -102,7 +102,6 @@ function TabForget(props: TabForgetProps) {
                     }
                     catch (error: any) {
                         setBusy(busy = false);
-                        console.log(error)
                         props.onError(error?.response?.data?.error ?? error);
                     } // try
                 }}>
