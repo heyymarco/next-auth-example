@@ -1,7 +1,7 @@
 'use client'
 
-import { Basic, Button, ButtonIcon, CardBody, CardHeader, CloseButton, Content, Group, Label, ModalCard, PasswordInput, Tab, TabPanel, TextInput } from '@reusable-ui/components'
-import { default as React, useEffect, useState } from 'react'
+import { Basic, Busy, Button, ButtonIcon, CardBody, CardHeader, CloseButton, Content, EmailInput, Group, Label, ModalCard, PasswordInput, Tab, TabPanel, TextInput } from '@reusable-ui/components'
+import { default as React, useEffect, useRef, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ModalStatus } from '@/components/ModalStatus'
@@ -133,8 +133,42 @@ function TabForget(props: TabForgetProps) {
         </div>
     );
 }
+
+interface TabResetProps {
+    onError : (error: string) => void
+}
+function TabReset(props: TabResetProps) {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [password2, setPassword2] = useState('');
+    let   [busy, setBusy] = useState(false);
+    const tabResetRef = useRef<HTMLDivElement|null>(null);
+    return (
+        <div ref={tabResetRef}>
+            <AccessibilityProvider enabled={!busy}>
+                <EmailInput readOnly={true} value={''} />
+                <TextInput placeholder='Username' value={username} onChange={({target: {value}}) => setUsername(value)} />
+                <PasswordInput placeholder='Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
+                <PasswordInput placeholder='Confirm Password' value={password2} onChange={({target: {value}}) => setPassword2(value)} />
+                <Button>
+                    Reset password
+                </Button>
+            </AccessibilityProvider>
+            <ModalStatus theme='primary' viewport={tabResetRef}>
+                {!username && <CardBody>
+                    <p>
+                        <Busy /> validating...
+                    </p>
+                </CardBody>}
+            </ModalStatus>
+        </div>
+    );
+}
+
 export default function Login() {
-    const [tabIndex, setTabIndex] = useState(0);
+    const searchParams = useSearchParams();
+    
+    const [tabIndex, setTabIndex] = useState(() => searchParams?.get('resetPasswordToken') ? 2 : 0);
     const router = useRouter();
     const [error, setError] = useState('');
     
@@ -160,6 +194,15 @@ export default function Login() {
                 </TabPanel>
                 <TabPanel label='Recovery'>
                     <TabForget onError={setError} onBackLogin={() => setTabIndex(0)} />
+                    <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
+                        Back to Login Page
+                    </ButtonIcon>
+                    <ButtonIcon icon='home' buttonStyle='link' onClick={() => router.push('/')}>
+                        Back to Home
+                    </ButtonIcon>
+                </TabPanel>
+                <TabPanel label='Reset'>
+                    <TabReset onError={setError} />
                     <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
                         Back to Login Page
                     </ButtonIcon>

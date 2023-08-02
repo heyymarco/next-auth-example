@@ -171,7 +171,14 @@ export const authOptions: NextAuthOptions = {
 }
 
 async function handlePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
-  if (req.method !== 'POST') return false;
+  return (
+    await handleRequestPasswordReset('reset', req, res)
+    ||
+    await handleValidatePasswordReset('reset', req, res)
+  );
+}
+async function handleRequestPasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+  if (req.method !== 'POST')            return false;
   if (req.query.nextauth?.[0] !== path) return false;
   
   
@@ -211,15 +218,15 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
     
     const resetLimitInMinutes = Number.parseFloat(process.env.EMAIL_RESET_LIMITS ?? '5');
     if (resetLimitInMinutes) {
-      const {updatedAt} = await prismaTransaction.resetPasswordToken.findUnique({
+      if (!await prismaTransaction.resetPasswordToken.count({
         where       : {
           userId    : userId,
+          updatedAt : {
+            lt      : new Date(Date.now() - (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */)),
+          },
         },
-        select      : {
-          updatedAt : true,
-        },
-      }) ?? {};
-      if (!!updatedAt && (updatedAt > new Date(Date.now() - (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */)))) {
+        take        : 1,
+      })) {
         // the reset request is too frequent => reject:
         return Error('REQUEST_TOO_FREQUENT');
       } // if
@@ -298,6 +305,61 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
     message: 'password reset sent!',
   });
   return true;
+}
+async function handleValidatePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+  if (req.method !== 'GET')             return false;
+  if (req.query.nextauth?.[0] !== path) return false;
+  
+  
+  
+  const {
+    resetPasswordToken,
+  } = req.query;
+  if ((typeof(resetPasswordToken) !== 'string') || !resetPasswordToken) {
+    res.status(400).end();
+    return true;
+  } // if
+  
+  
+  
+  try {
+    const user = await prisma.user.findFirst({
+      where                : {
+        resetPasswordToken : {
+          token            : resetPasswordToken,
+          expiresAt        : {
+            gt             : new Date(Date.now()),
+          },
+        },
+      },
+      select               : {
+        email              : true,
+        credentials        : {
+          select           : {
+            username       : true,
+          },
+        },
+      },
+    });
+    if (!user) {
+      res.status(404).json({
+        error: 'The reset password token is invalid or expired.'
+      });
+      return true;
+    } // if
+    
+    
+    
+    res.json({
+      email    : user.email,
+      username : user.credentials?.username ?? null,
+    });
+    return true;
+  }
+  catch (error: any) {
+    res.status(500).end();
+    return true;
+  } // try
 }
 
 export default async function auth(req: NextApiRequest, res: NextApiResponse) {
