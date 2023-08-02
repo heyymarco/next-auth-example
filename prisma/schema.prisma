@@ -33,7 +33,7 @@ model Account {
     
     // relations:
     userId              String
-    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade) // delete the related Account(s) if the user deleted
 }
 
 model Session {
@@ -46,7 +46,7 @@ model Session {
     
     // relations:
     userId              String
-    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade) // delete the related Session(s) if the user deleted
 }
 
 model User {
@@ -62,10 +62,10 @@ model User {
     image               String?
     
     // relations:
-    accounts            Account[]
-    sessions            Session[]
-    credentials         Credentials?
-    resetPasswordToken  ResetPasswordToken?
+    accounts            Account[]           // a user may have some related Account(s)          // one to many
+    sessions            Session[]           // a user may have some related Session(s)          // one to many
+    credentials         Credentials?        // a user may have one  related Credentials         // one to one
+    resetPasswordToken  ResetPasswordToken? // a user may have one  related ResetPasswordToken  // one to one
 }
 
 model Credentials {
@@ -78,7 +78,7 @@ model Credentials {
     
     // relations:
     userId              String              @unique
-    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade) // delete the related Credentials if the User deleted
 }
 
 model ResetPasswordToken {
@@ -92,7 +92,7 @@ model ResetPasswordToken {
     
     // relations:
     userId              String              @unique
-    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade) // delete the related ResetPasswordToken if the User deleted
 }
 
 // model VerificationToken {
