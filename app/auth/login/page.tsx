@@ -94,23 +94,16 @@ function TabForget(props: TabForgetProps) {
                         
                         
                         
-                        if (!result.data.ok) {
-                            setBusy(busy = false);
-                            props.onError('unknown');
-                            return;
-                        } // if
-                        
-                        
-                        
                         setMessage(
                             <p>
-                                A reset password link was sent to your email.
+                                {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
                             </p>
                         );
                     }
                     catch (error: any) {
                         setBusy(busy = false);
-                        props.onError('unknown');
+                        console.log(error)
+                        props.onError(error?.response?.data?.error ?? error);
                     } // try
                 }}>
                     Send Reset Password Link
@@ -170,7 +163,7 @@ export default function Login() {
     
     const [tabIndex, setTabIndex] = useState(() => searchParams?.get('resetPasswordToken') ? 2 : 0);
     const router = useRouter();
-    const [error, setError] = useState('');
+    const [error, setError] = useState<string|React.ReactNode>('');
     
     
     
@@ -223,11 +216,17 @@ export default function Login() {
                                 case 'CredentialsSignin': return <p>
                                     Login error. Please try again.
                                 </p>
+                                
                                 case 'Callback': return <p>
                                     Login error. Please try again.
                                 </p>
-                                default: return <p>
-                                    Unknown. Please try again.
+                                
+                                case 'Default': return <p>
+                                    An error occured. Please try again.
+                                </p>
+                                
+                                default       : return (typeof(error) !== 'string') ? <>{error}</> : <p>
+                                    {error}
                                 </p>
                             } // switch
                         })()}

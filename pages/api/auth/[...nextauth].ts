@@ -14,6 +14,7 @@ import { customAlphabet } from 'nanoid/async'
 import Cookies from 'cookies'
 import { encode, decode } from 'next-auth/jwt'
 import bcrypt from 'bcrypt'
+import moment from 'moment'
 
 import { default as nodemailer } from 'nodemailer'
 
@@ -178,8 +179,8 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
   );
 }
 async function handleRequestPasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
-  if (req.method !== 'POST')            return false;
-  if (req.query.nextauth?.[0] !== path) return false;
+  if (req.method !== 'POST')            return false; // ignore
+  if (req.query.nextauth?.[0] !== path) return false; // ignore
   
   
   
@@ -187,8 +188,10 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
     username,
   } = req.body;
   if (!username || (typeof(username) !== 'string')) {
-    res.status(400).end();
-    return true;
+    res.status(400).json({
+      error: 'The required username or email is not provided.',
+    });
+    return true; // handled with error
   } // if
   
   
@@ -212,23 +215,26 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
         id : true,
       },
     }) ?? {};
-    if (userId === undefined) return Error('USER_NOT_FOUND');
+    if (userId === undefined) return Error('There is no user with the specified username or email.', { cause: 404 });
     
     
     
     const resetLimitInMinutes = Number.parseFloat(process.env.EMAIL_RESET_LIMITS ?? '5');
     if (resetLimitInMinutes) {
-      if (!await prismaTransaction.resetPasswordToken.count({
+      // const now = new Date(Date.now() - (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */));
+      const {updatedAt} = await prismaTransaction.resetPasswordToken.findUnique({
         where       : {
           userId    : userId,
-          updatedAt : {
-            lt      : new Date(Date.now() - (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */)),
-          },
         },
-        take        : 1,
-      })) {
+        select      : {
+          updatedAt : true,
+        },
+      }) ?? {};
+      const now         = Date.now();
+      const minInterval = (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */);
+      if (!!updatedAt && ((now - updatedAt.valueOf()) <= minInterval)) {
         // the reset request is too frequent => reject:
-        return Error('REQUEST_TOO_FREQUENT');
+        return Error(`The password reset request is too often. Please try again in ${moment(now).to(updatedAt.valueOf() + minInterval)}.`, { cause: 400 });
       } // if
     } // if
     
@@ -260,16 +266,17 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
     return user;
   });
   if (user instanceof Error) {
-    console.log(user);
-    res.status(400).end();
-    return true;
+    res.status(Number.parseInt(user.cause as any) || 400).json({
+      error: user.message,
+    });
+    return true; // handled with error
   } // if
   
   
   
   try {
     const resetLinkUrl = `${process.env.WEBSITE_URL}/auth/login?resetPasswordToken=${encodeURIComponent(resetToken)}`
-    const sent = await transporter.sendMail({
+    await transporter.sendMail({
       from    : process.env.EMAIL_RESET_FROM, // sender address
       to      : user.email, // list of receivers
       subject : process.env.EMAIL_RESET_SUBJECT ?? 'Password Reset Request',
@@ -287,28 +294,25 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
       .replace('{{ResetLink}}', `<a href="${resetLinkUrl}">Reset Password</a>`)
       .replace('{{ResetLinkAsText}}'  , resetLinkUrl)
     });
-    console.log('email sent: ', sent);
+    
+    
+    
+    res.json({
+      ok      : true,
+      message : 'A password reset link sent to your email. Please check your inbox in a moment.',
+    });
+    return true; // handled with success
   }
   catch (error: any) {
-    console.log('email not sent: ', error);
-    res.status(500).end();
-    return true;
+    res.status(500).json({
+      error: 'An error occured.',
+    });
+    return true; // handled with error
   } // try
-  
-  
-  
-  res.json({
-    ok: true,
-    username,
-    user : user.name,
-    email: user.email,
-    message: 'password reset sent!',
-  });
-  return true;
 }
 async function handleValidatePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
-  if (req.method !== 'GET')             return false;
-  if (req.query.nextauth?.[0] !== path) return false;
+  if (req.method !== 'GET')             return false; // ignore
+  if (req.query.nextauth?.[0] !== path) return false; // ignore
   
   
   
@@ -316,8 +320,10 @@ async function handleValidatePasswordReset(path: string, req: NextApiRequest, re
     resetPasswordToken,
   } = req.query;
   if ((typeof(resetPasswordToken) !== 'string') || !resetPasswordToken) {
-    res.status(400).end();
-    return true;
+    res.status(400).json({
+      error: 'The required reset password token is not provided.',
+    });
+    return true; // handled with error
   } // if
   
   
@@ -343,9 +349,9 @@ async function handleValidatePasswordReset(path: string, req: NextApiRequest, re
     });
     if (!user) {
       res.status(404).json({
-        error: 'The reset password token is invalid or expired.'
+        error: 'The reset password token is invalid or expired.',
       });
-      return true;
+      return true; // handled with error
     } // if
     
     
@@ -354,11 +360,13 @@ async function handleValidatePasswordReset(path: string, req: NextApiRequest, re
       email    : user.email,
       username : user.credentials?.username ?? null,
     });
-    return true;
+    return true; // handled with success
   }
   catch (error: any) {
-    res.status(500).end();
-    return true;
+    res.status(500).json({
+      error: 'An error occured.',
+    });
+    return true; // handled with error
   } // try
 }
 

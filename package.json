@@ -27,6 +27,7 @@
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "cookies": "^0.8.0",
+    "moment": "^2.29.4",
     "nanoid": "^4.0.2",
     "next": "latest",
     "next-auth": "^4.22.3",
