@@ -253,14 +253,14 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
         ??
 `<p>Hi {{user.name}}.</p>
 <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
-<p>To reset your password, click on the button below:<br />{{ResetButton}}</p>
-<p>Or copy and paste the URL into your browser:<br /><u>{{ResetLink}}</u></p>
+<p>To reset your password, click on the link below:<br />{{ResetLink}}</p>
+<p>Or copy and paste the URL into your browser:<br /><u>{{ResetLinkAsText}}</u></p>
 <p>If you did not make this request then please ignore this email.</p>
 `
       )
       .replace('{{user.name}}'  , user.name)
-      .replace('{{ResetButton}}', `<a href="${resetLinkUrl}" style="-webkit-appearance: button;-moz-appearance: button;appearance: button;">Reset Password</a>`)
-      .replace('{{ResetLink}}'  , resetLinkUrl)
+      .replace('{{ResetLink}}', `<a href="${resetLinkUrl}">Reset Password</a>`)
+      .replace('{{ResetLinkAsText}}'  , resetLinkUrl)
     });
     console.log('email sent: ', sent);
   }
