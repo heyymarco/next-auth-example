@@ -190,42 +190,60 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
   const resetMaxAge = ((Number.parseFloat(process.env.EMAIL_RESET_MAX_AGE ?? '24') || (1 * 24)) * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
   const resetExpiry = new Date(Date.now() + resetMaxAge);
   const user = await prisma.$transaction(async (prismaTransaction) => {
-    const { id: userId } = await prisma.user.findFirst({
+    const { id: userId } = await prismaTransaction.user.findFirst({
       where  :
         username.includes('@')
         ? {
-          email : username,
+          email       : username,
         }
         : {
-          credentials   : {
-            username    : username,
+          credentials : {
+            username  : username,
           },
         },
       select : {
         id : true,
       },
     }) ?? {};
-    if (userId === undefined) return false;
+    if (userId === undefined) return Error('USER_NOT_FOUND');
     
     
     
-    const {user} = await prisma.resetPasswordToken.upsert({
-      where : {
-        userId : userId,
+    const resetLimitInMinutes = Number.parseFloat(process.env.EMAIL_RESET_LIMIT ?? '5');
+    if (resetLimitInMinutes) {
+      const {updatedAt} = await prismaTransaction.resetPasswordToken.findUnique({
+        where       : {
+          userId    : userId,
+        },
+        select      : {
+          updatedAt : true,
+        },
+      }) ?? {};
+      if (!!updatedAt && (updatedAt > new Date(Date.now() - (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */)))) {
+        // the reset request is too frequent => reject:
+        return Error('REQUEST_TOO_FREQUENT');
+      } // if
+    } // if
+    
+    
+    
+    const {user} = await prismaTransaction.resetPasswordToken.upsert({
+      where       : {
+        userId    : userId,
       },
-      create : {
-        userId : userId,
+      create      : {
+        userId    : userId,
         
         expiresAt : resetExpiry,
         token     : resetToken
       },
-      update : {
+      update      : {
         expiresAt : resetExpiry,
         token     : resetToken,
       },
-      select : {
-        user : {
-          select : {
+      select      : {
+        user      : {
+          select  : {
             name  : true,
             email : true,
           },
@@ -234,9 +252,9 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
     });
     return user;
   });
-  if (!user) {
-    console.log('user not found');
-    res.status(404).end();
+  if (user instanceof Error) {
+    console.log(user);
+    res.status(400).end();
     return true;
   } // if
   
