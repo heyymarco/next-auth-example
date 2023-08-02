@@ -10,14 +10,29 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 import { randomUUID } from 'crypto'
+import { customAlphabet } from 'nanoid/async'
 import Cookies from 'cookies'
 import { encode, decode } from 'next-auth/jwt'
 import bcrypt from 'bcrypt'
+
+import { default as nodemailer } from 'nodemailer'
 
 // ORMs:
 import {
     prisma,
 }                           from '@/libs/prisma.server'
+
+
+
+const transporter = nodemailer.createTransport({
+  host   : process.env.EMAIL_RESET_SERVER_HOST ?? '',
+  port   : Number.parseInt(process.env.EMAIL_RESET_SERVER_PORT ?? '465'),
+  secure : (process.env.EMAIL_RESET_SERVER_SECURE === 'true'),
+  auth   : {
+    user: process.env.EMAIL_RESET_SERVER_USER,
+    pass: process.env.EMAIL_RESET_SERVER_PASSWORD,
+  },
+});
 
 
 
@@ -81,29 +96,30 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     FacebookProvider({
-      clientId: process.env.FACEBOOK_ID,
-      clientSecret: process.env.FACEBOOK_SECRET,
+      clientId     : process.env.FACEBOOK_ID,
+      clientSecret : process.env.FACEBOOK_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
     GithubProvider({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
+      clientId     : process.env.GITHUB_ID,
+      clientSecret : process.env.GITHUB_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
     // GoogleProvider({
-    //   clientId: process.env.GOOGLE_ID,
-    //   clientSecret: process.env.GOOGLE_SECRET,
+    //   clientId     : process.env.GOOGLE_ID,
+    //   clientSecret : process.env.GOOGLE_SECRET,
     // }),
     // TwitterProvider({
-    //   clientId: process.env.TWITTER_ID,
-    //   clientSecret: process.env.TWITTER_SECRET,
-    //   version: '2.0',
+    //   clientId     : process.env.TWITTER_ID,
+    //   clientSecret : process.env.TWITTER_SECRET,
+    //   version      : '2.0',
     // }),
   ],
   callbacks : {
     async signIn({ user, account, profile, email, credentials }) {
       if (!('emailVerified' in user)) {
         const newUser : User = user;
+        if (!newUser.name ) return false; // the name  field is required to be stored to model User
         if (!newUser.email) return false; // the email field is required to be stored to model User
         console.log('SIGN UP', { user, account, profile, email, credentials });
       }
@@ -169,7 +185,11 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
   } // if
   
   
-  const email = await prisma.$transaction(async (prismaTransaction) => {
+  
+  const resetToken  = await customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 16)();
+  const resetMaxAge = (1 * 24 * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
+  const resetExpiry = new Date(Date.now() + resetMaxAge);
+  const user = await prisma.$transaction(async (prismaTransaction) => {
     const { id: userId } = await prisma.user.findFirst({
       where  :
         username.includes('@')
@@ -189,9 +209,7 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
     
     
     
-    const resetMaxAge = (1 * 24 * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
-    const resetExpiry = new Date(Date.now() + resetMaxAge);
-    const {user: {email}} = await prisma.resetPasswordToken.upsert({
+    const {user} = await prisma.resetPasswordToken.upsert({
       where : {
         userId : userId,
       },
@@ -199,26 +217,66 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
         userId : userId,
         
         expiresAt : resetExpiry,
-        token     : '<TOKEN>',
+        token     : resetToken
       },
       update : {
         expiresAt : resetExpiry,
-        token     : '<TOKEN>',
+        token     : resetToken,
       },
       select : {
         user : {
           select : {
+            name  : true,
             email : true,
           },
         },
       },
     });
-    return email;
+    return user;
   });
+  if (!user) {
+    console.log('user not found');
+    res.status(404).end();
+    return true;
+  } // if
+  
+  
+  
+  try {
+    const resetLinkUrl = `${process.env.WEBSITE_URL}/auth/login?resetPasswordToken=${encodeURIComponent(resetToken)}`
+    const sent = await transporter.sendMail({
+      from    : process.env.EMAIL_RESET_FROM, // sender address
+      to      : user.email, // list of receivers
+      subject : process.env.EMAIL_RESET_SUBJECT ?? 'Password Reset Request',
+      html    : (
+        process.env.EMAIL_RESET_MESSAGE
+        ??
+`<p>Hi {{user.name}}.</p>
+<p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
+<p>To reset your password, click on the button below:<br />{{ResetButton}}</p>
+<p>Or copy and paste the URL into your browser:<br /><u>{{ResetLink}}</u></p>
+<p>If you did not make this request then please ignore this email.</p>
+`
+      )
+      .replace('{{user.name}}'  , user.name)
+      .replace('{{ResetButton}}', `<a href="${resetLinkUrl}" style="-webkit-appearance: button;-moz-appearance: button;appearance: button;">Reset Password</a>`)
+      .replace('{{ResetLink}}'  , resetLinkUrl)
+    });
+    console.log('email sent: ', sent);
+  }
+  catch (error: any) {
+    console.log('email not sent: ', error);
+    res.status(500).end();
+    return true;
+  } // try
+  
+  
+  
   res.json({
     ok: true,
     username,
-    email: email,
+    user : user.name,
+    email: user.email,
     message: 'password reset sent!',
   });
   return true;
