@@ -187,7 +187,7 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
   
   
   const resetToken  = await customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 16)();
-  const resetMaxAge = (1 * 24 * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
+  const resetMaxAge = ((Number.parseFloat(process.env.EMAIL_RESET_MAX_AGE ?? '24') || (1 * 24)) * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
   const resetExpiry = new Date(Date.now() + resetMaxAge);
   const user = await prisma.$transaction(async (prismaTransaction) => {
     const { id: userId } = await prisma.user.findFirst({
