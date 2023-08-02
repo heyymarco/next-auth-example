@@ -209,7 +209,7 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
     
     
     
-    const resetLimitInMinutes = Number.parseFloat(process.env.EMAIL_RESET_LIMIT ?? '5');
+    const resetLimitInMinutes = Number.parseFloat(process.env.EMAIL_RESET_LIMITS ?? '5');
     if (resetLimitInMinutes) {
       const {updatedAt} = await prismaTransaction.resetPasswordToken.findUnique({
         where       : {
