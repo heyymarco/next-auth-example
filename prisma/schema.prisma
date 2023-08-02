@@ -56,7 +56,7 @@ model User {
     updatedAt           DateTime            @updatedAt
     
     // data:
-    name                String?
+    name                String
     email               String              @unique
     emailVerified       DateTime?
     image               String?
