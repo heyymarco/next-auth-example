@@ -234,7 +234,7 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
       const minInterval = (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */);
       if (!!updatedAt && ((now - updatedAt.valueOf()) <= minInterval)) {
         // the reset request is too frequent => reject:
-        return Error(`The password reset request is too often. Please try again in ${moment(now).to(updatedAt.valueOf() + minInterval)}.`, { cause: 400 });
+        return Error(`The password reset request is too often. Please try again ${moment(now).to(updatedAt.valueOf() + minInterval)}.`, { cause: 400 });
       } // if
     } // if
     
