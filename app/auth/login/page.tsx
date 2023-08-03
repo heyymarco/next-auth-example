@@ -270,7 +270,6 @@ export default function Login() {
         setDialogMessage(false);
     });
     const handleClosedDialogMessage = useEvent((): void => {
-        console.log('CLOSE...');
         for (const subscriberDialogMessageClosed of subscribersDialogMessageClosed.current) {
             subscriberDialogMessageClosed();
         } // for
@@ -385,15 +384,14 @@ export default function Login() {
                 // jsx:
                 return (
                     <ModalStatus
+                        key='aafff'
                         modalCardStyle='scrollable'
                         theme={prevDialogMessage.current?.theme ?? 'primary'}
                         
                         lazy={true}
                         
                         onExpandedChange={({expanded}) => !expanded && handleCloseDialogMessage()}
-                        onCollapseStart={() => console.log('collapsING')}
-                        onCollapseEnd={() => console.log('collapseD')}
-                        // onCollapseEnd={handleClosedDialogMessage}
+                        onCollapseEnd={handleClosedDialogMessage}
                     >
                         {!!dialogMessage && <>
                             <CardHeader>
