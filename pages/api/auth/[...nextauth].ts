@@ -316,6 +316,12 @@ async function handleValidatePasswordReset(path: string, req: NextApiRequest, re
   
   
   
+  await new Promise((resolved) => {
+    setTimeout(resolved, 2000);
+  });
+  
+  
+  
   const {
     resetPasswordToken,
   } = req.query;
@@ -357,6 +363,7 @@ async function handleValidatePasswordReset(path: string, req: NextApiRequest, re
     
     
     res.json({
+      ok       : true,
       email    : user.email,
       username : user.credentials?.username ?? null,
     });

@@ -5,13 +5,13 @@ import { default as React, useEffect, useRef, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ModalStatus } from '@/components/ModalStatus'
-import { AccessibilityProvider, useMountedFlag } from '@reusable-ui/core'
+import { AccessibilityProvider, useEvent, useMountedFlag } from '@reusable-ui/core'
 import axios from 'axios'
 
 
 
 interface TabLoginProps {
-    onError : (error: string) => void
+    onError : (error: string) => Promise<void>
 }
 function TabLogin(props: TabLoginProps) {
     const [username, setUsername] = useState('');
@@ -69,7 +69,7 @@ function TabLogin(props: TabLoginProps) {
 }
 
 interface TabForgetProps {
-    onError : (error: string) => void
+    onError : (error: string) => Promise<void>
     onBackLogin : () => void
 }
 function TabForget(props: TabForgetProps) {
@@ -84,7 +84,7 @@ function TabForget(props: TabForgetProps) {
         <div>
             <AccessibilityProvider enabled={!busy}>
                 <TextInput placeholder='Username or Email' value={username} onChange={({target: {value}}) => setUsername(value)} />
-                <Button onClick={async () => {
+                <Button enabled={!busy} onClick={async () => {
                     setBusy(busy = true);
                     try {
                         const result = await axios.post('/api/auth/reset', {
@@ -127,27 +127,70 @@ function TabForget(props: TabForgetProps) {
 }
 
 interface TabResetProps {
-    onError : (error: string) => void
+    resetPasswordToken : string|null
+    onError : (error: string) => Promise<void>
+    onBackLogin : () => void
 }
 function TabReset(props: TabResetProps) {
-    const [username, setUsername] = useState('');
+    const passwordRef = useRef<HTMLInputElement|null>(null);
     const [password, setPassword] = useState('');
     const [password2, setPassword2] = useState('');
-    let   [busy, setBusy] = useState(false);
     const tabResetRef = useRef<HTMLDivElement|null>(null);
+    const isMounted = useMountedFlag();
+    const resetPasswordToken = props.resetPasswordToken;
+    
+    const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(null);
+    let   [busy, setBusy] = useState(false);
+    
+    
+    
+    const hasInitialized = useRef(false); // workaround for <React.StrictMode>
+    useEffect(() => {
+        // conditions:
+        if (!resetPasswordToken) return;
+        if (hasInitialized.current) return;
+        hasInitialized.current = true; // mark as initialized
+        
+        
+        
+        // actions:
+        (async () => {
+            try {
+                const result = await axios.get(`/api/auth/reset?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
+                if (!isMounted.current) return;
+                
+                
+                
+                setVerified(result.data);
+            }
+            catch (error: any) {
+                setVerified(false);
+                await props.onError(error?.response?.data?.error ?? error);
+                if (!isMounted.current) return;
+                props.onBackLogin();
+            } // try
+        })();
+    }, [resetPasswordToken]);
+    useEffect(() => {
+        if (!verified) return;
+        passwordRef.current?.focus();
+    }, [verified]);
+    
+    
+    
     return (
         <div ref={tabResetRef}>
-            <AccessibilityProvider enabled={!busy}>
-                <EmailInput readOnly={true} value={''} />
-                <TextInput placeholder='Username' value={username} onChange={({target: {value}}) => setUsername(value)} />
-                <PasswordInput placeholder='Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
-                <PasswordInput placeholder='Confirm Password' value={password2} onChange={({target: {value}}) => setPassword2(value)} />
-                <Button>
+            <AccessibilityProvider enabled={!busy && !!verified}>
+                <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
+                {/* <TextInput readOnly={true} value={verified?.username ?? ''} placeholder={!verified?.username ? 'username was not configured' : ''} /> */}
+                <PasswordInput elmRef={passwordRef} placeholder='New Password'         value={password} onChange={({target: {value}}) => setPassword(value)} />
+                <PasswordInput                      placeholder='Confirm New Password' value={password2} onChange={({target: {value}}) => setPassword2(value)} />
+                <Button enabled={!busy}>
                     Reset password
                 </Button>
             </AccessibilityProvider>
             <ModalStatus theme='primary' viewport={tabResetRef}>
-                {!username && <CardBody>
+                {(verified === null) && <CardBody>
                     <p>
                         <Busy /> validating...
                     </p>
@@ -160,9 +203,24 @@ function TabReset(props: TabResetProps) {
 export default function Login() {
     const searchParams = useSearchParams();
     
-    const [tabIndex, setTabIndex] = useState(() => searchParams?.get('resetPasswordToken') ? 2 : 0);
+    const resetPasswordToken = searchParams?.get('resetPasswordToken') ?? null;
+    const [tabIndex, setTabIndex] = useState(resetPasswordToken ? 2 : 0);
     const router = useRouter();
-    const [error, setError] = useState<string|React.ReactNode>('');
+    const [error, setError] = useState<string>('');
+    const subscribersErrorClosed = useRef<(() => void)[]>([]);
+    const handleError = useEvent(async (error: string) => {
+        setError(error);
+        return new Promise<void>((resolved) => {
+            subscribersErrorClosed.current.push(resolved);
+        });
+    });
+    const handleErrorClosed = useEvent(() => {
+        setError('');
+        for (const subscriberErrorClosed of subscribersErrorClosed.current) {
+            subscriberErrorClosed();
+        } // for
+        subscribersErrorClosed.current.splice(0); // clear
+    });
     
     
     
@@ -176,7 +234,7 @@ export default function Login() {
                 id='tabbbb'
             >
                 <TabPanel label='Login'>
-                    <TabLogin onError={setError} />
+                    <TabLogin onError={handleError} />
                     <ButtonIcon icon='lock_open' buttonStyle='link' onClick={() => setTabIndex(1)}>
                         Forgot password?
                     </ButtonIcon>
@@ -185,7 +243,7 @@ export default function Login() {
                     </ButtonIcon>
                 </TabPanel>
                 <TabPanel label='Recovery'>
-                    <TabForget onError={setError} onBackLogin={() => setTabIndex(0)} />
+                    <TabForget onError={handleError} onBackLogin={() => setTabIndex(0)} />
                     <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
                         Back to Login Page
                     </ButtonIcon>
@@ -194,7 +252,7 @@ export default function Login() {
                     </ButtonIcon>
                 </TabPanel>
                 <TabPanel label='Reset'>
-                    <TabReset onError={setError} />
+                    <TabReset resetPasswordToken={resetPasswordToken} onError={handleError} onBackLogin={() => setTabIndex(0)} />
                     <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
                         Back to Login Page
                     </ButtonIcon>
@@ -203,11 +261,11 @@ export default function Login() {
                     </ButtonIcon>
                 </TabPanel>
             </Tab>
-            <ModalStatus theme='danger'>
+            <ModalStatus theme='danger' onCollapseEnd={handleErrorClosed}>
                 {!!error && <>
                     <CardHeader>
                         Login Error
-                        <CloseButton onClick={() => setError('')} />
+                        <CloseButton onClick={handleErrorClosed} />
                     </CardHeader>
                     <CardBody>
                         {((): JSX.Element|null => {
@@ -220,11 +278,11 @@ export default function Login() {
                                     Login error. Please try again.
                                 </p>
                                 
-                                case 'Default': return <p>
+                                case 'Default' : return <p>
                                     An error occured. Please try again.
                                 </p>
                                 
-                                default       : return (typeof(error) !== 'string') ? <>{error}</> : <p>
+                                default        : return <p>
                                     {error}
                                 </p>
                             } // switch
