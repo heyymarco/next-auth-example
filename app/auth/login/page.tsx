@@ -337,8 +337,32 @@ export default function Login() {
         handleClose();
     });
     const handleFetchError     = useEvent(async (error: any): Promise<void> => {
-        handleMessageError(
+        await handleMessageError(
             error?.response?.data?.error
+            ??
+            ((): string|React.ReactNode|null => {
+                const errorCode = error?.response?.status;
+                if (typeof(errorCode) !== 'number') return null;
+                const isClientError = (errorCode >= 400) && (errorCode <= 499);
+                const isServerError = (errorCode >= 500) && (errorCode <= 599);
+                if (isClientError || isServerError) return <>
+                    <p>
+                        Oops, there was an error processing the command.
+                    </p>
+                    <p>
+                        There was a <strong>problem contacting our server</strong>.
+                        {isClientError && <>
+                            <br />
+                            Make sure your internet connection is available.
+                        </>}
+                    </p>
+                    <p>
+                        Please try again in a few minutes.<br />
+                        If the problem still persists, please contact our technical support.
+                    </p>
+                </>;
+                return null;
+            })()
             ??
             error?.response?.data
             ??
