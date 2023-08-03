@@ -173,9 +173,11 @@ export const authOptions: NextAuthOptions = {
 
 async function handlePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
   return (
-    await handleRequestPasswordReset('reset', req, res)
+    await handleRequestPasswordReset(path, req, res)
     ||
-    await handleValidatePasswordReset('reset', req, res)
+    await handleValidatePasswordReset(path, req, res)
+    ||
+    await handleApplyPasswordReset(path, req, res)
   );
 }
 async function handleRequestPasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
@@ -368,6 +370,105 @@ async function handleValidatePasswordReset(path: string, req: NextApiRequest, re
       username : user.credentials?.username ?? null,
     });
     return true; // handled with success
+  }
+  catch (error: any) {
+    res.status(500).json({
+      error: 'An error occured.',
+    });
+    return true; // handled with error
+  } // try
+}
+async function handleApplyPasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+  if (req.method !== 'PATCH')           return false; // ignore
+  if (req.query.nextauth?.[0] !== path) return false; // ignore
+  
+  
+  
+  await new Promise((resolved) => {
+    setTimeout(resolved, 2000);
+  });
+  
+  
+  
+  const {
+    resetPasswordToken,
+    password,
+  } = req.body;
+  if (!resetPasswordToken || (typeof(resetPasswordToken) !== 'string')) {
+    res.status(400).json({
+      error: 'The required resetPasswordToken is not provided.',
+    });
+    return true; // handled with error
+  } // if
+  if (!password || (typeof(password) !== 'string')) {
+    res.status(400).json({
+      error: 'The required password is not provided.',
+    });
+    return true; // handled with error
+  } // if
+  const hashedPassword = await bcrypt.hash(password, 10);
+  
+  
+  
+  try {
+    return await prisma.$transaction(async (prismaTransaction): Promise<boolean> => {
+      const { id: userId } = await prismaTransaction.user.findFirst({
+        where                : {
+          resetPasswordToken : {
+            token            : resetPasswordToken,
+            expiresAt        : {
+              gt             : new Date(Date.now()),
+            },
+          },
+        },
+        select               : {
+          id                 : true,
+        },
+      }) ?? {};
+      if (!userId) {
+        res.status(404).json({
+          error: 'The reset password token is invalid or expired.',
+        });
+        return true; // handled with error
+      } // if
+      
+      
+      
+      await prismaTransaction.resetPasswordToken.delete({
+        where    : {
+          userId : userId,
+        },
+        select   : {
+          id     : true,
+        },
+      });
+      
+      
+      
+      await prismaTransaction.credentials.upsert({
+        where      : {
+          userId   : userId,
+        },
+        create     : {
+          userId   : userId,
+          password : hashedPassword,
+        },
+        update     : {
+          password : hashedPassword,
+        },
+        select     : {
+          id       : true,
+        },
+      });
+      
+      
+      
+      res.json({
+        ok       : true,
+        message  : 'The password updated successfully.',
+      });
+      return true; // handled with success
+    });
   }
   catch (error: any) {
     res.status(500).json({
