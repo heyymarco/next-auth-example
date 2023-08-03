@@ -1,17 +1,29 @@
 'use client'
 
-import { Basic, Busy, Button, ButtonIcon, CardBody, CardHeader, CloseButton, Content, EmailInput, Group, Label, ModalCard, PasswordInput, Tab, TabPanel, TextInput } from '@reusable-ui/components'
-import { default as React, useEffect, useRef, useState } from 'react'
+import { Basic, Busy, Button, ButtonIcon, CardBody, CardFooter, CardHeader, CloseButton, Content, EmailInput, Group, Icon, Label, List, ListItem, ModalCard, PasswordInput, Tab, TabPanel, TextInput } from '@reusable-ui/components'
+import { default as React, useEffect, useMemo, useRef, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ModalStatus } from '@/components/ModalStatus'
-import { AccessibilityProvider, useEvent, useMountedFlag } from '@reusable-ui/core'
+import { AccessibilityProvider, ThemeName, ValidationProvider, useEvent, useMountedFlag } from '@reusable-ui/core'
 import axios from 'axios'
 
 
 
+const invalidSelector = ':is(.invalidating, .invalidated)';
+
+
+
+interface DialogMessage {
+    theme   ?: ThemeName
+    title   ?: React.ReactNode
+    message  : React.ReactNode
+}
+
+
+
 interface TabLoginProps {
-    onError : (error: string) => Promise<void>
+    onMessageError   : (error        : string|React.ReactNode)       => Promise<void>
 }
 function TabLogin(props: TabLoginProps) {
     const [username, setUsername] = useState('');
@@ -21,7 +33,7 @@ function TabLogin(props: TabLoginProps) {
     const searchParams = useSearchParams();
     useEffect(() => {
         const error = searchParams?.get('error');
-        if (error) props.onError(error);
+        if (error) props.onMessageError(error);
     }, []);
     
     const router = useRouter();
@@ -43,7 +55,7 @@ function TabLogin(props: TabLoginProps) {
                         if (!result || result.error) setBusy(busy = false);
                         if (!result) return;
                         if (result.error) {
-                            props.onError(result.error);
+                            props.onMessageError(result.error);
                         }
                         else {
                             router.replace('/');
@@ -51,7 +63,7 @@ function TabLogin(props: TabLoginProps) {
                     }
                     catch (error: any) {
                         setBusy(busy = false);
-                        props.onError(error?.response?.data?.error ?? error);
+                        props.onMessageError(error?.response?.data?.error ?? error);
                     } // try
                 }}>
                     Login
@@ -69,14 +81,14 @@ function TabLogin(props: TabLoginProps) {
 }
 
 interface TabForgetProps {
-    onError : (error: string) => Promise<void>
-    onBackLogin : () => void
+    onMessageError   : (error        : string|React.ReactNode)       => Promise<void>
+    onMessageSuccess : (success      : string|React.ReactNode)       => Promise<void>
+    onBackLogin      : () => void
 }
 function TabForget(props: TabForgetProps) {
     const [username, setUsername] = useState('');
     const isMounted = useMountedFlag();
     let   [busy, setBusy] = useState(false);
-    const [message, setMessage] = useState<React.ReactNode>(null);
     
     
     
@@ -94,42 +106,31 @@ function TabForget(props: TabForgetProps) {
                         
                         
                         
-                        setMessage(
+                        await props.onMessageSuccess(
                             <p>
                                 {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
                             </p>
                         );
+                        props.onBackLogin();
                     }
                     catch (error: any) {
                         setBusy(busy = false);
-                        props.onError(error?.response?.data?.error ?? error);
+                        props.onMessageError(error?.response?.data?.error ?? error);
                     } // try
                 }}>
                     Send Reset Password Link
                 </Button>
             </AccessibilityProvider>
-            <ModalStatus theme='success'>
-                {!!message && <>
-                    <CardHeader>
-                        Notification
-                        <CloseButton onClick={() => {
-                            setMessage(null);
-                            props.onBackLogin();
-                        }} />
-                    </CardHeader>
-                    <CardBody>
-                        {message}
-                    </CardBody>
-                </>}
-            </ModalStatus>
         </div>
     );
 }
 
 interface TabResetProps {
     resetPasswordToken : string|null
-    onError : (error: string) => Promise<void>
-    onBackLogin : () => void
+    onMessageError   : (error        : string|React.ReactNode)       => Promise<void>
+    onFieldError     : (invalidFields: ArrayLike<Element>|undefined) => Promise<void>
+    onMessageSuccess : (success      : string|React.ReactNode)       => Promise<void>
+    onBackLogin      : () => void
 }
 function TabReset(props: TabResetProps) {
     const passwordRef = useRef<HTMLInputElement|null>(null);
@@ -138,9 +139,52 @@ function TabReset(props: TabResetProps) {
     const tabResetRef = useRef<HTMLDivElement|null>(null);
     const isMounted = useMountedFlag();
     const resetPasswordToken = props.resetPasswordToken;
+    const [enableValidation, setEnableValidation] = useState(false);
     
     const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(null);
     let   [busy, setBusy] = useState(false);
+    const handleDoPasswordReset = useEvent(async () => {
+        // validate:
+        // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
+        setEnableValidation(true);
+        await new Promise<void>((resolve) => { // wait for a validation state applied
+            setTimeout(() => {
+                setTimeout(() => {
+                    resolve();
+                }, 0);
+            }, 0);
+        });
+        const invalidFields = tabResetRef?.current?.querySelectorAll?.(invalidSelector);
+        if (invalidFields?.length) { // there is an/some invalid field
+            props.onFieldError(invalidFields);
+            return;
+        } // if
+        
+        
+        
+        // do password reset:
+        setBusy(busy = true);
+        try {
+            const result = await axios.patch('/api/auth/reset', {
+                resetPasswordToken,
+                password,
+            });
+            if (!isMounted.current) return;
+            
+            
+            
+            props.onMessageSuccess(
+                <p>
+                    {result.data.message ?? 'The password has been successfully changed. Now you can login with the new password.'}
+                </p>
+            );
+            props.onBackLogin();
+        }
+        catch (error: any) {
+            setBusy(busy = false);
+            props.onMessageError(error?.response?.data?.error ?? error);
+        } // try
+    });
     
     
     
@@ -165,7 +209,7 @@ function TabReset(props: TabResetProps) {
             }
             catch (error: any) {
                 setVerified(false);
-                await props.onError(error?.response?.data?.error ?? error);
+                await props.onMessageError(error?.response?.data?.error ?? error);
                 if (!isMounted.current) return;
                 props.onBackLogin();
             } // try
@@ -181,13 +225,15 @@ function TabReset(props: TabResetProps) {
     return (
         <div ref={tabResetRef}>
             <AccessibilityProvider enabled={!busy && !!verified}>
-                <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
-                {/* <TextInput readOnly={true} value={verified?.username ?? ''} placeholder={!verified?.username ? 'username was not configured' : ''} /> */}
-                <PasswordInput elmRef={passwordRef} placeholder='New Password'         value={password} onChange={({target: {value}}) => setPassword(value)} />
-                <PasswordInput                      placeholder='Confirm New Password' value={password2} onChange={({target: {value}}) => setPassword2(value)} />
-                <Button enabled={!busy}>
-                    Reset password
-                </Button>
+                <ValidationProvider enableValidation={enableValidation}>
+                    <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
+                    {/* <TextInput readOnly={true} value={verified?.username ?? ''} placeholder={!verified?.username ? 'username was not configured' : ''} /> */}
+                    <PasswordInput isValid={(password.length >= 1)} elmRef={passwordRef} placeholder='New Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
+                    <PasswordInput isValid={(password.length >= 1) && (password === password2)} placeholder='Confirm New Password' value={password2} onChange={({target: {value}}) => setPassword2(value)} />
+                    <Button enabled={!busy} onClick={handleDoPasswordReset}>
+                        Reset password
+                    </Button>
+                </ValidationProvider>
             </AccessibilityProvider>
             <ModalStatus theme='primary' viewport={tabResetRef}>
                 {(verified === null) && <CardBody>
@@ -206,20 +252,94 @@ export default function Login() {
     const resetPasswordToken = searchParams?.get('resetPasswordToken') ?? null;
     const [tabIndex, setTabIndex] = useState(resetPasswordToken ? 2 : 0);
     const router = useRouter();
-    const [error, setError] = useState<string>('');
-    const subscribersErrorClosed = useRef<(() => void)[]>([]);
-    const handleError = useEvent(async (error: string) => {
-        setError(error);
+    
+    
+    
+    // message handlers:
+    const [dialogMessage, setDialogMessage] = useState<DialogMessage|false>(false);
+    const subscribersDialogMessageClosed = useRef<(() => void)[]>([]);
+    const prevDialogMessage = useRef<DialogMessage|undefined>(dialogMessage || undefined);
+    if (dialogMessage) prevDialogMessage.current = dialogMessage;
+    const showDialogMessage = useEvent(async (dialogMessage: React.SetStateAction<DialogMessage|false>): Promise<void> => {
+        setDialogMessage(dialogMessage);
         return new Promise<void>((resolved) => {
-            subscribersErrorClosed.current.push(resolved);
+            subscribersDialogMessageClosed.current.push(resolved);
         });
     });
-    const handleCloseError = useEvent(() => {
-        setError('');
-        for (const subscriberErrorClosed of subscribersErrorClosed.current) {
-            subscriberErrorClosed();
+    const handleCloseDialogMessage = useEvent((): void => {
+        setDialogMessage(false);
+    });
+    const handleClosedDialogMessage = useEvent((): void => {
+        console.log('CLOSE...');
+        for (const subscriberDialogMessageClosed of subscribersDialogMessageClosed.current) {
+            subscriberDialogMessageClosed();
         } // for
-        subscribersErrorClosed.current.splice(0); // clear
+        subscribersDialogMessageClosed.current.splice(0); // clear
+    });
+    
+    
+    
+    const handleMessageError   = useEvent(async (error: string|React.ReactNode): Promise<void> => {
+        await showDialogMessage({
+            theme   : 'danger',
+            title   : 'Error',
+            message : error,
+        });
+    });
+    const handleFieldError     = useEvent(async (invalidFields: ArrayLike<Element>|undefined): Promise<void> => {
+        // conditions:
+        if (!invalidFields?.length) return;
+        
+        
+        
+        // handlers:
+        const handleClose = (): void => {
+            // focus the first fieldError:
+            const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), iframe';
+            const firstInvalidField = invalidFields?.[0];
+            const firstFocusableElm = (firstInvalidField.matches(focusableSelector) ? firstInvalidField : firstInvalidField?.querySelector(focusableSelector)) as HTMLElement|null;
+            firstInvalidField.scrollIntoView({
+                block    : 'start',
+                behavior : 'smooth',
+            });
+            firstFocusableElm?.focus?.({ preventScroll: true });
+        };
+        
+        
+        
+        // show message:
+        const isPlural = (invalidFields?.length > 1);
+        await handleMessageError(<>
+            <p>
+                There {isPlural ? 'are some' : 'is an'} invalid field{isPlural ? 's' : ''} that {isPlural ? 'need' : 'needs'} to be fixed:
+            </p>
+            <List listStyle='flat'>
+                {Array.from(invalidFields).map((invalidField, index) =>
+                    <ListItem key={index}>
+                        <>
+                            <Icon
+                                icon={
+                                    ((invalidField.parentElement?.previousElementSibling as HTMLElement)?.children?.[0]?.children?.[0] as HTMLElement)?.style?.getPropertyValue('--icon-image')?.slice(1, -1)
+                                    ??
+                                    'text_fields'
+                                }
+                                theme='primary'
+                            />
+                            &nbsp;
+                            {(invalidField as HTMLElement).getAttribute('aria-label') || (invalidField.children[0] as HTMLInputElement).placeholder}
+                        </>
+                    </ListItem>
+                )}
+            </List>
+        </>);
+        handleClose();
+    });
+    const handleMessageSuccess = useEvent(async (success: string|React.ReactNode): Promise<void> => {
+        await showDialogMessage({
+            theme   : 'success',
+            title   : 'Success',
+            message : success,
+        });
     });
     
     
@@ -234,7 +354,7 @@ export default function Login() {
                 id='tabbbb'
             >
                 <TabPanel label='Login'>
-                    <TabLogin onError={handleError} />
+                    <TabLogin onMessageError={handleMessageError} />
                     <ButtonIcon icon='lock_open' buttonStyle='link' onClick={() => setTabIndex(1)}>
                         Forgot password?
                     </ButtonIcon>
@@ -243,7 +363,7 @@ export default function Login() {
                     </ButtonIcon>
                 </TabPanel>
                 <TabPanel label='Recovery'>
-                    <TabForget onError={handleError} onBackLogin={() => setTabIndex(0)} />
+                    <TabForget onMessageError={handleMessageError} onMessageSuccess={handleMessageSuccess} onBackLogin={() => setTabIndex(0)} />
                     <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
                         Back to Login Page
                     </ButtonIcon>
@@ -252,7 +372,7 @@ export default function Login() {
                     </ButtonIcon>
                 </TabPanel>
                 <TabPanel label='Reset'>
-                    <TabReset resetPasswordToken={resetPasswordToken} onError={handleError} onBackLogin={() => setTabIndex(0)} />
+                    <TabReset resetPasswordToken={resetPasswordToken} onMessageError={handleMessageError}  onFieldError={handleFieldError} onMessageSuccess={handleMessageSuccess} onBackLogin={() => setTabIndex(0)} />
                     <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
                         Back to Login Page
                     </ButtonIcon>
@@ -261,35 +381,35 @@ export default function Login() {
                     </ButtonIcon>
                 </TabPanel>
             </Tab>
-            <ModalStatus theme='danger' onExpandedChange={({expanded}) => !expanded && handleCloseError()}>
-                {!!error && <>
-                    <CardHeader>
-                        Login Error
-                        <CloseButton onClick={handleCloseError} />
-                    </CardHeader>
-                    <CardBody>
-                        {((): JSX.Element|null => {
-                            switch (error) {
-                                case 'CredentialsSignin': return <p>
-                                    Login error. Please try again.
-                                </p>
-                                
-                                case 'Callback': return <p>
-                                    Login error. Please try again.
-                                </p>
-                                
-                                case 'Default' : return <p>
-                                    An error occured. Please try again.
-                                </p>
-                                
-                                default        : return <p>
-                                    {error}
-                                </p>
-                            } // switch
-                        })()}
-                    </CardBody>
-                </>}
-            </ModalStatus>
+            {useMemo(() => {
+                // jsx:
+                return (
+                    <ModalStatus
+                        modalCardStyle='scrollable'
+                        theme={prevDialogMessage.current?.theme ?? 'primary'}
+                        
+                        lazy={true}
+                        
+                        onExpandedChange={({expanded}) => !expanded && handleCloseDialogMessage()}
+                        onCollapseEnd={handleClosedDialogMessage}
+                    >
+                        {!!dialogMessage && <>
+                            <CardHeader>
+                                {dialogMessage.title ?? 'Notification'}
+                                <CloseButton onClick={() => showDialogMessage(false)} />
+                            </CardHeader>
+                            <CardBody>
+                                {dialogMessage.message}
+                            </CardBody>
+                            <CardFooter>
+                                <Button onClick={() => showDialogMessage(false)}>
+                                    Okay
+                                </Button>
+                            </CardFooter>
+                        </>}
+                    </ModalStatus>
+                );
+            }, [dialogMessage])}
         </Content>
     )
 }
