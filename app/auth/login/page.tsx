@@ -214,7 +214,7 @@ export default function Login() {
             subscribersErrorClosed.current.push(resolved);
         });
     });
-    const handleErrorClosed = useEvent(() => {
+    const handleCloseError = useEvent(() => {
         setError('');
         for (const subscriberErrorClosed of subscribersErrorClosed.current) {
             subscriberErrorClosed();
@@ -261,11 +261,11 @@ export default function Login() {
                     </ButtonIcon>
                 </TabPanel>
             </Tab>
-            <ModalStatus theme='danger' onCollapseEnd={handleErrorClosed}>
+            <ModalStatus theme='danger' onExpandedChange={({expanded}) => !expanded && handleCloseError()}>
                 {!!error && <>
                     <CardHeader>
                         Login Error
-                        <CloseButton onClick={handleErrorClosed} />
+                        <CloseButton onClick={handleCloseError} />
                     </CardHeader>
                     <CardBody>
                         {((): JSX.Element|null => {
