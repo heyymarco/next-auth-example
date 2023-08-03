@@ -173,7 +173,7 @@ function TabReset(props: TabResetProps) {
             
             
             
-            props.onMessageSuccess(
+            await props.onMessageSuccess(
                 <p>
                     {result.data.message ?? 'The password has been successfully changed. Now you can login with the new password.'}
                 </p>
