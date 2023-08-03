@@ -391,18 +391,20 @@ export default function Login() {
                         lazy={true}
                         
                         onExpandedChange={({expanded}) => !expanded && handleCloseDialogMessage()}
-                        onCollapseEnd={handleClosedDialogMessage}
+                        onCollapseStart={() => console.log('collapsING')}
+                        onCollapseEnd={() => console.log('collapseD')}
+                        // onCollapseEnd={handleClosedDialogMessage}
                     >
                         {!!dialogMessage && <>
                             <CardHeader>
                                 {dialogMessage.title ?? 'Notification'}
-                                <CloseButton onClick={() => showDialogMessage(false)} />
+                                <CloseButton onClick={handleCloseDialogMessage} />
                             </CardHeader>
                             <CardBody>
                                 {dialogMessage.message}
                             </CardBody>
                             <CardFooter>
-                                <Button onClick={() => showDialogMessage(false)}>
+                                <Button onClick={handleCloseDialogMessage}>
                                     Okay
                                 </Button>
                             </CardFooter>
