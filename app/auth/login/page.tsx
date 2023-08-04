@@ -691,6 +691,7 @@ const TabForget = () => {
 const TabReset  = () => {
     // contexts:
     const {
+        expandedTabIndex,
         resetPasswordToken,
         
         backLogin,
@@ -714,9 +715,13 @@ const TabReset  = () => {
     
     
     
+    // refs:
+    const tabResetRef = useRef<HTMLDivElement|null>(null);
+    const passwordRef = useRef<HTMLInputElement|null>(null);
+    
+    
+    
     // dom effects:
-    const tabResetRef    = useRef<HTMLDivElement|null>(null);
-    const passwordRef    = useRef<HTMLInputElement|null>(null);
     const hasInitialized = useRef(false); // workaround for <React.StrictMode>
     useEffect(() => {
         // conditions:
@@ -744,6 +749,7 @@ const TabReset  = () => {
             } // try
         })();
     }, [resetPasswordToken]);
+    
     useEffect(() => {
         if (!verified) return;
         passwordRef.current?.focus();
@@ -753,6 +759,11 @@ const TabReset  = () => {
     
     // handlers:
     const handleDoPasswordReset = useEvent(async () => {
+        // conditions:
+        if (busy) return; // ignore when busy
+        
+        
+        
         // validate:
         // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
         setEnableValidation(true);
@@ -772,8 +783,8 @@ const TabReset  = () => {
         
         
         
-        // do password reset:
-        setBusy(busy = true);
+        // attempts apply password reset:
+        setBusy(busy = true); // mark as busy
         try {
             const result = await axios.patch('/api/auth/reset', {
                 resetPasswordToken,
@@ -783,17 +794,48 @@ const TabReset  = () => {
             
             
             
+            setBusy(busy = false); // unmark as busy
+            
+            
+            
+            // resets:
+            setEnableValidation(false);
+            setPassword('');
+            setPassword2('');
+            
+            
+            
+            // report the success:
             await showMessageSuccess(
                 <p>
                     {result.data.message ?? 'The password has been successfully changed. Now you can login with the new password.'}
                 </p>
             );
             if (!isMounted.current) return;
+            
+            
+            
+            // redirect to login tab:
             backLogin();
         }
         catch (error: any) {
-            setBusy(busy = false);
-            showMessageFetchError(error);
+            setBusy(busy = false); // unmark as busy
+            
+            
+            
+            // resets:
+            setEnableValidation(false);
+            
+            
+            
+            // report the failure:
+            await showMessageFetchError(error);
+            
+            
+            
+            // focus to password field:
+            passwordRef.current?.setSelectionRange(0, password.length);
+            passwordRef.current?.focus();
         } // try
     });
     
