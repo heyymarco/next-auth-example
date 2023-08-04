@@ -375,7 +375,6 @@ const Login     = () => {
                 // jsx:
                 return (
                     <ModalStatus
-                        key='aafff'
                         modalCardStyle='scrollable'
                         theme={prevDialogMessage.current?.theme ?? 'primary'}
                         
@@ -882,9 +881,9 @@ const TabReset  = () => {
                     {/* <TextInput readOnly={true} value={verified?.username ?? ''} placeholder={!verified?.username ? 'username was not configured' : ''} /> */}
                     <PasswordInput isValid={(password.length >= 1)} elmRef={passwordRef} placeholder='New Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
                     <PasswordInput isValid={(password.length >= 1) && (password === password2)} placeholder='Confirm New Password' value={password2} onChange={({target: {value}}) => setPassword2(value)} />
-                    <Button enabled={!busy} onClick={handleDoPasswordReset}>
+                    <ButtonIcon icon={busy ? 'busy' : 'save'} enabled={!busy} onClick={handleDoPasswordReset}>
                         Reset password
-                    </Button>
+                    </ButtonIcon>
                 </ValidationProvider>
             </AccessibilityProvider>
             <ModalStatus theme='primary' viewport={tabResetRef}>
