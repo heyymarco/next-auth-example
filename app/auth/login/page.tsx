@@ -133,7 +133,7 @@ const Login     = () => {
     
     // states:
     const resetPasswordToken = searchParams?.get('resetPasswordToken') ?? null;
-    const [tabIndex, setTabIndex] = useState(resetPasswordToken ? 2 : 0);
+    const [expandedTabIndex, setExpandedTabIndex] = useState(resetPasswordToken ? 2 : 0);
     
     const isMounted = useMountedFlag();
     
@@ -141,7 +141,13 @@ const Login     = () => {
     
     // handers:
     const handleBackLogin = useEvent(() => {
-        setTabIndex(0);
+        setExpandedTabIndex(0);
+    });
+    const handleGotoReset = useEvent(() => {
+        setExpandedTabIndex(1);
+    });
+    const handleBackHome  = useEvent(() => {
+        router.push('/');
     });
     
     
@@ -286,7 +292,7 @@ const Login     = () => {
                 showMessageNotification : handleShowMessageNotification,
             }), [resetPasswordToken])}>
                 <Tab
-                    expandedTabIndex={tabIndex}
+                    expandedTabIndex={expandedTabIndex}
                     // listComponent={<></>}
                     // listItemComponent={<></>}
                     bodyComponent={<Content mild={true} />}
@@ -294,28 +300,28 @@ const Login     = () => {
                 >
                     <TabPanel label='Login'>
                         <TabLogin />
-                        <ButtonIcon icon='lock_open' buttonStyle='link' onClick={() => setTabIndex(1)}>
+                        <ButtonIcon icon='lock_open' buttonStyle='link' onClick={handleGotoReset}>
                             Forgot password?
                         </ButtonIcon>
-                        <ButtonIcon icon='home' buttonStyle='link' onClick={() => router.push('/')}>
+                        <ButtonIcon icon='home' buttonStyle='link' onClick={handleBackHome}>
                             Back to Home
                         </ButtonIcon>
                     </TabPanel>
                     <TabPanel label='Recovery'>
                         <TabForget />
-                        <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
+                        <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={handleBackLogin}>
                             Back to Login Page
                         </ButtonIcon>
-                        <ButtonIcon icon='home' buttonStyle='link' onClick={() => router.push('/')}>
+                        <ButtonIcon icon='home' buttonStyle='link' onClick={handleBackHome}>
                             Back to Home
                         </ButtonIcon>
                     </TabPanel>
                     <TabPanel label='Reset'>
                         <TabReset />
-                        <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={() => setTabIndex(0)}>
+                        <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={handleBackLogin}>
                             Back to Login Page
                         </ButtonIcon>
-                        <ButtonIcon icon='home' buttonStyle='link' onClick={() => router.push('/')}>
+                        <ButtonIcon icon='home' buttonStyle='link' onClick={handleBackHome}>
                             Back to Home
                         </ButtonIcon>
                     </TabPanel>
