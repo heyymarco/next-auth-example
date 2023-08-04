@@ -72,6 +72,7 @@ interface DialogMessage {
 // contexts:
 interface LoginApi {
     expandedTabIndex        : number
+    callbackUrl             : string|null
     resetPasswordToken      : string|null
     
     backLogin               : () => void
@@ -85,6 +86,7 @@ interface LoginApi {
 }
 const LoginContext = createContext<LoginApi>({
     expandedTabIndex        : 0,
+    callbackUrl             : null,
     resetPasswordToken      : null,
     
     backLogin               :       () => {},
@@ -128,16 +130,54 @@ const getAuthErrorDescription = (errorCode: string): string|React.ReactNode => {
 
 // react components:
 const Login     = () => {
+    // hooks:
     const router       = useRouter();
+    const pathName     = usePathname() ?? '/'
     const searchParams = useSearchParams();
     
     
     
     // states:
-    const resetPasswordToken = searchParams?.get('resetPasswordToken') ?? null;
-    const [expandedTabIndex, setExpandedTabIndex] = useState(resetPasswordToken ? 2 : 0);
+    const callbackUrlRef                          = useRef<string>(searchParams?.get('callbackUrl') ?? null);
+    const resetPasswordTokenRef                   = useRef<string>(searchParams?.get('resetPasswordToken') ?? null);
+    const [expandedTabIndex, setExpandedTabIndex] = useState(resetPasswordTokenRef.current ? 2 : 0);
     
     const isMounted = useMountedFlag();
+    
+    
+    
+    // dom effects:
+    useEffect(() => {
+        // displays an error passed by `next-auth`:
+        const error = searchParams?.get('error');
+        if (error) {
+            handleShowMessageError(getAuthErrorDescription(error));
+        } // if
+    }, []);
+    
+    useEffect(() => {
+        if (!!searchParams?.get('error') || !!searchParams?.get('callbackUrl') || !!searchParams?.get('resetPasswordToken')) {
+            try {
+                // get current browser's queryString:
+                const newSearchParams = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
+                
+                // remove `?error=***` on browser's url:
+                newSearchParams.delete('error');
+                
+                // remove `?resetPasswordToken=***` on browser's url:
+                newSearchParams.delete('callbackUrl');
+                
+                // remove `?resetPasswordToken=***` on browser's url:
+                newSearchParams.delete('resetPasswordToken');
+                
+                // update browser's url:
+                router.replace(`${pathName}${newSearchParams.size ? `?${newSearchParams}` : ''}`, { scroll: false });
+            }
+            catch {
+                // ignore any error
+            } // if
+        } // if
+    }, []);
     
     
     
@@ -283,7 +323,8 @@ const Login     = () => {
         <Content theme='primary'>
             <LoginContext.Provider value={useMemo(() => ({
                 expandedTabIndex        : expandedTabIndex,
-                resetPasswordToken      : resetPasswordToken,
+                callbackUrl             : callbackUrlRef.current,
+                resetPasswordToken      : resetPasswordTokenRef.current,
                 
                 backLogin               : handleBackLogin,
                 
@@ -293,7 +334,7 @@ const Login     = () => {
                 showMessageFetchError   : handleShowMessageFetchError,
                 showMessageSuccess      : handleShowMessageSuccess,
                 showMessageNotification : handleShowMessageNotification,
-            }), [expandedTabIndex, resetPasswordToken])}>
+            }), [expandedTabIndex])}>
                 <Tab
                     expandedTabIndex={expandedTabIndex}
                     // listComponent={<></>}
@@ -367,15 +408,14 @@ export default Login;
 
 const TabLogin  = () => {
     // hooks:
-    const router       = useRouter();
-    const pathName     = usePathname() ?? '/'
-    const searchParams = useSearchParams();
+    const router = useRouter();
     
     
     
     // contexts:
     const {
         expandedTabIndex,
+        callbackUrl,
         
         showMessageError,
         showMessageFieldError,
@@ -402,26 +442,6 @@ const TabLogin  = () => {
     
     // dom effects:
     useEffect(() => {
-        // displays an error passed by `next-auth`:
-        const error = searchParams?.get('error');
-        if (error) {
-            showMessageError(getAuthErrorDescription(error));
-            
-            
-            
-            // remove `?error=***` on browser's url:
-            try {
-                const newSearchParams = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
-                newSearchParams.delete('error');
-                router.replace(`${pathName}?${newSearchParams}`, { scroll: false });
-            }
-            catch {
-                // ignore any error
-            } // if
-        } // if
-    }, []);
-    
-    useEffect(() => {
         // resets:
         setEnableValidation(false);
         setUsername('');
@@ -431,7 +451,7 @@ const TabLogin  = () => {
     
     
     // redirects:
-    const loggedInRedirectPath = '/'; // redirect to home page if login is successful
+    const loggedInRedirectPath = callbackUrl || '/'; // redirect to home page if login is successful
     
     
     
@@ -691,7 +711,6 @@ const TabForget = () => {
 const TabReset  = () => {
     // contexts:
     const {
-        expandedTabIndex,
         resetPasswordToken,
         
         backLogin,
@@ -708,7 +727,7 @@ const TabReset  = () => {
     const [password        , setPassword        ] = useState('');
     const [password2       , setPassword2       ] = useState('');
     
-    const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(null);
+    const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(!resetPasswordToken ? false : null);
     
     const isMounted       = useMountedFlag();
     let   [busy, setBusy] = useState(false);
@@ -722,10 +741,11 @@ const TabReset  = () => {
     
     
     // dom effects:
-    const hasInitialized = useRef(false); // workaround for <React.StrictMode>
+    const hasInitialized = useRef(false); // make sure the validation is never performed twice
     useEffect(() => {
         // conditions:
-        if (!resetPasswordToken) return;
+        if (!resetPasswordToken   ) return;
+        if (verified !== null     ) return;
         if (hasInitialized.current) return;
         hasInitialized.current = true; // mark as initialized
         
@@ -733,22 +753,33 @@ const TabReset  = () => {
         
         // actions:
         (async () => {
+            // attempts validate password reset:
             try {
                 const result = await axios.get(`/api/auth/reset?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
                 if (!isMounted.current) return;
                 
                 
                 
+                // save the success:
                 setVerified(result.data);
             }
             catch (error: any) {
+                // save the failure:
                 setVerified(false);
+                
+                
+                
+                // report the failure:
                 await showMessageFetchError(error);
                 if (!isMounted.current) return;
+                
+                
+                
+                // redirect to login tab:
                 backLogin();
             } // try
         })();
-    }, [resetPasswordToken]);
+    }, [resetPasswordToken, verified]);
     
     useEffect(() => {
         if (!verified) return;
@@ -830,6 +861,7 @@ const TabReset  = () => {
             
             // report the failure:
             await showMessageFetchError(error);
+            if (!isMounted.current) return;
             
             
             
