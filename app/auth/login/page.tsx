@@ -22,6 +22,7 @@ import {
 
 // next:
 import {
+    usePathname,
     useRouter, useSearchParams,
 }                           from 'next/navigation'
 
@@ -90,6 +91,25 @@ const useLoginContext = () => {
 
 // utils:
 const invalidSelector = ':is(.invalidating, .invalidated)';
+const getAuthErrorDescription = (errorCode: string): string|React.ReactNode => {
+    switch (errorCode) {
+        case 'SessionRequired'   : // the content of this page requires you to be signed in at all times
+            return <p>You are not logged in. Please <strong>login to continue</strong>.</p>;
+        
+        case 'CredentialsSignin' : // the authorize callback returned null in the Credentials provider
+            return <p>Login failed. Make sure <strong>your username (or email)</strong> and <strong>your password</strong> are correct.</p>;
+        
+        case 'OAuthSignin'       : // error in constructing an authorization URL
+        case 'OAuthCallback'     : // error in handling the response from an OAuth provider
+        case 'OAuthCreateAccount': // could not create OAuth provider user in the database
+        case 'Callback'          : // error in the OAuth callback handler route
+            return <p>Login failed. Make sure you have <strong>granted access</strong> from your 3rd party account.</p>;
+        
+        case 'Default':
+        default:
+            return errorCode;
+    } // switch
+}
 
 
 
@@ -319,15 +339,15 @@ export default Login;
 
 const TabLogin  = () => {
     // hooks:
-    const searchParams = useSearchParams();
     const router       = useRouter();
+    const pathName     = usePathname() ?? '/'
+    const searchParams = useSearchParams();
     
     
     
     // contexts:
     const {
         showMessageError,
-        showMessageFetchError,
     } = useLoginContext();
     
     
@@ -343,9 +363,77 @@ const TabLogin  = () => {
     
     // dom effects:
     useEffect(() => {
+        // displays an error passed by `next-auth`:
         const error = searchParams?.get('error');
-        if (error) showMessageError(error);
+        if (error) {
+            showMessageError(getAuthErrorDescription(error));
+            
+            
+            
+            // remove `?error=***` on browser's url:
+            try {
+                const newSearchParams = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
+                newSearchParams.delete('error');
+                router.replace(`${pathName}?${newSearchParams}`, { scroll: false });
+            }
+            catch {
+                // ignore any error
+            } // if
+        } // if
     }, []);
+    
+    
+    
+    // redirects:
+    const loggedInRedirectPath = '/'; // redirect to home page if login is successful
+    
+    
+    
+    // handlers:
+    const handleLoginUsingCredentials = useEvent(async (): Promise<void> => {
+        // conditions:
+        if (busy) return; // ignore when busy
+        
+        
+        
+        // attempts login with credentials:
+        setBusy(busy = true); // mark as busy
+        const result = await signIn('credentials', { username, password, redirect: false });
+        if (!isMounted.current) return;
+        
+        
+        
+        // verify the login status:
+        if (!result?.ok) {
+            await showMessageError(getAuthErrorDescription(result?.error ?? 'CredentialsSignin'));
+            if (!isMounted.current) return;
+            
+            
+            
+            setBusy(busy = false); // unmark as busy
+        }
+        else {
+            router.replace(loggedInRedirectPath); // redirect to home page
+        } // if
+    });
+    const handleLoginUsingFacebook = useEvent(async (): Promise<void> => {
+        // conditions:
+        if (busy) return; // ignore when busy
+        
+        
+        
+        // attempts login with facebook:
+        await signIn('facebook', { callbackUrl: loggedInRedirectPath });
+    });
+    const handleLoginUsingGithub = useEvent(async (): Promise<void> => {
+        // conditions:
+        if (busy) return; // ignore when busy
+        
+        
+        
+        // attempts login with github:
+        await signIn('github', { callbackUrl: loggedInRedirectPath });
+    });
     
     
     
@@ -355,35 +443,14 @@ const TabLogin  = () => {
             <AccessibilityProvider enabled={!busy}>
                 <TextInput placeholder='Username or Email' value={username} onChange={({target: {value}}) => setUsername(value)} />
                 <PasswordInput placeholder='Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
-                <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={async () => {
-                    setBusy(busy = true);
-                    try {
-                        const result = await signIn('credentials', { username, password, callbackUrl: '/', redirect: false });
-                        if (!isMounted.current) return;
-                        
-                        
-                        
-                        if (!result || result.error) setBusy(busy = false);
-                        if (!result) return;
-                        if (result.error) {
-                            showMessageError(result.error);
-                        }
-                        else {
-                            router.replace('/');
-                        } // if
-                    }
-                    catch (error: any) {
-                        setBusy(busy = false);
-                        showMessageFetchError(error);
-                    } // try
-                }}>
+                <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
                     Login
                 </ButtonIcon>
                 <hr />
-                <ButtonIcon icon='facebook' onClick={() => signIn('facebook', { callbackUrl: '/' })}>
+                <ButtonIcon icon='facebook' onClick={handleLoginUsingFacebook}>
                     Login with Facebook
                 </ButtonIcon>
-                <ButtonIcon icon='login' onClick={() => signIn('github', { callbackUrl: '/' })}>
+                <ButtonIcon icon='login' onClick={handleLoginUsingGithub}>
                     Login with Github
                 </ButtonIcon>
             </AccessibilityProvider>
