@@ -71,26 +71,28 @@ interface DialogMessage {
 
 // contexts:
 interface LoginApi {
-    resetPasswordToken    : string|null
+    resetPasswordToken      : string|null
     
-    backLogin             : () => void
+    backLogin               : () => void
     
-    showMessage           : (dialogMessage: React.SetStateAction<DialogMessage | false>) => Promise<void>
-    showMessageError      : (error  : string | React.ReactNode                         ) => Promise<void>
-    showMessageFieldError : (invalidFields: ArrayLike<Element> | undefined             ) => Promise<void>
-    showMessageFetchError : (error  : any                                              ) => Promise<void>
-    showMessageSuccess    : (success: string | React.ReactNode                         ) => Promise<void>
+    showMessage             : (dialogMessage : React.SetStateAction<DialogMessage | false>      ) => Promise<void>
+    showMessageError        : (error         : string | React.ReactNode                         ) => Promise<void>
+    showMessageFieldError   : (invalidFields : ArrayLike<Element> | undefined                   ) => Promise<void>
+    showMessageFetchError   : (error         : any                                              ) => Promise<void>
+    showMessageSuccess      : (success       : string | React.ReactNode                         ) => Promise<void>
+    showMessageNotification : (notification  : string | React.ReactNode                         ) => Promise<void>
 }
 const LoginContext = createContext<LoginApi>({
-    resetPasswordToken    : null,
+    resetPasswordToken      : null,
     
-    backLogin             :       () => {},
+    backLogin               :       () => {},
     
-    showMessage           : async () => {},
-    showMessageError      : async () => {},
-    showMessageFieldError : async () => {},
-    showMessageFetchError : async () => {},
-    showMessageSuccess    : async () => {},
+    showMessage             : async () => {},
+    showMessageError        : async () => {},
+    showMessageFieldError   : async () => {},
+    showMessageFetchError   : async () => {},
+    showMessageSuccess      : async () => {},
+    showMessageNotification : async () => {},
 });
 const useLoginContext = () => {
     return useContext(LoginContext);
@@ -149,30 +151,30 @@ const Login     = () => {
     const subscribersDialogMessageClosed = useRef<(() => void)[]>([]);
     const prevDialogMessage = useRef<DialogMessage|undefined>(dialogMessage || undefined);
     if (dialogMessage) prevDialogMessage.current = dialogMessage;
-    const handleShowMessage           = useEvent(async (dialogMessage: React.SetStateAction<DialogMessage|false>): Promise<void> => {
+    const handleShowMessage             = useEvent(async (dialogMessage : React.SetStateAction<DialogMessage|false>): Promise<void> => {
         setDialogMessage(dialogMessage);
         return new Promise<void>((resolved) => {
             subscribersDialogMessageClosed.current.push(resolved);
         });
     });
-    const handleCloseDialogMessage    = useEvent((): void => {
+    const handleCloseDialogMessage      = useEvent((): void => {
         setDialogMessage(false);
     });
-    const handleClosedDialogMessage   = useEvent((): void => {
+    const handleClosedDialogMessage     = useEvent((): void => {
         for (const subscriberDialogMessageClosed of subscribersDialogMessageClosed.current) {
             subscriberDialogMessageClosed();
         } // for
         subscribersDialogMessageClosed.current.splice(0); // clear
     });
     
-    const handleShowMessageError      = useEvent(async (error: string|React.ReactNode): Promise<void> => {
+    const handleShowMessageError        = useEvent(async (error         : string|React.ReactNode      ): Promise<void> => {
         await handleShowMessage({
             theme   : 'danger',
             title   : 'Error',
             message : error,
         });
     });
-    const handleShowMessageFieldError = useEvent(async (invalidFields: ArrayLike<Element>|undefined): Promise<void> => {
+    const handleShowMessageFieldError   = useEvent(async (invalidFields : ArrayLike<Element>|undefined): Promise<void> => {
         // conditions:
         if (!invalidFields?.length) return;
         
@@ -217,7 +219,7 @@ const Login     = () => {
         });
         firstFocusableElm?.focus?.({ preventScroll: true });
     });
-    const handleShowMessageFetchError = useEvent(async (error: any): Promise<void> => {
+    const handleShowMessageFetchError   = useEvent(async (error         : any                         ): Promise<void> => {
         await handleShowMessageError(
             error?.response?.data?.error
             ??
@@ -252,11 +254,18 @@ const Login     = () => {
             `${error}`
         );
     });
-    const handleShowMessageSuccess    = useEvent(async (success: string|React.ReactNode): Promise<void> => {
+    const handleShowMessageSuccess      = useEvent(async (success       : string|React.ReactNode      ): Promise<void> => {
         await handleShowMessage({
             theme   : 'success',
             title   : 'Success',
             message : success,
+        });
+    });
+    const handleShowMessageNotification = useEvent(async (notification  : string|React.ReactNode      ): Promise<void> => {
+        await handleShowMessage({
+            theme   : 'primary',
+            title   : 'Notification',
+            message : notification,
         });
     });
     
@@ -265,15 +274,16 @@ const Login     = () => {
     return (
         <Content theme='primary'>
             <LoginContext.Provider value={useMemo(() => ({
-                resetPasswordToken    : resetPasswordToken,
+                resetPasswordToken      : resetPasswordToken,
                 
-                backLogin             : handleBackLogin,
+                backLogin               : handleBackLogin,
                 
-                showMessage           : handleShowMessage,
-                showMessageError      : handleShowMessageError,
-                showMessageFieldError : handleShowMessageFieldError,
-                showMessageFetchError : handleShowMessageFetchError,
-                showMessageSuccess    : handleShowMessageSuccess,
+                showMessage             : handleShowMessage,
+                showMessageError        : handleShowMessageError,
+                showMessageFieldError   : handleShowMessageFieldError,
+                showMessageFetchError   : handleShowMessageFetchError,
+                showMessageSuccess      : handleShowMessageSuccess,
+                showMessageNotification : handleShowMessageNotification,
             }), [resetPasswordToken])}>
                 <Tab
                     expandedTabIndex={tabIndex}
@@ -357,6 +367,7 @@ const TabLogin  = () => {
     // contexts:
     const {
         showMessageError,
+        showMessageNotification,
     } = useLoginContext();
     
     
@@ -432,7 +443,26 @@ const TabLogin  = () => {
         
         
         // attempts login with OAuth:
-        await signIn(providerType, { callbackUrl: loggedInRedirectPath });
+        setBusy(busy = true); // mark as busy
+        const result = await signIn(providerType, { callbackUrl: loggedInRedirectPath });
+        if (!isMounted.current) return;
+        
+        
+        
+        // verify the login status:
+        if ((result !== undefined) && !result?.ok) {
+            await showMessageError(getAuthErrorDescription(result?.error ?? 'OAuthSignin'));
+            if (!isMounted.current) return;
+            
+            
+            
+            setBusy(busy = false); // unmark as busy
+        }
+        else {
+            showMessageNotification(
+                <p>You are being redirected to <strong>{providerType} login page</strong>. Please wait...</p>
+            );
+        } // if
     });
     const handleLoginUsingFacebook = useEvent(async (): Promise<void> => {
         await handleLoginUsingOAuth('facebook');
