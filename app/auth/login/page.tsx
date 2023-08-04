@@ -425,12 +425,11 @@ const TabLogin  = () => {
         
         // verify the login status:
         if (!result?.ok) {
-            await showMessageError(getAuthErrorDescription(result?.error ?? 'CredentialsSignin'));
-            if (!isMounted.current) return;
-            
-            
-            
             setBusy(busy = false); // unmark as busy
+            
+            
+            
+            showMessageError(getAuthErrorDescription(result?.error ?? 'CredentialsSignin'));
         }
         else {
             router.replace(loggedInRedirectPath); // redirect to home page
@@ -451,12 +450,11 @@ const TabLogin  = () => {
         
         // verify the login status:
         if ((result !== undefined) && !result?.ok) {
-            await showMessageError(getAuthErrorDescription(result?.error ?? 'OAuthSignin'));
-            if (!isMounted.current) return;
-            
-            
-            
             setBusy(busy = false); // unmark as busy
+            
+            
+            
+            showMessageError(getAuthErrorDescription(result?.error ?? 'OAuthSignin'));
         }
         else {
             showMessageNotification(
