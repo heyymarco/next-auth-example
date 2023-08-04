@@ -23,6 +23,11 @@ import {
     prisma,
 }                           from '@/libs/prisma.server'
 
+// configs:
+import {
+  default as authConfig,
+}                           from '@/auth.config'
+
 
 
 const transporter = nodemailer.createTransport({
@@ -199,7 +204,7 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
   
   
   const resetToken  = await customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 16)();
-  const resetMaxAge = ((Number.parseFloat(process.env.EMAIL_RESET_MAX_AGE ?? '24') || (1 * 24)) * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
+  const resetMaxAge = (((authConfig.EMAIL_RESET_MAX_AGE ?? 24) || (1 * 24)) * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
   const resetExpiry = new Date(Date.now() + resetMaxAge);
   const user = await prisma.$transaction(async (prismaTransaction) => {
     const { id: userId } = await prismaTransaction.user.findFirst({
@@ -221,7 +226,7 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
     
     
     
-    const resetLimitInMinutes = Number.parseFloat(process.env.EMAIL_RESET_LIMITS ?? '5');
+    const resetLimitInMinutes = (authConfig.EMAIL_RESET_LIMITS ?? 5);
     if (resetLimitInMinutes) {
       // const now = new Date(Date.now() - (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */));
       const {updatedAt} = await prismaTransaction.resetPasswordToken.findUnique({
@@ -281,16 +286,15 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
     await transporter.sendMail({
       from    : process.env.EMAIL_RESET_FROM, // sender address
       to      : user.email, // list of receivers
-      subject : process.env.EMAIL_RESET_SUBJECT ?? 'Password Reset Request',
+      subject : (authConfig.EMAIL_RESET_SUBJECT ?? 'Password Reset Request'),
       html    : (
-        process.env.EMAIL_RESET_MESSAGE
+        authConfig.EMAIL_RESET_MESSAGE
         ??
 `<p>Hi {{user.name}}.</p>
 <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
 <p>To reset your password, click on the link below:<br />{{ResetLink}}</p>
 <p>Or copy and paste the URL into your browser:<br /><u>{{ResetLinkAsText}}</u></p>
-<p>If you did not make this request then please ignore this email.</p>
-`
+<p>If you did not make this request then please ignore this email.</p>`
       )
       .replace('{{user.name}}'  , user.name)
       .replace('{{ResetLink}}', `<a href="${resetLinkUrl}">Reset Password</a>`)
