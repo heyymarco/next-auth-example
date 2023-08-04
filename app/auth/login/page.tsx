@@ -367,14 +367,16 @@ const TabLogin  = () => {
     // contexts:
     const {
         showMessageError,
+        showMessageFieldError,
         showMessageNotification,
     } = useLoginContext();
     
     
     
     // states:
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [enableValidation, setEnableValidation] = useState(false);
+    const [username        , setUsername        ] = useState('');
+    const [password        , setPassword        ] = useState('');
     
     const isMounted       = useMountedFlag();
     let   [busy, setBusy] = useState(false);
@@ -382,6 +384,7 @@ const TabLogin  = () => {
     
     
     // refs:
+    const tabLoginRef = useRef<HTMLDivElement|null>(null);
     const usernameRef = useRef<HTMLInputElement|null>(null);
     
     
@@ -421,6 +424,25 @@ const TabLogin  = () => {
         
         
         
+        // validate:
+        // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
+        setEnableValidation(true);
+        await new Promise<void>((resolve) => { // wait for a validation state applied
+            setTimeout(() => {
+                setTimeout(() => {
+                    resolve();
+                }, 0);
+            }, 0);
+        });
+        if (!isMounted.current) return;
+        const invalidFields = tabLoginRef?.current?.querySelectorAll?.(invalidSelector);
+        if (invalidFields?.length) { // there is an/some invalid field
+            showMessageFieldError(invalidFields);
+            return;
+        } // if
+        
+        
+        
         // attempts login with credentials:
         setBusy(busy = true); // mark as busy
         const result = await signIn('credentials', { username, password, redirect: false });
@@ -434,7 +456,8 @@ const TabLogin  = () => {
             
             
             
-            // clear password field to increase security:
+            // resets:
+            setEnableValidation(false);
             setPassword('');
             
             
@@ -448,7 +471,7 @@ const TabLogin  = () => {
             usernameRef.current?.focus();
         }
         else {
-            // clear username & password field to increase security:
+            // resets:
             setUsername('');
             setPassword('');
             
@@ -495,20 +518,22 @@ const TabLogin  = () => {
     
     // jsx:
     return (
-        <div>
+        <div ref={tabLoginRef}>
             <AccessibilityProvider enabled={!busy}>
-                <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} value={username} onChange={({target: {value}}) => setUsername(value)} />
-                <PasswordInput                  placeholder='Password'          autoComplete='current-password' required={true} value={password} onChange={({target: {value}}) => setPassword(value)} />
-                <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
-                    Login
-                </ButtonIcon>
-                <hr />
-                <ButtonIcon icon='facebook' onClick={handleLoginUsingFacebook}>
-                    Login with Facebook
-                </ButtonIcon>
-                <ButtonIcon icon='login'    onClick={handleLoginUsingGithub}>
-                    Login with Github
-                </ButtonIcon>
+                <ValidationProvider enableValidation={enableValidation}>
+                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={({target: {value}}) => setUsername(value)} />
+                    <PasswordInput                  placeholder='Password'          autoComplete='current-password' required={true} isValid={password.length >= 1} value={password} onChange={({target: {value}}) => setPassword(value)} />
+                    <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
+                        Login
+                    </ButtonIcon>
+                    <hr />
+                    <ButtonIcon icon='facebook' onClick={handleLoginUsingFacebook}>
+                        Login with Facebook
+                    </ButtonIcon>
+                    <ButtonIcon icon='login'    onClick={handleLoginUsingGithub}>
+                        Login with Github
+                    </ButtonIcon>
+                </ValidationProvider>
             </AccessibilityProvider>
         </div>
     );
@@ -582,8 +607,8 @@ const TabReset  = () => {
     
     // states:
     const [enableValidation, setEnableValidation] = useState(false);
-    const [password , setPassword ] = useState('');
-    const [password2, setPassword2] = useState('');
+    const [password        , setPassword        ] = useState('');
+    const [password2       , setPassword2       ] = useState('');
     
     const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(null);
     
