@@ -774,8 +774,17 @@ const TabReset  = () => {
                 
                 
                 
-                // redirect to login tab:
-                backLogin();
+                const errorCode     = error?.response?.status;
+                const isClientError = (errorCode >= 400) && (errorCode <= 499);
+                if (isClientError) {
+                    // redirect to login tab:
+                    backLogin();
+                }
+                else {
+                    // focus to password field:
+                    passwordRef.current?.setSelectionRange(0, password.length);
+                    passwordRef.current?.focus();
+                } // if
             } // try
         })();
     }, [resetPasswordToken, verified]);
@@ -864,9 +873,17 @@ const TabReset  = () => {
             
             
             
-            // focus to password field:
-            passwordRef.current?.setSelectionRange(0, password.length);
-            passwordRef.current?.focus();
+            const errorCode     = error?.response?.status;
+            const isClientError = (errorCode >= 400) && (errorCode <= 499);
+            if (isClientError) {
+                // redirect to login tab:
+                backLogin();
+            }
+            else {
+                // focus to password field:
+                passwordRef.current?.setSelectionRange(0, password.length);
+                passwordRef.current?.focus();
+            } // if
         } // try
     });
     
