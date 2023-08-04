@@ -381,6 +381,11 @@ const TabLogin  = () => {
     
     
     
+    // refs:
+    const usernameRef = useRef<HTMLInputElement|null>(null);
+    
+    
+    
     // dom effects:
     useEffect(() => {
         // displays an error passed by `next-auth`:
@@ -429,7 +434,18 @@ const TabLogin  = () => {
             
             
             
-            showMessageError(getAuthErrorDescription(result?.error ?? 'CredentialsSignin'));
+            // clear password field to increase security:
+            setPassword('');
+            
+            
+            
+            await showMessageError(getAuthErrorDescription(result?.error ?? 'CredentialsSignin'));
+            
+            
+            
+            // focus to username field:
+            usernameRef.current?.setSelectionRange(0, username.length);
+            usernameRef.current?.focus();
         }
         else {
             router.replace(loggedInRedirectPath); // redirect to home page
@@ -475,7 +491,7 @@ const TabLogin  = () => {
     return (
         <div>
             <AccessibilityProvider enabled={!busy}>
-                <TextInput placeholder='Username or Email' value={username} onChange={({target: {value}}) => setUsername(value)} />
+                <TextInput elmRef={usernameRef} placeholder='Username or Email' value={username} onChange={({target: {value}}) => setUsername(value)} />
                 <PasswordInput placeholder='Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
                 <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
                     Login
