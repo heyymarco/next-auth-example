@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from 'react-dom/server'
 import NextAuth, { NextAuthOptions, SessionOptions, User } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
@@ -287,14 +288,16 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
       from    : process.env.EMAIL_RESET_FROM, // sender address
       to      : user.email, // list of receivers
       subject : (authConfig.EMAIL_RESET_SUBJECT ?? 'Password Reset Request'),
-      html    : (
+      html    : renderToStaticMarkup(
         authConfig.EMAIL_RESET_MESSAGE
         ??
-`<p>Hi {{user.name}}.</p>
-<p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
-<p>To reset your password, click on the link below:<br />{{ResetLink}}</p>
-<p>Or copy and paste the URL into your browser:<br /><u>{{ResetLinkAsText}}</u></p>
-<p>If you did not make this request then please ignore this email.</p>`
+        <>
+          <p>Hi {`{{user.name}}`}.</p>
+          <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
+          <p>To reset your password, click on the link below:<br />{`{{ResetLink}}`}</p>
+          <p>Or copy and paste the URL into your browser:<br /><u>{`{{ResetLinkAsText}}`}</u></p>
+          <p>If you did not make this request then please ignore this email.</p>
+        </>
       )
       .replace('{{user.name}}'  , user.name)
       .replace('{{ResetLink}}', `<a href="${resetLinkUrl}">Reset Password</a>`)
