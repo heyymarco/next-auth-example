@@ -480,6 +480,7 @@ const TabLogin  = () => {
             
             
             
+            // report the failure:
             await showMessageError(getAuthErrorDescription(result?.error ?? 'CredentialsSignin'));
             
             
@@ -495,7 +496,8 @@ const TabLogin  = () => {
             
             
             
-            router.replace(loggedInRedirectPath); // redirect to home page
+            // redirect to home page:
+            router.replace(loggedInRedirectPath);
         } // if
     });
     const handleLoginUsingOAuth       = useEvent(async (providerType: LiteralUnion<BuiltInProviderType>): Promise<void> => {
@@ -517,9 +519,11 @@ const TabLogin  = () => {
             
             
             
+            // report the failure:
             showMessageError(getAuthErrorDescription(result?.error ?? 'OAuthSignin'));
         }
         else {
+            // report the success:
             showMessageNotification(
                 <p>You are being redirected to <strong>{providerType} login page</strong>. Please wait...</p>
             );
@@ -559,8 +563,11 @@ const TabLogin  = () => {
 const TabForget = () => {
     // contexts:
     const {
+        expandedTabIndex,
+        
         backLogin,
         
+        showMessageFieldError,
         showMessageFetchError,
         showMessageSuccess,
     } = useLoginContext();
@@ -568,43 +575,115 @@ const TabForget = () => {
     
     
     // states:
-    const [username, setUsername] = useState('');
+    const [enableValidation, setEnableValidation] = useState(false);
+    const [username        , setUsername        ] = useState('');
     
     const isMounted       = useMountedFlag();
     let   [busy, setBusy] = useState(false);
     
     
     
+    // refs:
+    const tabForgetRef = useRef<HTMLDivElement|null>(null);
+    const usernameRef  = useRef<HTMLInputElement|null>(null);
+    
+    
+    
+    // dom effects:
+    useEffect(() => {
+        // resets:
+        setEnableValidation(false);
+        setUsername('');
+    }, [expandedTabIndex]); // resets input states when expandedTabIndex changed
+    
+    
+    
+    // handlers:
+    const handleRequestPasswordReset = useEvent(async () => {
+        // conditions:
+        if (busy) return; // ignore when busy
+        
+        
+        
+        // validate:
+        // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
+        setEnableValidation(true);
+        await new Promise<void>((resolve) => { // wait for a validation state applied
+            setTimeout(() => {
+                setTimeout(() => {
+                    resolve();
+                }, 0);
+            }, 0);
+        });
+        if (!isMounted.current) return;
+        const invalidFields = tabForgetRef?.current?.querySelectorAll?.(invalidSelector);
+        if (invalidFields?.length) { // there is an/some invalid field
+            showMessageFieldError(invalidFields);
+            return;
+        } // if
+        
+        
+        
+        // attempts request password reset:
+        setBusy(busy = true); // mark as busy
+        try {
+            const result = await axios.post('/api/auth/reset', {
+                username,
+            });
+            if (!isMounted.current) return;
+            
+            
+            
+            setBusy(busy = false); // unmark as busy
+            
+            
+            
+            // report the success:
+            await showMessageSuccess(
+                <p>
+                    {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
+                </p>
+            );
+            if (!isMounted.current) return;
+            
+            
+            
+            // redirect to login tab:
+            backLogin();
+        }
+        catch (error: any) {
+            setBusy(busy = false); // unmark as busy
+            
+            
+            
+            // resets:
+            setEnableValidation(false);
+            
+            
+            
+            // report the failure:
+            await showMessageFetchError(error);
+            
+            
+            
+            // focus to username field:
+            usernameRef.current?.setSelectionRange(0, username.length);
+            usernameRef.current?.focus();
+        } // try
+    });
+    
+    
+    
     // jsx:
     return (
-        <div>
+        <div ref={tabForgetRef}>
             <AccessibilityProvider enabled={!busy}>
-                <TextInput placeholder='Username or Email' value={username} onChange={({target: {value}}) => setUsername(value)} />
-                <Button enabled={!busy} onClick={async () => {
-                    setBusy(busy = true);
-                    try {
-                        const result = await axios.post('/api/auth/reset', {
-                            username,
-                        });
-                        if (!isMounted.current) return;
-                        
-                        
-                        
-                        await showMessageSuccess(
-                            <p>
-                                {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
-                            </p>
-                        );
-                        if (!isMounted.current) return;
-                        backLogin();
-                    }
-                    catch (error: any) {
-                        setBusy(busy = false);
-                        showMessageFetchError(error);
-                    } // try
-                }}>
-                    Send Reset Password Link
-                </Button>
+                <ValidationProvider enableValidation={enableValidation}>
+                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={({target: {value}}) => setUsername(value)} />
+                    <ButtonIcon icon={busy ? 'busy' : 'lock_open'} onClick={handleRequestPasswordReset}>
+                        Send Reset Password Link
+                    </ButtonIcon>
+                </ValidationProvider>
             </AccessibilityProvider>
         </div>
     );
