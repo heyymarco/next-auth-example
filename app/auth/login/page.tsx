@@ -104,6 +104,8 @@ const Login     = () => {
     const resetPasswordToken = searchParams?.get('resetPasswordToken') ?? null;
     const [tabIndex, setTabIndex] = useState(resetPasswordToken ? 2 : 0);
     
+    const isMounted = useMountedFlag();
+    
     
     
     // handers:
@@ -147,21 +149,6 @@ const Login     = () => {
         
         
         
-        // handlers:
-        const handleClose = (): void => {
-            // focus the first fieldError:
-            const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), iframe';
-            const firstInvalidField = invalidFields?.[0];
-            const firstFocusableElm = (firstInvalidField.matches(focusableSelector) ? firstInvalidField : firstInvalidField?.querySelector(focusableSelector)) as HTMLElement|null;
-            firstInvalidField.scrollIntoView({
-                block    : 'start',
-                behavior : 'smooth',
-            });
-            firstFocusableElm?.focus?.({ preventScroll: true });
-        };
-        
-        
-        
         // show message:
         const isPlural = (invalidFields?.length > 1);
         await handleShowMessageError(<>
@@ -187,7 +174,19 @@ const Login     = () => {
                 )}
             </List>
         </>);
-        handleClose();
+        if (!isMounted.current) return;
+        
+        
+        
+        // focus the first fieldError:
+        const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), iframe';
+        const firstInvalidField = invalidFields?.[0];
+        const firstFocusableElm = (firstInvalidField.matches(focusableSelector) ? firstInvalidField : firstInvalidField?.querySelector(focusableSelector)) as HTMLElement|null;
+        firstInvalidField.scrollIntoView({
+            block    : 'start',
+            behavior : 'smooth',
+        });
+        firstFocusableElm?.focus?.({ preventScroll: true });
     });
     const handleShowMessageFetchError = useEvent(async (error: any): Promise<void> => {
         await handleShowMessageError(
@@ -322,7 +321,6 @@ const TabLogin  = () => {
     // hooks:
     const searchParams = useSearchParams();
     const router       = useRouter();
-    const isMounted    = useMountedFlag();
     
     
     
@@ -337,6 +335,8 @@ const TabLogin  = () => {
     // states:
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    
+    const isMounted       = useMountedFlag();
     let   [busy, setBusy] = useState(false);
     
     
@@ -391,11 +391,6 @@ const TabLogin  = () => {
     );
 };
 const TabForget = () => {
-    // hooks:
-    const isMounted = useMountedFlag();
-    
-    
-    
     // contexts:
     const {
         backLogin,
@@ -408,6 +403,8 @@ const TabForget = () => {
     
     // states:
     const [username, setUsername] = useState('');
+    
+    const isMounted       = useMountedFlag();
     let   [busy, setBusy] = useState(false);
     
     
@@ -432,6 +429,7 @@ const TabForget = () => {
                                 {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
                             </p>
                         );
+                        if (!isMounted.current) return;
                         backLogin();
                     }
                     catch (error: any) {
@@ -446,11 +444,6 @@ const TabForget = () => {
     );
 };
 const TabReset  = () => {
-    // hooks:
-    const isMounted = useMountedFlag();
-    
-    
-    
     // contexts:
     const {
         resetPasswordToken,
@@ -465,11 +458,13 @@ const TabReset  = () => {
     
     
     // states:
-    const [password, setPassword] = useState('');
-    const [password2, setPassword2] = useState('');
     const [enableValidation, setEnableValidation] = useState(false);
+    const [password , setPassword ] = useState('');
+    const [password2, setPassword2] = useState('');
     
     const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(null);
+    
+    const isMounted       = useMountedFlag();
     let   [busy, setBusy] = useState(false);
     
     
@@ -523,6 +518,7 @@ const TabReset  = () => {
                 }, 0);
             }, 0);
         });
+        if (!isMounted.current) return;
         const invalidFields = tabResetRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
@@ -547,6 +543,7 @@ const TabReset  = () => {
                     {result.data.message ?? 'The password has been successfully changed. Now you can login with the new password.'}
                 </p>
             );
+            if (!isMounted.current) return;
             backLogin();
         }
         catch (error: any) {
