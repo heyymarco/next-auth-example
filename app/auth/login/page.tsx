@@ -448,10 +448,16 @@ const TabLogin  = () => {
             usernameRef.current?.focus();
         }
         else {
+            // clear username & password field to increase security:
+            setUsername('');
+            setPassword('');
+            
+            
+            
             router.replace(loggedInRedirectPath); // redirect to home page
         } // if
     });
-    const handleLoginUsingOAuth = useEvent(async (providerType: LiteralUnion<BuiltInProviderType>): Promise<void> => {
+    const handleLoginUsingOAuth       = useEvent(async (providerType: LiteralUnion<BuiltInProviderType>): Promise<void> => {
         // conditions:
         if (busy) return; // ignore when busy
         
@@ -478,10 +484,10 @@ const TabLogin  = () => {
             );
         } // if
     });
-    const handleLoginUsingFacebook = useEvent(async (): Promise<void> => {
+    const handleLoginUsingFacebook    = useEvent(async (): Promise<void> => {
         await handleLoginUsingOAuth('facebook');
     });
-    const handleLoginUsingGithub = useEvent(async (): Promise<void> => {
+    const handleLoginUsingGithub      = useEvent(async (): Promise<void> => {
         await handleLoginUsingOAuth('github');
     });
     
@@ -491,8 +497,8 @@ const TabLogin  = () => {
     return (
         <div>
             <AccessibilityProvider enabled={!busy}>
-                <TextInput elmRef={usernameRef} placeholder='Username or Email' value={username} onChange={({target: {value}}) => setUsername(value)} />
-                <PasswordInput placeholder='Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
+                <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} value={username} onChange={({target: {value}}) => setUsername(value)} />
+                <PasswordInput                  placeholder='Password'          autoComplete='current-password' required={true} value={password} onChange={({target: {value}}) => setPassword(value)} />
                 <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
                     Login
                 </ButtonIcon>
@@ -500,7 +506,7 @@ const TabLogin  = () => {
                 <ButtonIcon icon='facebook' onClick={handleLoginUsingFacebook}>
                     Login with Facebook
                 </ButtonIcon>
-                <ButtonIcon icon='login' onClick={handleLoginUsingGithub}>
+                <ButtonIcon icon='login'    onClick={handleLoginUsingGithub}>
                     Login with Github
                 </ButtonIcon>
             </AccessibilityProvider>
