@@ -71,6 +71,7 @@ interface DialogMessage {
 
 // contexts:
 interface LoginApi {
+    expandedTabIndex        : number
     resetPasswordToken      : string|null
     
     backLogin               : () => void
@@ -83,6 +84,7 @@ interface LoginApi {
     showMessageNotification : (notification  : string | React.ReactNode                         ) => Promise<void>
 }
 const LoginContext = createContext<LoginApi>({
+    expandedTabIndex        : 0,
     resetPasswordToken      : null,
     
     backLogin               :       () => {},
@@ -280,6 +282,7 @@ const Login     = () => {
     return (
         <Content theme='primary'>
             <LoginContext.Provider value={useMemo(() => ({
+                expandedTabIndex        : expandedTabIndex,
                 resetPasswordToken      : resetPasswordToken,
                 
                 backLogin               : handleBackLogin,
@@ -290,7 +293,7 @@ const Login     = () => {
                 showMessageFetchError   : handleShowMessageFetchError,
                 showMessageSuccess      : handleShowMessageSuccess,
                 showMessageNotification : handleShowMessageNotification,
-            }), [resetPasswordToken])}>
+            }), [expandedTabIndex, resetPasswordToken])}>
                 <Tab
                     expandedTabIndex={expandedTabIndex}
                     // listComponent={<></>}
@@ -372,6 +375,8 @@ const TabLogin  = () => {
     
     // contexts:
     const {
+        expandedTabIndex,
+        
         showMessageError,
         showMessageFieldError,
         showMessageNotification,
@@ -415,6 +420,13 @@ const TabLogin  = () => {
             } // if
         } // if
     }, []);
+    
+    useEffect(() => {
+        // resets:
+        setEnableValidation(false);
+        setUsername('');
+        setPassword('');
+    }, [expandedTabIndex]); // resets input states when expandedTabIndex changed
     
     
     
