@@ -28,6 +28,15 @@ import {
 
 // next auth:
 import {
+    // types:
+    type BuiltInProviderType,
+}                           from 'next-auth/providers'
+import {
+    // types:
+    type LiteralUnion,
+    
+    
+    
     signIn,
 }                           from 'next-auth/react'
 
@@ -416,23 +425,20 @@ const TabLogin  = () => {
             router.replace(loggedInRedirectPath); // redirect to home page
         } // if
     });
-    const handleLoginUsingFacebook = useEvent(async (): Promise<void> => {
+    const handleLoginUsingOAuth = useEvent(async (providerType: LiteralUnion<BuiltInProviderType>): Promise<void> => {
         // conditions:
         if (busy) return; // ignore when busy
         
         
         
-        // attempts login with facebook:
-        await signIn('facebook', { callbackUrl: loggedInRedirectPath });
+        // attempts login with OAuth:
+        await signIn(providerType, { callbackUrl: loggedInRedirectPath });
+    });
+    const handleLoginUsingFacebook = useEvent(async (): Promise<void> => {
+        await handleLoginUsingOAuth('facebook');
     });
     const handleLoginUsingGithub = useEvent(async (): Promise<void> => {
-        // conditions:
-        if (busy) return; // ignore when busy
-        
-        
-        
-        // attempts login with github:
-        await signIn('github', { callbackUrl: loggedInRedirectPath });
+        await handleLoginUsingOAuth('github');
     });
     
     
