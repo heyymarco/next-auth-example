@@ -120,7 +120,6 @@ import {
 }                           from '@/components/ModalStatus'
 import {
     // dialogs:
-    DialogMessageProvider,
     useDialogMessage,
 }                           from '@/hooks/dialogMessage'
 
@@ -190,15 +189,6 @@ const handlePreventSubmit : React.FormEventHandler<HTMLFormElement> = (event) =>
 
 
 // react components:
-const Page      = () => {
-    return (
-        <DialogMessageProvider>
-            <Login />
-        </DialogMessageProvider>
-    )
-};
-export default Page;
-
 const Login     = () => {
     // navigations:
     const router       = useRouter();
@@ -396,6 +386,7 @@ const Login     = () => {
         </Content>
     )
 };
+export default Login;
 
 const TabLogin  = () => {
     // navigations:

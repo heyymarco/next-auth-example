@@ -16,6 +16,12 @@ import './layoutStyles.css'
 
 // import { WEBSITE_LANGUAGE } from '@/website.config'
 
+// internal components:
+import {
+    // dialogs:
+    DialogMessageProvider,
+}                           from '@/hooks/dialogMessage'
+
 
 
 export default function RootLayout({
@@ -30,13 +36,15 @@ export default function RootLayout({
                 <StylesSSR />
             </head>
             <body>
-                {/* <Header /> */}
-                {/* <Provider store={store}> */}
-                <Container theme='primary' tag='main'>
-                    {children}
-                </Container>
-                {/* </Provider> */}
-                {/* <Footer /> */}
+                <DialogMessageProvider>
+                    {/* <Header /> */}
+                    {/* <Provider store={store}> */}
+                    <Container theme='primary' tag='main'>
+                        {children}
+                    </Container>
+                    {/* </Provider> */}
+                    {/* <Footer /> */}
+                </DialogMessageProvider>
             </body>
         </html>
     )
