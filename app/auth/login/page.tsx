@@ -337,7 +337,7 @@ const Login     = () => {
         return (
             <ButtonIcon
                 // appearances:
-                icon='lock_open'
+                icon='help_center'
                 
                 
                 
@@ -349,7 +349,7 @@ const Login     = () => {
                 // handlers:
                 onClick={handleGotoReset}
             >
-                Back to Login Page
+                Forgot Password?
             </ButtonIcon>
         );
     };
