@@ -118,65 +118,41 @@ import {
     // dialog-components:
     ModalStatus,
 }                           from '@/components/ModalStatus'
+import {
+    // dialogs:
+    DialogMessageProvider,
+    useDialogMessage,
+}                           from '@/hooks/dialogMessage'
 
 // other libs:
 import axios                from 'axios'
 
 
 
-// types:
-interface DialogMessage {
-    theme   ?: ThemeName
-    title   ?: React.ReactNode
-    message  : React.ReactNode
-}
-
-
-
 // contexts:
 interface LoginApi {
     // states:
-    expandedTabIndex        : number
-    callbackUrl             : string|null
-    resetPasswordToken      : string|null
+    expandedTabIndex   : number
+    callbackUrl        : string|null
+    resetPasswordToken : string|null
     
     
     
     // navigations:
-    backLogin               : () => void
-    
-    
-    
-    // dialogs:
-    showMessage             : (dialogMessage : React.SetStateAction<DialogMessage | false>) => Promise<void>
-    showMessageError        : (error         : React.ReactNode                            ) => Promise<void>
-    showMessageFieldError   : (invalidFields : ArrayLike<Element> | undefined             ) => Promise<void>
-    showMessageFetchError   : (error         : any                                        ) => Promise<void>
-    showMessageSuccess      : (success       : React.ReactNode                            ) => Promise<void>
-    showMessageNotification : (notification  : React.ReactNode                            ) => Promise<void>
+    backLogin          : () => void
 }
 const LoginContext = createContext<LoginApi>({
     // states:
-    expandedTabIndex        : 0,
-    callbackUrl             : null,
-    resetPasswordToken      : null,
+    expandedTabIndex   : 0,
+    callbackUrl        : null,
+    resetPasswordToken : null,
     
     
     
     // navigations:
-    backLogin               :       () => {},
-    
-    
-    
-    // dialogs:
-    showMessage             : async () => {},
-    showMessageError        : async () => {},
-    showMessageFieldError   : async () => {},
-    showMessageFetchError   : async () => {},
-    showMessageSuccess      : async () => {},
-    showMessageNotification : async () => {},
+    backLogin          : () => {},
 });
-const useLoginContext = () => {
+const useLoginContext = (): LoginApi => {
     return useContext(LoginContext);
 };
 
@@ -214,6 +190,15 @@ const handlePreventSubmit : React.FormEventHandler<HTMLFormElement> = (event) =>
 
 
 // react components:
+const Page      = () => {
+    return (
+        <DialogMessageProvider>
+            <Login />
+        </DialogMessageProvider>
+    )
+};
+export default Page;
+
 const Login     = () => {
     // navigations:
     const router       = useRouter();
@@ -227,12 +212,12 @@ const Login     = () => {
     const resetPasswordTokenRef                   = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
     const [expandedTabIndex, setExpandedTabIndex] = useState<number>(!!resetPasswordTokenRef.current ? 2 : 0);
     
-    const isMounted = useMountedFlag();
     
     
-    
-    // refs:
-    const modalStatusButtonRef = useRef<HTMLButtonElement|null>(null);
+    // dialogs:
+    const {
+        showMessageError,
+    } = useDialogMessage();
     
     
     
@@ -247,7 +232,7 @@ const Login     = () => {
         
         
         // report the failure:
-        handleShowMessageError(getAuthErrorDescription(error));
+        showMessageError(getAuthErrorDescription(error));
     }, []);
     
     // remove passed queryString(s):
@@ -286,240 +271,131 @@ const Login     = () => {
     
     
     
-    // handers:
-    const handleBackLogin           = useEvent(() => {
+    // stable callbacks:
+    const backLogin = useEvent(() => {
         setExpandedTabIndex(0);
     });
-    const handleGotoReset           = useEvent(() => {
+    
+    
+    
+    // handlers:
+    const handleBackLogin = backLogin;
+    const handleGotoReset = useEvent(() => {
         setExpandedTabIndex(1);
     });
-    const handleBackHome            = useEvent(() => {
+    const handleBackHome  = useEvent(() => {
         router.push('/');
-    });
-    const handleModalExpandedChange = useEvent<EventHandler<ModalExpandedChangeEvent>>(({expanded}) => {
-        if (expanded) return;
-        handleCloseDialogMessage();
-    });
-    const handleModalFocus          = useEvent(() => {
-        setTimeout(() => {
-            modalStatusButtonRef.current?.focus();
-        }, 0); // wait to next macroTask, to make sure the keyboard event from <Input> was gone
-    });
-    
-    
-    
-    // message handlers:
-    const [dialogMessage, setDialogMessage] = useState<DialogMessage|false>(false);
-    const subscribersDialogMessageClosed = useRef<(() => void)[]>([]);
-    const prevDialogMessage = useRef<DialogMessage|undefined>(dialogMessage || undefined);
-    if (dialogMessage) prevDialogMessage.current = dialogMessage;
-    const handleShowMessage             = useEvent(async (dialogMessage : React.SetStateAction<DialogMessage|false>): Promise<void> => {
-        setDialogMessage(dialogMessage);
-        return new Promise<void>((resolved) => {
-            subscribersDialogMessageClosed.current.push(resolved);
-        });
-    });
-    const handleCloseDialogMessage      = useEvent((): void => {
-        setDialogMessage(false);
-    });
-    const handleClosedDialogMessage     = useEvent((): void => {
-        for (const subscriberDialogMessageClosed of subscribersDialogMessageClosed.current) {
-            subscriberDialogMessageClosed();
-        } // for
-        subscribersDialogMessageClosed.current.splice(0); // clear
-    });
-    
-    const handleShowMessageError        = useEvent(async (error         : React.ReactNode                          ): Promise<void> => {
-        await handleShowMessage({
-            theme   : 'danger',
-            title   : 'Error',
-            message : error,
-        });
-    });
-    const handleShowMessageFieldError   = useEvent(async (invalidFields : ArrayLike<Element>|undefined             ): Promise<void> => {
-        // conditions:
-        if (!invalidFields?.length) return;
-        
-        
-        
-        // show message:
-        const isPlural = (invalidFields?.length > 1);
-        await handleShowMessageError(<>
-            <p>
-                There {isPlural ? 'are some' : 'is an'} invalid field{isPlural ? 's' : ''} that {isPlural ? 'need' : 'needs'} to be fixed:
-            </p>
-            <List listStyle='flat'>
-                {Array.from(invalidFields).map((invalidField, index) =>
-                    <ListItem key={index}>
-                        <>
-                            <Icon
-                                icon={
-                                    ((invalidField.parentElement?.previousElementSibling as HTMLElement)?.children?.[0]?.children?.[0] as HTMLElement)?.style?.getPropertyValue('--icon-image')?.slice(1, -1)
-                                    ??
-                                    'text_fields'
-                                }
-                                theme='primary'
-                            />
-                            &nbsp;
-                            {(invalidField as HTMLElement).getAttribute('aria-label') || (invalidField.children[0] as HTMLInputElement).placeholder}
-                        </>
-                    </ListItem>
-                )}
-            </List>
-        </>);
-        if (!isMounted.current) return;
-        
-        
-        
-        // focus the first fieldError:
-        const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]), iframe';
-        const firstInvalidField = invalidFields?.[0];
-        const firstFocusableElm = (firstInvalidField.matches(focusableSelector) ? firstInvalidField : firstInvalidField?.querySelector(focusableSelector)) as HTMLElement|null;
-        firstInvalidField.scrollIntoView({
-            block    : 'start',
-            behavior : 'smooth',
-        });
-        firstFocusableElm?.focus?.({ preventScroll: true });
-    });
-    const handleShowMessageFetchError   = useEvent(async (error         : any                                      ): Promise<void> => {
-        await handleShowMessageError(
-            error?.response?.data?.error
-            ??
-            ((): React.ReactNode => {
-                const errorCode = error?.response?.status;
-                if (typeof(errorCode) !== 'number') return null;
-                const isClientError = (errorCode >= 400) && (errorCode <= 499);
-                const isServerError = (errorCode >= 500) && (errorCode <= 599);
-                if (isClientError || isServerError) return <>
-                    <p>
-                        Oops, there was an error processing the command.
-                    </p>
-                    <p>
-                        There was a <strong>problem contacting our server</strong>.
-                        {isClientError && <>
-                            <br />
-                            Make sure your internet connection is available.
-                        </>}
-                    </p>
-                    <p>
-                        Please try again in a few minutes.<br />
-                        If the problem still persists, please contact our technical support.
-                    </p>
-                </>;
-                return null;
-            })()
-            ??
-            error?.response?.data
-            ??
-            error?.message
-            ??
-            `${error}`
-        );
-    });
-    const handleShowMessageSuccess      = useEvent(async (success       : React.ReactNode                          ): Promise<void> => {
-        await handleShowMessage({
-            theme   : 'success',
-            title   : 'Success',
-            message : success,
-        });
-    });
-    const handleShowMessageNotification = useEvent(async (notification  : React.ReactNode                          ): Promise<void> => {
-        await handleShowMessage({
-            theme   : 'primary',
-            title   : 'Notification',
-            message : notification,
-        });
     });
     
     
     
     // jsx:
+    const ButtonGotoHome  = () => {
+        // jsx:
+        return (
+            <ButtonIcon
+                // appearances:
+                icon='home'
+                
+                
+                
+                // variants:
+                buttonStyle='link'
+                
+                
+                
+                // handlers:
+                onClick={handleBackHome}
+            >
+                Back to Home
+            </ButtonIcon>
+        );
+    };
+    const ButtonGotoLogin = () => {
+        // jsx:
+        return (
+            <ButtonIcon
+                // appearances:
+                icon='arrow_back'
+                
+                
+                
+                // variants:
+                buttonStyle='link'
+                
+                
+                
+                // handlers:
+                onClick={handleBackLogin}
+            >
+                Back to Login Page
+            </ButtonIcon>
+        );
+    };
+    const ButtonGotoReset = () => {
+        // jsx:
+        return (
+            <ButtonIcon
+                // appearances:
+                icon='lock_open'
+                
+                
+                
+                // variants:
+                buttonStyle='link'
+                
+                
+                
+                // handlers:
+                onClick={handleGotoReset}
+            >
+                Back to Login Page
+            </ButtonIcon>
+        );
+    };
     return (
         <Content theme='primary'>
             <LoginContext.Provider value={useMemo(() => ({
-                expandedTabIndex        : expandedTabIndex,
-                callbackUrl             : callbackUrlRef.current,
-                resetPasswordToken      : resetPasswordTokenRef.current,
+                expandedTabIndex   : expandedTabIndex,
+                callbackUrl        : callbackUrlRef.current,
+                resetPasswordToken : resetPasswordTokenRef.current,
                 
-                backLogin               : handleBackLogin,
-                
-                showMessage             : handleShowMessage,
-                showMessageError        : handleShowMessageError,
-                showMessageFieldError   : handleShowMessageFieldError,
-                showMessageFetchError   : handleShowMessageFetchError,
-                showMessageSuccess      : handleShowMessageSuccess,
-                showMessageNotification : handleShowMessageNotification,
+                backLogin          : backLogin,
             }), [expandedTabIndex])}>
                 <Tab
+                    // identifiers:
+                    id='tabLogin'
+                    
+                    
+                    
+                    // states:
                     expandedTabIndex={expandedTabIndex}
-                    // listComponent={<></>}
-                    // listItemComponent={<></>}
+                    
+                    
+                    
+                    // components:
                     bodyComponent={<Content mild={true} />}
-                    id='tabbbb'
                 >
                     <TabPanel label='Login'>
                         <TabLogin />
-                        <ButtonIcon icon='lock_open' buttonStyle='link' onClick={handleGotoReset}>
-                            Forgot password?
-                        </ButtonIcon>
-                        <ButtonIcon icon='home' buttonStyle='link' onClick={handleBackHome}>
-                            Back to Home
-                        </ButtonIcon>
+                        <ButtonGotoReset />
+                        <ButtonGotoHome />
                     </TabPanel>
                     <TabPanel label='Recovery'>
                         <TabForget />
-                        <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={handleBackLogin}>
-                            Back to Login Page
-                        </ButtonIcon>
-                        <ButtonIcon icon='home' buttonStyle='link' onClick={handleBackHome}>
-                            Back to Home
-                        </ButtonIcon>
+                        <ButtonGotoLogin />
+                        <ButtonGotoHome />
                     </TabPanel>
                     <TabPanel label='Reset'>
                         <TabReset />
-                        <ButtonIcon icon='arrow_back' buttonStyle='link' onClick={handleBackLogin}>
-                            Back to Login Page
-                        </ButtonIcon>
-                        <ButtonIcon icon='home' buttonStyle='link' onClick={handleBackHome}>
-                            Back to Home
-                        </ButtonIcon>
+                        <ButtonGotoLogin />
+                        <ButtonGotoHome />
                     </TabPanel>
                 </Tab>
             </LoginContext.Provider>
-            {useMemo(() => {
-                // jsx:
-                return (
-                    <ModalStatus
-                        modalCardStyle='scrollable'
-                        theme={prevDialogMessage.current?.theme ?? 'primary'}
-                        
-                        lazy={true}
-                        
-                        onExpandedChange={handleModalExpandedChange}
-                        onExpandStart={handleModalFocus}
-                        onCollapseEnd={handleClosedDialogMessage}
-                    >
-                        {!!dialogMessage && <>
-                            <CardHeader>
-                                {dialogMessage.title ?? 'Notification'}
-                                <CloseButton onClick={handleCloseDialogMessage} />
-                            </CardHeader>
-                            <CardBody>
-                                {dialogMessage.message}
-                            </CardBody>
-                            <CardFooter>
-                                <Button elmRef={modalStatusButtonRef} onClick={handleCloseDialogMessage}>
-                                    Okay
-                                </Button>
-                            </CardFooter>
-                        </>}
-                    </ModalStatus>
-                );
-            }, [dialogMessage])}
         </Content>
     )
 };
-export default Login;
 
 const TabLogin  = () => {
     // navigations:
@@ -531,11 +407,16 @@ const TabLogin  = () => {
     const {
         expandedTabIndex,
         callbackUrl,
-        
+    } = useLoginContext();
+    
+    
+    
+    // dialogs:
+    const {
         showMessageError,
         showMessageFieldError,
         showMessageNotification,
-    } = useLoginContext();
+    } = useDialogMessage();
     
     
     
@@ -708,11 +589,16 @@ const TabForget = () => {
         expandedTabIndex,
         
         backLogin,
-        
+    } = useLoginContext();
+    
+    
+    
+    // dialogs:
+    const {
         showMessageFieldError,
         showMessageFetchError,
         showMessageSuccess,
-    } = useLoginContext();
+    } = useDialogMessage();
     
     
     
@@ -840,11 +726,16 @@ const TabReset  = () => {
         resetPasswordToken,
         
         backLogin,
-        
+    } = useLoginContext();
+    
+    
+    
+    // dialogs:
+    const {
         showMessageFieldError,
         showMessageFetchError,
         showMessageSuccess,
-    } = useLoginContext();
+    } = useDialogMessage();
     
     
     
