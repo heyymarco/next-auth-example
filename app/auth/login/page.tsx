@@ -879,6 +879,8 @@ const TabReset  = () => {
             setEnableValidation(false);
             setPassword('');
             setPassword2('');
+            setPasswordFocused(false);
+            setPassword2Focused(false);
             
             
             
@@ -902,6 +904,8 @@ const TabReset  = () => {
             
             // resets:
             setEnableValidation(false);
+            setPasswordFocused(false);
+            setPassword2Focused(false);
             
             
             
@@ -987,7 +991,7 @@ const TabReset  = () => {
                         floatingOn={passwordRef}
                         floatingPlacement='bottom'
                         
-                        expanded={passwordFocused}
+                        expanded={passwordFocused && !busy}
                     >
                         <List listStyle='flat'>
                             <ListItem outlined={true} size='sm' theme={passwordValidationLength ? 'success' : 'danger'}>
@@ -1027,7 +1031,7 @@ const TabReset  = () => {
                         floatingOn={password2Ref}
                         floatingPlacement='bottom'
                         
-                        expanded={password2Focused}
+                        expanded={password2Focused && !busy}
                     >
                         <List listStyle='flat'>
                             <ListItem outlined={true} size='sm' theme={password2ValidationLength ? 'success' : 'danger'}>
