@@ -396,9 +396,15 @@ const TabLogin  = () => {
     
     // contexts:
     const {
+        // states:
         expandedTabIndex,
         callbackUrl,
     } = useLoginContext();
+    
+    
+    
+    // redirects:
+    const loggedInRedirectPath = callbackUrl || '/'; // redirect to origin page if login is successful
     
     
     
@@ -412,12 +418,12 @@ const TabLogin  = () => {
     
     
     // states:
-    const [enableValidation, setEnableValidation] = useState(false);
-    const [username        , setUsername        ] = useState('');
-    const [password        , setPassword        ] = useState('');
+    const [enableValidation, setEnableValidation] = useState<boolean>(false);
+    const [username        , setUsername        ] = useState<string>('');
+    const [password        , setPassword        ] = useState<string>('');
     
     const isMounted       = useMountedFlag();
-    let   [busy, setBusy] = useState(false);
+    let   [busy, setBusy] = useState<boolean>(false);
     
     
     
@@ -433,12 +439,8 @@ const TabLogin  = () => {
         setEnableValidation(false);
         setUsername('');
         setPassword('');
+        setBusy(busy = false);
     }, [expandedTabIndex]); // resets input states when expandedTabIndex changed
-    
-    
-    
-    // redirects:
-    const loggedInRedirectPath = callbackUrl || '/'; // redirect to home page if login is successful
     
     
     
@@ -459,7 +461,7 @@ const TabLogin  = () => {
                 }, 0);
             }, 0);
         });
-        if (!isMounted.current) return;
+        if (!isMounted.current) return; // unmounted => abort
         const invalidFields = formLoginRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
@@ -471,12 +473,13 @@ const TabLogin  = () => {
         // attempts login with credentials:
         setBusy(busy = true); // mark as busy
         const result = await signIn('credentials', { username, password, redirect: false });
-        if (!isMounted.current) return;
+        if (!busy)              return; // reseted   => abort
+        if (!isMounted.current) return; // unmounted => abort
         
         
         
         // verify the login status:
-        if (!result?.ok) {
+        if (!result?.ok) { // error
             setBusy(busy = false); // unmark as busy
             
             
@@ -496,14 +499,14 @@ const TabLogin  = () => {
             usernameRef.current?.setSelectionRange(0, username.length);
             usernameRef.current?.focus();
         }
-        else {
+        else { // success
             // resets:
             setUsername('');
             setPassword('');
             
             
             
-            // redirect to home page:
+            // redirect to origin page:
             router.replace(loggedInRedirectPath);
         } // if
     });
@@ -516,7 +519,8 @@ const TabLogin  = () => {
         // attempts login with OAuth:
         setBusy(busy = true); // mark as busy
         const result = await signIn(providerType, { callbackUrl: loggedInRedirectPath });
-        if (!isMounted.current) return;
+        if (!busy)              return; // reseted   => abort
+        if (!isMounted.current) return; // unmounted => abort
         
         
         
