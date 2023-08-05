@@ -42,12 +42,12 @@ import {
 
 // reusable-ui core:
 import {
-    AccessibilityProvider, ThemeName, ValidationProvider, useEvent, useMountedFlag,
+    AccessibilityProvider, EventHandler, ThemeName, ValidationProvider, useEvent, useMountedFlag,
 }                           from '@reusable-ui/core'
 
 // reusable-ui components:
 import {
-    Busy, Button, ButtonIcon, CardBody, CardFooter, CardHeader, CloseButton, Content, EmailInput, Icon, List, ListItem, PasswordInput, Tab, TabPanel, TextInput, Tooltip,
+    Busy, Button, ButtonIcon, CardBody, CardFooter, CardHeader, CloseButton, Content, EmailInput, Icon, List, ListItem, ModalExpandedChangeEvent, PasswordInput, Tab, TabPanel, TextInput, Tooltip,
 }                           from '@reusable-ui/components'
 
 // internal components:
@@ -182,14 +182,18 @@ const Login     = () => {
     
     
     // handers:
-    const handleBackLogin = useEvent(() => {
+    const handleBackLogin           = useEvent(() => {
         setExpandedTabIndex(0);
     });
-    const handleGotoReset = useEvent(() => {
+    const handleGotoReset           = useEvent(() => {
         setExpandedTabIndex(1);
     });
-    const handleBackHome  = useEvent(() => {
+    const handleBackHome            = useEvent(() => {
         router.push('/');
+    });
+    const handleModalExpandedChange = useEvent<EventHandler<ModalExpandedChangeEvent>>(({expanded}) => {
+        if (expanded) return;
+        handleCloseDialogMessage();
     });
     
     
@@ -380,7 +384,7 @@ const Login     = () => {
                         
                         lazy={true}
                         
-                        onExpandedChange={({expanded}) => !expanded && handleCloseDialogMessage()}
+                        onExpandedChange={handleModalExpandedChange}
                         onCollapseEnd={handleClosedDialogMessage}
                     >
                         {!!dialogMessage && <>
@@ -940,7 +944,6 @@ const TabReset  = () => {
             <AccessibilityProvider enabled={!busy && !!verified}>
                 <ValidationProvider enableValidation={enableValidation}>
                     <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
-                    {/* <TextInput readOnly={true} value={verified?.username ?? ''} placeholder={!verified?.username ? 'username was not configured' : ''} /> */}
                     <PasswordInput
                         elmRef={passwordRef}
                         
