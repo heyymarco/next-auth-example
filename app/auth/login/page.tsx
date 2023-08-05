@@ -22,6 +22,7 @@ import {
 
 // next:
 import {
+    // navigations:
     useRouter,
     usePathname,
     useSearchParams,
@@ -134,26 +135,40 @@ interface DialogMessage {
 
 // contexts:
 interface LoginApi {
+    // states:
     expandedTabIndex        : number
     callbackUrl             : string|null
     resetPasswordToken      : string|null
     
+    
+    
+    // navigations:
     backLogin               : () => void
     
-    showMessage             : (dialogMessage : React.SetStateAction<DialogMessage | false>      ) => Promise<void>
-    showMessageError        : (error         : string | React.ReactNode                         ) => Promise<void>
-    showMessageFieldError   : (invalidFields : ArrayLike<Element> | undefined                   ) => Promise<void>
-    showMessageFetchError   : (error         : any                                              ) => Promise<void>
-    showMessageSuccess      : (success       : string | React.ReactNode                         ) => Promise<void>
-    showMessageNotification : (notification  : string | React.ReactNode                         ) => Promise<void>
+    
+    
+    // dialogs:
+    showMessage             : (dialogMessage : React.SetStateAction<DialogMessage | false>) => Promise<void>
+    showMessageError        : (error         : React.ReactNode                            ) => Promise<void>
+    showMessageFieldError   : (invalidFields : ArrayLike<Element> | undefined             ) => Promise<void>
+    showMessageFetchError   : (error         : any                                        ) => Promise<void>
+    showMessageSuccess      : (success       : React.ReactNode                            ) => Promise<void>
+    showMessageNotification : (notification  : React.ReactNode                            ) => Promise<void>
 }
 const LoginContext = createContext<LoginApi>({
+    // states:
     expandedTabIndex        : 0,
     callbackUrl             : null,
     resetPasswordToken      : null,
     
+    
+    
+    // navigations:
     backLogin               :       () => {},
     
+    
+    
+    // dialogs:
     showMessage             : async () => {},
     showMessageError        : async () => {},
     showMessageFieldError   : async () => {},
@@ -167,9 +182,9 @@ const useLoginContext = () => {
 
 
 
-// utils:
+// utilities:
 const invalidSelector = ':is(.invalidating, .invalidated)';
-const getAuthErrorDescription = (errorCode: string): string|React.ReactNode => {
+const getAuthErrorDescription = (errorCode: string): React.ReactNode => {
     switch (errorCode) {
         case 'SessionRequired'   : // the content of this page requires you to be signed in at all times
             return <p>You are not logged in. Please <strong>login to continue</strong>.</p>;
@@ -185,9 +200,9 @@ const getAuthErrorDescription = (errorCode: string): string|React.ReactNode => {
         
         case 'Default':
         default:
-            return errorCode;
+            return <p>Oops, an <strong>error occured</strong>.</p>;
     } // switch
-}
+};
 
 
 
@@ -200,7 +215,7 @@ const handlePreventSubmit : React.FormEventHandler<HTMLFormElement> = (event) =>
 
 // react components:
 const Login     = () => {
-    // hooks:
+    // navigations:
     const router       = useRouter();
     const pathName     = usePathname() ?? '/'
     const searchParams = useSearchParams();
@@ -208,9 +223,9 @@ const Login     = () => {
     
     
     // states:
-    const callbackUrlRef                          = useRef<string>(searchParams?.get('callbackUrl') ?? null);
-    const resetPasswordTokenRef                   = useRef<string>(searchParams?.get('resetPasswordToken') ?? null);
-    const [expandedTabIndex, setExpandedTabIndex] = useState(resetPasswordTokenRef.current ? 2 : 0);
+    const callbackUrlRef                          = useRef<string|null>(searchParams?.get('callbackUrl'       ) || null);
+    const resetPasswordTokenRef                   = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
+    const [expandedTabIndex, setExpandedTabIndex] = useState<number>(!!resetPasswordTokenRef.current ? 2 : 0);
     
     const isMounted = useMountedFlag();
     
@@ -222,35 +237,50 @@ const Login     = () => {
     
     
     // dom effects:
+    
+    // displays an error passed by `next-auth`:
     useEffect(() => {
-        // displays an error passed by `next-auth`:
+        // conditions:
         const error = searchParams?.get('error');
-        if (error) {
-            handleShowMessageError(getAuthErrorDescription(error));
-        } // if
+        if (!error) return; // no error passed => ignore
+        
+        
+        
+        // report the failure:
+        handleShowMessageError(getAuthErrorDescription(error));
     }, []);
     
+    // remove passed queryString(s):
     useEffect(() => {
-        if (!!searchParams?.get('error') || !!searchParams?.get('callbackUrl') || !!searchParams?.get('resetPasswordToken')) {
-            try {
-                // get current browser's queryString:
-                const newSearchParams = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
-                
-                // remove `?error=***` on browser's url:
-                newSearchParams.delete('error');
-                
-                // remove `?resetPasswordToken=***` on browser's url:
-                newSearchParams.delete('callbackUrl');
-                
-                // remove `?resetPasswordToken=***` on browser's url:
-                newSearchParams.delete('resetPasswordToken');
-                
-                // update browser's url:
-                router.replace(`${pathName}${newSearchParams.size ? `?${newSearchParams}` : ''}`, { scroll: false });
-            }
-            catch {
-                // ignore any error
-            } // if
+        // conditions:
+        if (
+            !searchParams?.get('error')
+            &&
+            !searchParams?.get('callbackUrl')
+            &&
+            !searchParams?.get('resetPasswordToken')
+        ) return; // no queryString(s) passed => nothing to remove => ignore
+        
+        
+        
+        try {
+            // get current browser's queryString:
+            const newSearchParams = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
+            
+            // remove `?error=***` on browser's url:
+            newSearchParams.delete('error');
+            
+            // remove `?callbackUrl=***` on browser's url:
+            newSearchParams.delete('callbackUrl');
+            
+            // remove `?resetPasswordToken=***` on browser's url:
+            newSearchParams.delete('resetPasswordToken');
+            
+            // update browser's url:
+            router.replace(`${pathName}${!!newSearchParams.size ? `?${newSearchParams}` : ''}`, { scroll: false });
+        }
+        catch {
+            // ignore any error
         } // if
     }, []);
     
@@ -299,14 +329,14 @@ const Login     = () => {
         subscribersDialogMessageClosed.current.splice(0); // clear
     });
     
-    const handleShowMessageError        = useEvent(async (error         : string|React.ReactNode      ): Promise<void> => {
+    const handleShowMessageError        = useEvent(async (error         : React.ReactNode                          ): Promise<void> => {
         await handleShowMessage({
             theme   : 'danger',
             title   : 'Error',
             message : error,
         });
     });
-    const handleShowMessageFieldError   = useEvent(async (invalidFields : ArrayLike<Element>|undefined): Promise<void> => {
+    const handleShowMessageFieldError   = useEvent(async (invalidFields : ArrayLike<Element>|undefined             ): Promise<void> => {
         // conditions:
         if (!invalidFields?.length) return;
         
@@ -351,11 +381,11 @@ const Login     = () => {
         });
         firstFocusableElm?.focus?.({ preventScroll: true });
     });
-    const handleShowMessageFetchError   = useEvent(async (error         : any                         ): Promise<void> => {
+    const handleShowMessageFetchError   = useEvent(async (error         : any                                      ): Promise<void> => {
         await handleShowMessageError(
             error?.response?.data?.error
             ??
-            ((): string|React.ReactNode|null => {
+            ((): React.ReactNode => {
                 const errorCode = error?.response?.status;
                 if (typeof(errorCode) !== 'number') return null;
                 const isClientError = (errorCode >= 400) && (errorCode <= 499);
@@ -386,14 +416,14 @@ const Login     = () => {
             `${error}`
         );
     });
-    const handleShowMessageSuccess      = useEvent(async (success       : string|React.ReactNode      ): Promise<void> => {
+    const handleShowMessageSuccess      = useEvent(async (success       : React.ReactNode                          ): Promise<void> => {
         await handleShowMessage({
             theme   : 'success',
             title   : 'Success',
             message : success,
         });
     });
-    const handleShowMessageNotification = useEvent(async (notification  : string|React.ReactNode      ): Promise<void> => {
+    const handleShowMessageNotification = useEvent(async (notification  : React.ReactNode                          ): Promise<void> => {
         await handleShowMessage({
             theme   : 'primary',
             title   : 'Notification',
@@ -492,7 +522,7 @@ const Login     = () => {
 export default Login;
 
 const TabLogin  = () => {
-    // hooks:
+    // navigations:
     const router = useRouter();
     
     
