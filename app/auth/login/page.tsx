@@ -555,6 +555,13 @@ const TabLogin  = () => {
         await handleLoginUsingOAuth('github');
     });
     
+    const handleUsernameChange        = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+        setUsername(value);
+    });
+    const handlePasswordChange        = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+        setPassword(value);
+    });
+    
     
     
     // jsx:
@@ -562,8 +569,8 @@ const TabLogin  = () => {
         <div ref={tabLoginRef}>
             <AccessibilityProvider enabled={!busy}>
                 <ValidationProvider enableValidation={enableValidation}>
-                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={({target: {value}}) => setUsername(value)} />
-                    <PasswordInput                  placeholder='Password'          autoComplete='current-password' required={true} isValid={password.length >= 1} value={password} onChange={({target: {value}}) => setPassword(value)} />
+                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
+                    <PasswordInput                  placeholder='Password'          autoComplete='current-password' required={true} isValid={password.length >= 1} value={password} onChange={handlePasswordChange} />
                     <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
                         Login
                     </ButtonIcon>
@@ -691,6 +698,10 @@ const TabForget = () => {
         } // try
     });
     
+    const handleUsernameChange       = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+        setUsername(value);
+    });
+    
     
     
     // jsx:
@@ -698,7 +709,7 @@ const TabForget = () => {
         <div ref={tabForgetRef}>
             <AccessibilityProvider enabled={!busy}>
                 <ValidationProvider enableValidation={enableValidation}>
-                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={({target: {value}}) => setUsername(value)} />
+                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
                     <ButtonIcon icon={busy ? 'busy' : 'lock_open'} onClick={handleRequestPasswordReset}>
                         Send Reset Password Link
                     </ButtonIcon>
