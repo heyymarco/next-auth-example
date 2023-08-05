@@ -47,7 +47,7 @@ import {
 
 // reusable-ui components:
 import {
-    Busy, Button, ButtonIcon, CardBody, CardFooter, CardHeader, CloseButton, Content, EmailInput, Icon, List, ListItem, PasswordInput, Tab, TabPanel, TextInput,
+    Busy, Button, ButtonIcon, CardBody, CardFooter, CardHeader, CloseButton, Content, EmailInput, Icon, List, ListItem, PasswordInput, Tab, TabPanel, TextInput, Tooltip,
 }                           from '@reusable-ui/components'
 
 // internal components:
@@ -728,14 +728,18 @@ const TabReset  = () => {
     
     const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(!resetPasswordToken ? false : null);
     
+    const [passwordFocused , setPasswordFocused ] = useState(false);
+    const [password2Focused, setPassword2Focused] = useState(false);
+    
     const isMounted       = useMountedFlag();
     let   [busy, setBusy] = useState(false);
     
     
     
     // refs:
-    const tabResetRef = useRef<HTMLDivElement|null>(null);
-    const passwordRef = useRef<HTMLInputElement|null>(null);
+    const tabResetRef  = useRef<HTMLDivElement|null>(null);
+    const passwordRef  = useRef<HTMLInputElement|null>(null);
+    const password2Ref = useRef<HTMLInputElement|null>(null);
     
     
     
@@ -887,6 +891,36 @@ const TabReset  = () => {
         } // try
     });
     
+    const handlePasswordChange  = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+        setPassword(value);
+    });
+    const handlePasswordFocus   = useEvent(() => {
+        setPasswordFocused(true);
+    });
+    const handlePasswordBlur    = useEvent(() => {
+        setPasswordFocused(false);
+    });
+    
+    const handlePassword2Change = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+        setPassword2(value);
+    });
+    const handlePassword2Focus  = useEvent(() => {
+        setPassword2Focused(true);
+    });
+    const handlePassword2Blur   = useEvent(() => {
+        setPassword2Focused(false);
+    });
+    
+    
+    
+    // fn props:
+    const passwordValidationLength   = (password.length >= 5) && (password.length <= 20);
+    const passwordValidationCapital  = !!password.match(/[A-Z]/);
+    
+    const password2ValidationLength  = (password2.length >= 5) && (password2.length <= 20);
+    const password2ValidationCapital = !!password2.match(/[A-Z]/);
+    const password2ValidationMatch   = !!password && (password2 === password);
+    
     
     
     // jsx:
@@ -896,8 +930,90 @@ const TabReset  = () => {
                 <ValidationProvider enableValidation={enableValidation}>
                     <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
                     {/* <TextInput readOnly={true} value={verified?.username ?? ''} placeholder={!verified?.username ? 'username was not configured' : ''} /> */}
-                    <PasswordInput isValid={(password.length >= 1)} elmRef={passwordRef} placeholder='New Password' value={password} onChange={({target: {value}}) => setPassword(value)} />
-                    <PasswordInput isValid={(password.length >= 1) && (password === password2)} placeholder='Confirm New Password' value={password2} onChange={({target: {value}}) => setPassword2(value)} />
+                    <PasswordInput
+                        elmRef={passwordRef}
+                        
+                        isValid={
+                            passwordValidationLength
+                            &&
+                            passwordValidationCapital
+                        }
+                        
+                        placeholder='New Password'
+                        
+                        value={password}
+                        
+                        onChange={handlePasswordChange}
+                        
+                        onFocus={handlePasswordFocus}
+                        onBlur={handlePasswordBlur}
+                    />
+                    <Tooltip
+                        theme='warning'
+                        
+                        floatingOn={passwordRef}
+                        floatingPlacement='bottom'
+                        
+                        expanded={passwordFocused}
+                    >
+                        <List listStyle='flat'>
+                            <ListItem outlined={true} size='sm' theme={passwordValidationLength ? 'success' : 'danger'}>
+                                <Icon icon={passwordValidationLength ? 'check' : 'error_outline'} />
+                                &nbsp;
+                                5-20 characters
+                            </ListItem>
+                            <ListItem outlined={true} size='sm' theme={passwordValidationCapital ? 'success' : 'danger'}>
+                                <Icon icon={passwordValidationCapital ? 'check' : 'error_outline'} />
+                                &nbsp;
+                                At least one capital letter
+                            </ListItem>
+                        </List>
+                    </Tooltip>
+                    <PasswordInput
+                        elmRef={password2Ref}
+                        
+                        isValid={
+                            password2ValidationLength
+                            &&
+                            password2ValidationCapital
+                            &&
+                            password2ValidationMatch
+                        }
+                        
+                        placeholder='Confirm New Password'
+                        
+                        value={password2}
+                        onChange={handlePassword2Change}
+                        
+                        onFocus={handlePassword2Focus}
+                        onBlur={handlePassword2Blur}
+                    />
+                    <Tooltip
+                        theme='warning'
+                        
+                        floatingOn={password2Ref}
+                        floatingPlacement='bottom'
+                        
+                        expanded={password2Focused}
+                    >
+                        <List listStyle='flat'>
+                            <ListItem outlined={true} size='sm' theme={password2ValidationLength ? 'success' : 'danger'}>
+                                <Icon icon={password2ValidationLength ? 'check' : 'error_outline'} />
+                                &nbsp;
+                                5-20 characters
+                            </ListItem>
+                            <ListItem outlined={true} size='sm' theme={password2ValidationCapital ? 'success' : 'danger'}>
+                                <Icon icon={password2ValidationCapital ? 'check' : 'error_outline'} />
+                                &nbsp;
+                                At least one capital letter
+                            </ListItem>
+                            <ListItem outlined={true} size='sm' theme={password2ValidationMatch ? 'success' : 'danger'}>
+                                <Icon icon={password2ValidationMatch ? 'check' : 'error_outline'} />
+                                &nbsp;
+                                Exact match to previous password
+                            </ListItem>
+                        </List>
+                    </Tooltip>
                     <ButtonIcon icon={busy ? 'busy' : 'save'} enabled={!busy} onClick={handleDoPasswordReset}>
                         Reset password
                     </ButtonIcon>
