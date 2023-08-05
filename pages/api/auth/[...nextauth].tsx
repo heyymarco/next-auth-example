@@ -323,9 +323,6 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
           </UserContextProvider>
         </ResetPasswordContextProvider>
       )
-      .replace('{{user.name}}'  , user.name)
-      .replace('{{ResetLink}}', `<a href="${resetLinkUrl}">Reset Password</a>`)
-      .replace('{{ResetLinkAsText}}'  , resetLinkUrl)
     });
     
     
