@@ -47,7 +47,7 @@ import {
 
 // reusable-ui components:
 import {
-    Busy, Button, ButtonIcon, CardBody, CardFooter, CardHeader, CloseButton, Content, EmailInput, Icon, List, ListItem, ModalExpandedChangeEvent, PasswordInput, Tab, TabPanel, TextInput, Tooltip,
+    Busy, Button, ButtonIcon, Card, CardBody, CardFooter, CardHeader, CloseButton, Content, EmailInput, Icon, List, ListItem, ModalExpandedChangeEvent, PasswordInput, Tab, TabPanel, TextInput, Tooltip,
 }                           from '@reusable-ui/components'
 
 // internal components:
@@ -128,6 +128,13 @@ const getAuthErrorDescription = (errorCode: string): string|React.ReactNode => {
 
 
 
+// handlers:
+const handlePreventSubmit : React.FormEventHandler<HTMLFormElement> = (event) => {
+    event.preventDefault();
+};
+
+
+
 // react components:
 const Login     = () => {
     // hooks:
@@ -143,6 +150,11 @@ const Login     = () => {
     const [expandedTabIndex, setExpandedTabIndex] = useState(resetPasswordTokenRef.current ? 2 : 0);
     
     const isMounted = useMountedFlag();
+    
+    
+    
+    // refs:
+    const modalStatusButtonRef = useRef<HTMLButtonElement|null>(null);
     
     
     
@@ -194,6 +206,11 @@ const Login     = () => {
     const handleModalExpandedChange = useEvent<EventHandler<ModalExpandedChangeEvent>>(({expanded}) => {
         if (expanded) return;
         handleCloseDialogMessage();
+    });
+    const handleModalFocus          = useEvent(() => {
+        setTimeout(() => {
+            modalStatusButtonRef.current?.focus();
+        }, 0); // wait to next macroTask, to make sure the keyboard event from <Input> was gone
     });
     
     
@@ -323,6 +340,7 @@ const Login     = () => {
     
     
     
+    // jsx:
     return (
         <Content theme='primary'>
             <LoginContext.Provider value={useMemo(() => ({
@@ -385,6 +403,7 @@ const Login     = () => {
                         lazy={true}
                         
                         onExpandedChange={handleModalExpandedChange}
+                        onExpandStart={handleModalFocus}
                         onCollapseEnd={handleClosedDialogMessage}
                     >
                         {!!dialogMessage && <>
@@ -396,7 +415,7 @@ const Login     = () => {
                                 {dialogMessage.message}
                             </CardBody>
                             <CardFooter>
-                                <Button onClick={handleCloseDialogMessage}>
+                                <Button elmRef={modalStatusButtonRef} onClick={handleCloseDialogMessage}>
                                     Okay
                                 </Button>
                             </CardFooter>
@@ -438,7 +457,7 @@ const TabLogin  = () => {
     
     
     // refs:
-    const tabLoginRef = useRef<HTMLDivElement|null>(null);
+    const tabLoginRef = useRef<HTMLFormElement|null>(null);
     const usernameRef = useRef<HTMLInputElement|null>(null);
     
     
@@ -570,12 +589,12 @@ const TabLogin  = () => {
     
     // jsx:
     return (
-        <div ref={tabLoginRef}>
+        <form ref={tabLoginRef} noValidate={true} onSubmit={handlePreventSubmit}>
             <AccessibilityProvider enabled={!busy}>
                 <ValidationProvider enableValidation={enableValidation}>
                     <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
                     <PasswordInput                  placeholder='Password'          autoComplete='current-password' required={true} isValid={password.length >= 1} value={password} onChange={handlePasswordChange} />
-                    <ButtonIcon icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
+                    <ButtonIcon type='submit' icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
                         Login
                     </ButtonIcon>
                     <hr />
@@ -587,7 +606,7 @@ const TabLogin  = () => {
                     </ButtonIcon>
                 </ValidationProvider>
             </AccessibilityProvider>
-        </div>
+        </form>
     );
 };
 const TabForget = () => {
