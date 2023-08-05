@@ -24,6 +24,24 @@ import {
     prisma,
 }                           from '@/libs/prisma.server'
 
+// templates:
+import {
+  // react:
+  UserContextProvider,
+}                           from '@/templates/UserContextProvider'
+import {
+  // react:
+  ResetPasswordContextProvider,
+}                           from '@/templates/ResetPasswordContextProvider'
+import {
+  // react:
+  User as TemplateUser,
+}                           from '@/templates/User'
+import {
+  // react:
+  ResetPassword,
+}                           from '@/templates/ResetPassword'
+
 // configs:
 import {
   default as authConfig,
@@ -289,15 +307,21 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
       to      : user.email, // list of receivers
       subject : (authConfig.EMAIL_RESET_SUBJECT ?? 'Password Reset Request'),
       html    : renderToStaticMarkup(
-        authConfig.EMAIL_RESET_MESSAGE
-        ??
-        <>
-          <p>Hi {`{{user.name}}`}.</p>
-          <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
-          <p>To reset your password, click on the link below:<br />{`{{ResetLink}}`}</p>
-          <p>Or copy and paste the URL into your browser:<br /><u>{`{{ResetLinkAsText}}`}</u></p>
-          <p>If you did not make this request then please ignore this email.</p>
-        </>
+        <ResetPasswordContextProvider url={resetLinkUrl}>
+          <UserContextProvider model={user}>
+            {
+              authConfig.EMAIL_RESET_MESSAGE
+              ??
+              <>
+                  <p>Hi <TemplateUser.Name />.</p>
+                  <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
+                  <p>To reset your password, click on the link below:<br /><ResetPassword.Link>Reset Password</ResetPassword.Link></p>
+                  <p>Or copy and paste the URL into your browser:<br /><u><ResetPassword.Url /></u></p>
+                  <p>If you did not make this request then please ignore this email.</p>
+              </>
+            }
+          </UserContextProvider>
+        </ResetPasswordContextProvider>
       )
       .replace('{{user.name}}'  , user.name)
       .replace('{{ResetLink}}', `<a href="${resetLinkUrl}">Reset Password</a>`)
