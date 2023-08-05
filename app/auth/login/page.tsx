@@ -633,7 +633,7 @@ const TabForget = () => {
     
     
     // refs:
-    const tabForgetRef = useRef<HTMLDivElement|null>(null);
+    const tabForgetRef = useRef<HTMLFormElement|null>(null);
     const usernameRef  = useRef<HTMLInputElement|null>(null);
     
     
@@ -729,16 +729,16 @@ const TabForget = () => {
     
     // jsx:
     return (
-        <div ref={tabForgetRef}>
+        <form ref={tabForgetRef} noValidate={true} onSubmit={handlePreventSubmit}>
             <AccessibilityProvider enabled={!busy}>
                 <ValidationProvider enableValidation={enableValidation}>
                     <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
-                    <ButtonIcon icon={busy ? 'busy' : 'lock_open'} onClick={handleRequestPasswordReset}>
+                    <ButtonIcon type='submit' icon={busy ? 'busy' : 'lock_open'} onClick={handleRequestPasswordReset}>
                         Send Reset Password Link
                     </ButtonIcon>
                 </ValidationProvider>
             </AccessibilityProvider>
-        </div>
+        </form>
     );
 };
 const TabReset  = () => {
