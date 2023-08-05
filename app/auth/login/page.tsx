@@ -457,8 +457,8 @@ const TabLogin  = () => {
     
     
     // refs:
-    const tabLoginRef = useRef<HTMLFormElement|null>(null);
-    const usernameRef = useRef<HTMLInputElement|null>(null);
+    const formLoginRef = useRef<HTMLFormElement|null>(null);
+    const usernameRef  = useRef<HTMLInputElement|null>(null);
     
     
     
@@ -495,7 +495,7 @@ const TabLogin  = () => {
             }, 0);
         });
         if (!isMounted.current) return;
-        const invalidFields = tabLoginRef?.current?.querySelectorAll?.(invalidSelector);
+        const invalidFields = formLoginRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
             return;
@@ -589,7 +589,7 @@ const TabLogin  = () => {
     
     // jsx:
     return (
-        <form ref={tabLoginRef} noValidate={true} onSubmit={handlePreventSubmit}>
+        <form ref={formLoginRef} noValidate={true} onSubmit={handlePreventSubmit}>
             <AccessibilityProvider enabled={!busy}>
                 <ValidationProvider enableValidation={enableValidation}>
                     <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
@@ -633,8 +633,8 @@ const TabForget = () => {
     
     
     // refs:
-    const tabForgetRef = useRef<HTMLFormElement|null>(null);
-    const usernameRef  = useRef<HTMLInputElement|null>(null);
+    const formForgetRef = useRef<HTMLFormElement|null>(null);
+    const usernameRef   = useRef<HTMLInputElement|null>(null);
     
     
     
@@ -665,7 +665,7 @@ const TabForget = () => {
             }, 0);
         });
         if (!isMounted.current) return;
-        const invalidFields = tabForgetRef?.current?.querySelectorAll?.(invalidSelector);
+        const invalidFields = formForgetRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
             return;
@@ -729,7 +729,7 @@ const TabForget = () => {
     
     // jsx:
     return (
-        <form ref={tabForgetRef} noValidate={true} onSubmit={handlePreventSubmit}>
+        <form ref={formForgetRef} noValidate={true} onSubmit={handlePreventSubmit}>
             <AccessibilityProvider enabled={!busy}>
                 <ValidationProvider enableValidation={enableValidation}>
                     <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
@@ -771,7 +771,7 @@ const TabReset  = () => {
     
     
     // refs:
-    const tabResetRef  = useRef<HTMLFormElement|null>(null);
+    const formResetRef = useRef<HTMLFormElement|null>(null);
     const passwordRef  = useRef<HTMLInputElement|null>(null);
     const password2Ref = useRef<HTMLInputElement|null>(null);
     
@@ -852,7 +852,7 @@ const TabReset  = () => {
             }, 0);
         });
         if (!isMounted.current) return;
-        const invalidFields = tabResetRef?.current?.querySelectorAll?.(invalidSelector);
+        const invalidFields = formResetRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
             return;
@@ -963,7 +963,7 @@ const TabReset  = () => {
     
     // jsx:
     return (
-        <form ref={tabResetRef} noValidate={true} onSubmit={handlePreventSubmit}>
+        <form ref={formResetRef} noValidate={true} onSubmit={handlePreventSubmit}>
             <AccessibilityProvider enabled={!busy && !!verified}>
                 <ValidationProvider enableValidation={enableValidation}>
                     <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
@@ -1056,7 +1056,7 @@ const TabReset  = () => {
                     </ButtonIcon>
                 </ValidationProvider>
             </AccessibilityProvider>
-            <ModalStatus theme='primary' viewport={tabResetRef}>
+            <ModalStatus theme='primary' viewport={formResetRef}>
                 {(verified === null) && <CardBody>
                     <p>
                         <Busy /> validating...
