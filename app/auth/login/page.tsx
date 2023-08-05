@@ -771,7 +771,7 @@ const TabReset  = () => {
     
     
     // refs:
-    const tabResetRef  = useRef<HTMLDivElement|null>(null);
+    const tabResetRef  = useRef<HTMLFormElement|null>(null);
     const passwordRef  = useRef<HTMLInputElement|null>(null);
     const password2Ref = useRef<HTMLInputElement|null>(null);
     
@@ -959,7 +959,7 @@ const TabReset  = () => {
     
     // jsx:
     return (
-        <div ref={tabResetRef}>
+        <form ref={tabResetRef} noValidate={true} onSubmit={handlePreventSubmit}>
             <AccessibilityProvider enabled={!busy && !!verified}>
                 <ValidationProvider enableValidation={enableValidation}>
                     <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
@@ -1047,7 +1047,7 @@ const TabReset  = () => {
                             </ListItem>
                         </List>
                     </Tooltip>
-                    <ButtonIcon icon={busy ? 'busy' : 'save'} enabled={!busy} onClick={handleDoPasswordReset}>
+                    <ButtonIcon type='submit' icon={busy ? 'busy' : 'save'} enabled={!busy} onClick={handleDoPasswordReset}>
                         Reset password
                     </ButtonIcon>
                 </ValidationProvider>
@@ -1059,6 +1059,6 @@ const TabReset  = () => {
                     </p>
                 </CardBody>}
             </ModalStatus>
-        </div>
+        </form>
     );
 };
