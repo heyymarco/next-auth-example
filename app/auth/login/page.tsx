@@ -571,7 +571,7 @@ const TabLogin  = () => {
         >
             <AccessibilityProvider
                 // accessibilities:
-                enabled={!busy}
+                enabled={!busy} // disabled if busy
             >
                 <ValidationProvider
                     // validations:
@@ -745,6 +745,10 @@ const TabForgot = () => {
             
             
             
+            setBusy(busy = false); // unmark as busy
+            
+            
+            
             // report the success:
             await showMessageSuccess(
                 <p>
@@ -803,7 +807,7 @@ const TabForgot = () => {
         >
             <AccessibilityProvider
                 // accessibilities:
-                enabled={!busy}
+                enabled={!busy} // disabled if busy
             >
                 <ValidationProvider
                     // validations:
@@ -855,8 +859,12 @@ const TabForgot = () => {
 const TabReset  = () => {
     // contexts:
     const {
+        // states:
         resetPasswordToken,
         
+        
+        
+        // navigations:
         backLogin,
     } = useLoginContext();
     
@@ -872,17 +880,17 @@ const TabReset  = () => {
     
     
     // states:
-    const [enableValidation, setEnableValidation] = useState(false);
-    const [password        , setPassword        ] = useState('');
-    const [password2       , setPassword2       ] = useState('');
+    const [enableValidation, setEnableValidation] = useState<boolean>(false);
+    const [password        , setPassword        ] = useState<string>('');
+    const [password2       , setPassword2       ] = useState<string>('');
     
-    const [verified, setVerified] = useState<null|{email: string, username: string|null}|false>(!resetPasswordToken ? false : null);
+    const [verified, setVerified] = useState<undefined|{ email: string, username: string|null }|false>(!resetPasswordToken ? false : undefined);
     
-    const [passwordFocused , setPasswordFocused ] = useState(false);
-    const [password2Focused, setPassword2Focused] = useState(false);
+    const [passwordFocused , setPasswordFocused ] = useState<boolean>(false);
+    const [password2Focused, setPassword2Focused] = useState<boolean>(false);
     
     const isMounted       = useMountedFlag();
-    let   [busy, setBusy] = useState(false);
+    let   [busy, setBusy] = useState<boolean>(false);
     
     
     
@@ -897,10 +905,10 @@ const TabReset  = () => {
     const hasInitialized = useRef(false); // make sure the validation is never performed twice
     useEffect(() => {
         // conditions:
-        if (!resetPasswordToken   ) return;
-        if (verified !== null     ) return;
-        if (hasInitialized.current) return;
-        hasInitialized.current = true; // mark as initialized
+        if (!resetPasswordToken   ) return; // no token => nothing to reset => ignore
+        if (verified !== undefined) return; // already verified with success/failed result => ignore
+        if (hasInitialized.current) return; // already performed => ignore
+        hasInitialized.current = true;      // mark as performed
         
         
         
@@ -909,14 +917,18 @@ const TabReset  = () => {
             // attempts validate password reset:
             try {
                 const result = await axios.get(`/api/auth/reset?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
-                if (!isMounted.current) return;
+                if (!isMounted.current) return; // unmounted => abort
+                
+                
+                
+                // success
                 
                 
                 
                 // save the success:
                 setVerified(result.data);
             }
-            catch (error: any) {
+            catch (error: any) { // error
                 // save the failure:
                 setVerified(false);
                 
@@ -924,34 +936,40 @@ const TabReset  = () => {
                 
                 // report the failure:
                 await showMessageFetchError(error);
-                if (!isMounted.current) return;
+                if (!isMounted.current) return; // unmounted => abort
                 
                 
                 
                 const errorCode     = error?.response?.status;
-                const isClientError = (errorCode >= 400) && (errorCode <= 499);
+                const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
                 if (isClientError) {
                     // redirect to login tab:
                     backLogin();
-                }
-                else {
-                    // focus to password field:
-                    passwordRef.current?.setSelectionRange(0, password.length);
-                    passwordRef.current?.focus();
                 } // if
+                // nothing to do with unverified token & server_side_error => keeps the UI disabled
+                // else {
+                //     // focus to password field:
+                //     passwordRef.current?.setSelectionRange(0, password.length);
+                //     passwordRef.current?.focus();
+                // } // if
             } // try
         })();
     }, [resetPasswordToken, verified]);
     
     useEffect(() => {
-        if (!verified) return;
+        // conditions:
+        if (!verified) return; // not verified with success result => ignore
+        
+        
+        
+        // actions:
         passwordRef.current?.focus();
     }, [verified]);
     
     
     
     // handlers:
-    const handleDoPasswordReset = useEvent(async () => {
+    const handleDoPasswordReset = useEvent(async (): Promise<void> => {
         // conditions:
         if (busy) return; // ignore when busy
         
@@ -967,7 +985,7 @@ const TabReset  = () => {
                 }, 0);
             }, 0);
         });
-        if (!isMounted.current) return;
+        if (!isMounted.current) return; // unmounted => abort
         const invalidFields = formResetRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
@@ -979,11 +997,12 @@ const TabReset  = () => {
         // attempts apply password reset:
         setBusy(busy = true); // mark as busy
         try {
-            const result = await axios.patch('/api/auth/reset', {
-                resetPasswordToken,
-                password,
-            });
-            if (!isMounted.current) return;
+            const result = await axios.patch('/api/auth/reset', { resetPasswordToken, password });
+            if (!isMounted.current) return; // unmounted => abort
+            
+            
+            
+            // success
             
             
             
@@ -995,8 +1014,8 @@ const TabReset  = () => {
             setEnableValidation(false);
             setPassword('');
             setPassword2('');
-            setPasswordFocused(false);
-            setPassword2Focused(false);
+            setPasswordFocused(false);  // important to hide the <Tooltip>
+            setPassword2Focused(false); // important to hide the <Tooltip>
             
             
             
@@ -1006,33 +1025,33 @@ const TabReset  = () => {
                     {result.data.message ?? 'The password has been successfully changed. Now you can login with the new password.'}
                 </p>
             );
-            if (!isMounted.current) return;
+            if (!isMounted.current) return; // unmounted => abort
             
             
             
             // redirect to login tab:
             backLogin();
         }
-        catch (error: any) {
+        catch (error: any) { // error
             setBusy(busy = false); // unmark as busy
             
             
             
             // resets:
             setEnableValidation(false);
-            setPasswordFocused(false);
-            setPassword2Focused(false);
+            setPasswordFocused(false);  // important to hide the <Tooltip>
+            setPassword2Focused(false); // important to hide the <Tooltip>
             
             
             
             // report the failure:
             await showMessageFetchError(error);
-            if (!isMounted.current) return;
+            if (!isMounted.current) return; // unmounted => abort
             
             
             
             const errorCode     = error?.response?.status;
-            const isClientError = (errorCode >= 400) && (errorCode <= 499);
+            const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
             if (isClientError) {
                 // redirect to login tab:
                 backLogin();
@@ -1048,83 +1067,166 @@ const TabReset  = () => {
     const handlePasswordChange  = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
         setPassword(value);
     });
-    const handlePasswordFocus   = useEvent(() => {
+    const handlePasswordFocus   = useEvent((): void => {
         setPasswordFocused(true);
     });
-    const handlePasswordBlur    = useEvent(() => {
+    const handlePasswordBlur    = useEvent((): void => {
         setPasswordFocused(false);
     });
     
     const handlePassword2Change = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
         setPassword2(value);
     });
-    const handlePassword2Focus  = useEvent(() => {
+    const handlePassword2Focus  = useEvent((): void => {
         setPassword2Focused(true);
     });
-    const handlePassword2Blur   = useEvent(() => {
+    const handlePassword2Blur   = useEvent((): void => {
         setPassword2Focused(false);
     });
     
     
     
     // fn props:
-    const passwordValidationLength   = (password.length >= 5) && (password.length <= 20);
-    const passwordValidationCapital  = !!password.match(/[A-Z]/);
+    const passwordValidationLength   = (password.length >= 5) && (password.length <= 20);   // 5-20 characters
+    const passwordValidationCapital  = !!password.match(/[A-Z]/);                           // At least one capital letter
     
-    const password2ValidationLength  = (password2.length >= 5) && (password2.length <= 20);
-    const password2ValidationCapital = !!password2.match(/[A-Z]/);
-    const password2ValidationMatch   = !!password && (password2 === password);
+    const password2ValidationLength  = (password2.length >= 5) && (password2.length <= 20); // 5-20 characters
+    const password2ValidationCapital = !!password2.match(/[A-Z]/);                          // At least one capital letter
+    const password2ValidationMatch   = !!password && (password2 === password);              // Exact match to previous password
     
     
     
     // jsx:
     return (
-        <form ref={formResetRef} noValidate={true} onSubmit={handlePreventSubmit}>
-            <AccessibilityProvider enabled={!busy && !!verified}>
-                <ValidationProvider enableValidation={enableValidation}>
-                    <EmailInput readOnly={true} value={(!!verified && verified?.email) || ''} />
+        <form
+            // refs:
+            ref={formResetRef}
+            
+            
+            
+            // validations:
+            noValidate={true}
+            
+            
+            
+            // handlers:
+            onSubmit={handlePreventSubmit}
+        >
+            <AccessibilityProvider
+                // accessibilities:
+                enabled={!busy && !!verified} // disabled if busy or not_verified
+            >
+                <ValidationProvider
+                    // validations:
+                    enableValidation={enableValidation}
+                >
+                    <EmailInput
+                        // accessibilities:
+                        readOnly={true}
+                        
+                        
+                        
+                        // values:
+                        value={(!!verified && verified?.email) || ''}
+                    />
                     <PasswordInput
+                        // refs:
                         elmRef={passwordRef}
                         
+                        
+                        
+                        // accessibilities:
+                        placeholder='New Password'
+                        autoComplete='new-password'
+                        
+                        
+                        
+                        // values:
+                        value={password}
+                        onChange={handlePasswordChange}
+                        
+                        
+                        
+                        // validations:
                         isValid={
                             passwordValidationLength
                             &&
                             passwordValidationCapital
                         }
+                        required={true}
                         
-                        placeholder='New Password'
                         
-                        value={password}
                         
-                        onChange={handlePasswordChange}
-                        
+                        // handlers:
                         onFocus={handlePasswordFocus}
                         onBlur={handlePasswordBlur}
                     />
                     <Tooltip
+                        // variants:
                         theme='warning'
                         
+                        
+                        
+                        // states:
+                        expanded={passwordFocused && !busy}
+                        
+                        
+                        
+                        // floatable:
                         floatingOn={passwordRef}
                         floatingPlacement='bottom'
-                        
-                        expanded={passwordFocused && !busy}
                     >
-                        <List listStyle='flat'>
-                            <ListItem outlined={true} size='sm' theme={passwordValidationLength ? 'success' : 'danger'}>
-                                <Icon icon={passwordValidationLength ? 'check' : 'error_outline'} />
+                        <List
+                            // variants:
+                            listStyle='flat'
+                        >
+                            <ListItem
+                                // variants:
+                                size='sm'
+                                theme={passwordValidationLength ? 'success' : 'danger'}
+                                outlined={true}
+                            >
+                                <Icon
+                                    // appearances:
+                                    icon={passwordValidationLength ? 'check' : 'error_outline'}
+                                />
                                 &nbsp;
                                 5-20 characters
                             </ListItem>
-                            <ListItem outlined={true} size='sm' theme={passwordValidationCapital ? 'success' : 'danger'}>
-                                <Icon icon={passwordValidationCapital ? 'check' : 'error_outline'} />
+                            <ListItem
+                                // variants:
+                                size='sm'
+                                theme={passwordValidationCapital ? 'success' : 'danger'}
+                                outlined={true}
+                            >
+                                <Icon
+                                    // appearances:
+                                    icon={passwordValidationCapital ? 'check' : 'error_outline'}
+                                />
                                 &nbsp;
                                 At least one capital letter
                             </ListItem>
                         </List>
                     </Tooltip>
                     <PasswordInput
+                        // refs:
                         elmRef={password2Ref}
                         
+                        
+                        
+                        // accessibilities:
+                        placeholder='Confirm New Password'
+                        autoComplete='new-password'
+                        
+                        
+                        
+                        // values:
+                        value={password2}
+                        onChange={handlePassword2Change}
+                        
+                        
+                        
+                        // validations:
                         isValid={
                             password2ValidationLength
                             &&
@@ -1132,50 +1234,106 @@ const TabReset  = () => {
                             &&
                             password2ValidationMatch
                         }
+                        required={true}
                         
-                        placeholder='Confirm New Password'
                         
-                        value={password2}
-                        onChange={handlePassword2Change}
                         
+                        // handlers:
                         onFocus={handlePassword2Focus}
                         onBlur={handlePassword2Blur}
                     />
                     <Tooltip
+                        // variants:
                         theme='warning'
                         
+                        
+                        
+                        // states:
+                        expanded={password2Focused && !busy}
+                        
+                        
+                        
+                        // floatable:
                         floatingOn={password2Ref}
                         floatingPlacement='bottom'
-                        
-                        expanded={password2Focused && !busy}
                     >
-                        <List listStyle='flat'>
-                            <ListItem outlined={true} size='sm' theme={password2ValidationLength ? 'success' : 'danger'}>
-                                <Icon icon={password2ValidationLength ? 'check' : 'error_outline'} />
+                        <List
+                            // variants:
+                            listStyle='flat'
+                        >
+                            <ListItem
+                                // variants:
+                                size='sm'
+                                theme={password2ValidationLength ? 'success' : 'danger'}
+                                outlined={true}
+                            >
+                                <Icon
+                                    // appearances:
+                                    icon={password2ValidationLength ? 'check' : 'error_outline'}
+                                />
                                 &nbsp;
                                 5-20 characters
                             </ListItem>
-                            <ListItem outlined={true} size='sm' theme={password2ValidationCapital ? 'success' : 'danger'}>
-                                <Icon icon={password2ValidationCapital ? 'check' : 'error_outline'} />
+                            <ListItem
+                                // variants:
+                                size='sm'
+                                theme={password2ValidationCapital ? 'success' : 'danger'}
+                                outlined={true}
+                            >
+                                <Icon
+                                    // appearances:
+                                    icon={password2ValidationCapital ? 'check' : 'error_outline'}
+                                />
                                 &nbsp;
                                 At least one capital letter
                             </ListItem>
-                            <ListItem outlined={true} size='sm' theme={password2ValidationMatch ? 'success' : 'danger'}>
-                                <Icon icon={password2ValidationMatch ? 'check' : 'error_outline'} />
+                            <ListItem
+                                // variants:
+                                size='sm'
+                                theme={password2ValidationMatch ? 'success' : 'danger'}
+                                outlined={true}
+                            >
+                                <Icon
+                                    // appearances:
+                                    icon={password2ValidationMatch ? 'check' : 'error_outline'}
+                                />
                                 &nbsp;
                                 Exact match to previous password
                             </ListItem>
                         </List>
                     </Tooltip>
-                    <ButtonIcon type='submit' icon={busy ? 'busy' : 'save'} enabled={!busy} onClick={handleDoPasswordReset}>
+                    <ButtonIcon
+                        // actions:
+                        type='submit'
+                        
+                        
+                        
+                        // appearances:
+                        icon={busy ? 'busy' : 'save'}
+                        
+                        
+                        
+                        // handlers:
+                        onClick={handleDoPasswordReset}
+                    >
                         Reset password
                     </ButtonIcon>
                 </ValidationProvider>
             </AccessibilityProvider>
-            <ModalStatus theme='primary' viewport={formResetRef}>
-                {(verified === null) && <CardBody>
+            <ModalStatus
+                // variants:
+                theme='primary'
+                
+                
+                
+                // global stackable:
+                viewport={formResetRef}
+            >
+                {(verified === undefined) && <CardBody>
                     <p>
-                        <Busy /> validating...
+                        <Busy />
+                        &nbsp;
+                        validating...
                     </p>
                 </CardBody>}
             </ModalStatus>
