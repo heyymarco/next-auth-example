@@ -1234,8 +1234,8 @@ const TabReset  = () => {
                                 passwordValidationCapital
                             }
                             required={true}
-                            minLength={5}
-                            maxLength={20}
+                            // minLength={5}  // validate on JS level
+                            // maxLength={20} // validate on JS level
                             
                             
                             
@@ -1281,8 +1281,8 @@ const TabReset  = () => {
                                 password2ValidationMatch
                             }
                             required={true}
-                            minLength={5}
-                            maxLength={20}
+                            // minLength={5}  // validate on JS level
+                            // maxLength={20} // validate on JS level
                             
                             
                             
