@@ -434,12 +434,30 @@ const TabLogin  = () => {
     
     
     // dom effects:
+    
+    // focus on username field when the <TabLogin> is active:
     useEffect(() => {
+        // conditions:
+        if (expandedTabIndex !== 0) return; // <TabLogin> is NOT active => ignore
+        
+        
+        
+        // actions:
+        usernameRef.current?.focus();
+    }, [expandedTabIndex]);
+    
+    // resets input states when the <TabLogin> is NOT active:
+    useEffect(() => {
+        // conditions:
+        if (expandedTabIndex === 0) return; // <TabLogin> is active => ignore
+        
+        
+        
         // resets:
         setEnableValidation(false);
         setUsername('');
         setPassword('');
-    }, [expandedTabIndex]); // resets input states when expandedTabIndex changed
+    }, [expandedTabIndex]);
     
     
     
@@ -699,11 +717,29 @@ const TabForgot = () => {
     
     
     // dom effects:
+    
+    // focus on username field when the <TabForgot> is active:
     useEffect(() => {
+        // conditions:
+        if (expandedTabIndex !== 1) return; // <TabForgot> is NOT active => ignore
+        
+        
+        
+        // actions:
+        usernameRef.current?.focus();
+    }, [expandedTabIndex]);
+    
+    // resets input states when the <TabForgot> is NOT active:
+    useEffect(() => {
+        // conditions:
+        if (expandedTabIndex === 1) return; // <TabForgot> is active => ignore
+        
+        
+        
         // resets:
         setEnableValidation(false);
         setUsername('');
-    }, [expandedTabIndex]); // resets input states when expandedTabIndex changed
+    }, [expandedTabIndex]);
     
     
     
@@ -902,6 +938,8 @@ const TabReset  = () => {
     
     
     // dom effects:
+    
+    // validate password reset token at startup:
     const hasInitialized = useRef(false); // make sure the validation is never performed twice
     useEffect(() => {
         // conditions:
@@ -956,9 +994,10 @@ const TabReset  = () => {
         })();
     }, [resetPasswordToken, verified]);
     
+    // focus on password field after successfully verified the password reset token:
     useEffect(() => {
         // conditions:
-        if (!verified) return; // not verified with success result => ignore
+        if (!verified) return; // NOT verified with success result => ignore
         
         
         
