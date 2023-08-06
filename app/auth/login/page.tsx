@@ -372,7 +372,7 @@ const Login     = () => {
                         <ButtonGotoHome />
                     </TabPanel>
                     <TabPanel label='Recovery'>
-                        <TabForget />
+                        <TabForgot />
                         <ButtonGotoLogin />
                         <ButtonGotoHome />
                     </TabPanel>
@@ -439,7 +439,6 @@ const TabLogin  = () => {
         setEnableValidation(false);
         setUsername('');
         setPassword('');
-        setBusy(busy = '');
     }, [expandedTabIndex]); // resets input states when expandedTabIndex changed
     
     
@@ -473,7 +472,6 @@ const TabLogin  = () => {
         // attempts login with credentials:
         setBusy(busy = 'credentials'); // mark as busy
         const result = await signIn('credentials', { username, password, redirect: false });
-        if (!busy)              return; // reseted   => abort
         if (!isMounted.current) return; // unmounted => abort
         
         
@@ -519,7 +517,6 @@ const TabLogin  = () => {
         // attempts login with OAuth:
         setBusy(busy = providerType); // mark as busy
         const result = await signIn(providerType, { callbackUrl: loggedInRedirectPath });
-        if (!busy)              return; // reseted   => abort
         if (!isMounted.current) return; // unmounted => abort
         
         
@@ -663,11 +660,15 @@ const TabLogin  = () => {
         </form>
     );
 };
-const TabForget = () => {
+const TabForgot = () => {
     // contexts:
     const {
+        // states:
         expandedTabIndex,
         
+        
+        
+        // navigations:
         backLogin,
     } = useLoginContext();
     
@@ -683,16 +684,16 @@ const TabForget = () => {
     
     
     // states:
-    const [enableValidation, setEnableValidation] = useState(false);
-    const [username        , setUsername        ] = useState('');
+    const [enableValidation, setEnableValidation] = useState<boolean>(false);
+    const [username        , setUsername        ] = useState<string>('');
     
     const isMounted       = useMountedFlag();
-    let   [busy, setBusy] = useState(false);
+    let   [busy, setBusy] = useState<boolean>(false);
     
     
     
     // refs:
-    const formForgetRef = useRef<HTMLFormElement|null>(null);
+    const formForgotRef = useRef<HTMLFormElement|null>(null);
     const usernameRef   = useRef<HTMLInputElement|null>(null);
     
     
@@ -707,7 +708,7 @@ const TabForget = () => {
     
     
     // handlers:
-    const handleRequestPasswordReset = useEvent(async () => {
+    const handleRequestPasswordReset = useEvent(async (): Promise<void> => {
         // conditions:
         if (busy) return; // ignore when busy
         
@@ -723,8 +724,8 @@ const TabForget = () => {
                 }, 0);
             }, 0);
         });
-        if (!isMounted.current) return;
-        const invalidFields = formForgetRef?.current?.querySelectorAll?.(invalidSelector);
+        if (!isMounted.current) return; // unmounted => abort
+        const invalidFields = formForgotRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
             return;
@@ -735,14 +736,12 @@ const TabForget = () => {
         // attempts request password reset:
         setBusy(busy = true); // mark as busy
         try {
-            const result = await axios.post('/api/auth/reset', {
-                username,
-            });
-            if (!isMounted.current) return;
+            const result = await axios.post('/api/auth/reset', { username });
+            if (!isMounted.current) return; // unmounted => abort
             
             
             
-            setBusy(busy = false); // unmark as busy
+            // success
             
             
             
@@ -752,14 +751,14 @@ const TabForget = () => {
                     {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
                 </p>
             );
-            if (!isMounted.current) return;
+            if (!isMounted.current) return; // unmounted => abort
             
             
             
             // redirect to login tab:
             backLogin();
         }
-        catch (error: any) {
+        catch (error: any) { // error
             setBusy(busy = false); // unmark as busy
             
             
@@ -788,11 +787,64 @@ const TabForget = () => {
     
     // jsx:
     return (
-        <form ref={formForgetRef} noValidate={true} onSubmit={handlePreventSubmit}>
-            <AccessibilityProvider enabled={!busy}>
-                <ValidationProvider enableValidation={enableValidation}>
-                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
-                    <ButtonIcon type='submit' icon={busy ? 'busy' : 'lock_open'} onClick={handleRequestPasswordReset}>
+        <form
+            // refs:
+            ref={formForgotRef}
+            
+            
+            
+            // validations:
+            noValidate={true}
+            
+            
+            
+            // handlers:
+            onSubmit={handlePreventSubmit}
+        >
+            <AccessibilityProvider
+                // accessibilities:
+                enabled={!busy}
+            >
+                <ValidationProvider
+                    // validations:
+                    enableValidation={enableValidation}
+                >
+                    <TextInput
+                        // refs:
+                        elmRef={usernameRef}
+                        
+                        
+                        
+                        // accessibilities:
+                        placeholder='Username or Email'
+                        autoComplete='username'
+                        
+                        
+                        
+                        // values:
+                        value={username}
+                        onChange={handleUsernameChange}
+                        
+                        
+                        
+                        // validations:
+                        isValid={username.length >= 1}
+                        required={true}
+                    />
+                    <ButtonIcon
+                        // actions:
+                        type='submit'
+                        
+                        
+                        
+                        // appearances:
+                        icon={busy ? 'busy' : 'lock_open'}
+                        
+                        
+                        
+                        // handlers:
+                        onClick={handleRequestPasswordReset}
+                    >
                         Send Reset Password Link
                     </ButtonIcon>
                 </ValidationProvider>
