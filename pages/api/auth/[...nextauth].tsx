@@ -493,7 +493,7 @@ async function handleApplyPasswordReset(path: string, req: NextApiRequest, res: 
       
       res.json({
         ok       : true,
-        message  : 'The password updated successfully.',
+        message  : 'The password has been successfully changed. Now you can login with the new password.',
       });
       return true; // handled with success
     });
