@@ -423,7 +423,7 @@ const TabLogin  = () => {
     const [password        , setPassword        ] = useState<string>('');
     
     const isMounted       = useMountedFlag();
-    let   [busy, setBusy] = useState<boolean>(false);
+    let   [busy, setBusy] = useState<string>('');
     
     
     
@@ -439,7 +439,7 @@ const TabLogin  = () => {
         setEnableValidation(false);
         setUsername('');
         setPassword('');
-        setBusy(busy = false);
+        setBusy(busy = '');
     }, [expandedTabIndex]); // resets input states when expandedTabIndex changed
     
     
@@ -471,7 +471,7 @@ const TabLogin  = () => {
         
         
         // attempts login with credentials:
-        setBusy(busy = true); // mark as busy
+        setBusy(busy = 'credentials'); // mark as busy
         const result = await signIn('credentials', { username, password, redirect: false });
         if (!busy)              return; // reseted   => abort
         if (!isMounted.current) return; // unmounted => abort
@@ -480,7 +480,7 @@ const TabLogin  = () => {
         
         // verify the login status:
         if (!result?.ok) { // error
-            setBusy(busy = false); // unmark as busy
+            setBusy(busy = ''); // unmark as busy
             
             
             
@@ -517,7 +517,7 @@ const TabLogin  = () => {
         
         
         // attempts login with OAuth:
-        setBusy(busy = true); // mark as busy
+        setBusy(busy = providerType); // mark as busy
         const result = await signIn(providerType, { callbackUrl: loggedInRedirectPath });
         if (!busy)              return; // reseted   => abort
         if (!isMounted.current) return; // unmounted => abort
@@ -525,15 +525,15 @@ const TabLogin  = () => {
         
         
         // verify the login status:
-        if ((result !== undefined) && !result?.ok) {
-            setBusy(busy = false); // unmark as busy
+        if ((result !== undefined) && !result?.ok) { // error
+            setBusy(busy = ''); // unmark as busy
             
             
             
             // report the failure:
             showMessageError(getAuthErrorDescription(result?.error ?? 'OAuthSignin'));
         }
-        else {
+        else { // success
             // report the success:
             showMessageNotification(
                 <p>You are being redirected to <strong>{providerType} login page</strong>. Please wait...</p>
@@ -558,19 +558,104 @@ const TabLogin  = () => {
     
     // jsx:
     return (
-        <form ref={formLoginRef} noValidate={true} onSubmit={handlePreventSubmit}>
-            <AccessibilityProvider enabled={!busy}>
-                <ValidationProvider enableValidation={enableValidation}>
-                    <TextInput elmRef={usernameRef} placeholder='Username or Email' autoComplete='username'         required={true} isValid={username.length >= 1} value={username} onChange={handleUsernameChange} />
-                    <PasswordInput                  placeholder='Password'          autoComplete='current-password' required={true} isValid={password.length >= 1} value={password} onChange={handlePasswordChange} />
-                    <ButtonIcon type='submit' icon={busy ? 'busy' : 'login'} onClick={handleLoginUsingCredentials}>
+        <form
+            // refs:
+            ref={formLoginRef}
+            
+            
+            
+            // validations:
+            noValidate={true}
+            
+            
+            
+            // handlers:
+            onSubmit={handlePreventSubmit}
+        >
+            <AccessibilityProvider
+                // accessibilities:
+                enabled={!busy}
+            >
+                <ValidationProvider
+                    // validations:
+                    enableValidation={enableValidation}
+                >
+                    <TextInput
+                        // refs:
+                        elmRef={usernameRef}
+                        
+                        
+                        
+                        // accessibilities:
+                        placeholder='Username or Email'
+                        autoComplete='username'
+                        
+                        
+                        
+                        // values:
+                        value={username}
+                        onChange={handleUsernameChange}
+                        
+                        
+                        
+                        // validations:
+                        isValid={username.length >= 1}
+                        required={true}
+                    />
+                    <PasswordInput
+                        // accessibilities:
+                        placeholder='Password'
+                        autoComplete='current-password'
+                        
+                        
+                        
+                        // values:
+                        value={password}
+                        onChange={handlePasswordChange}
+                        
+                        
+                        
+                        // validations:
+                        isValid={password.length >= 1}
+                        required={true}
+                    />
+                    <ButtonIcon
+                        // actions:
+                        type='submit'
+                        
+                        
+                        
+                        // appearances:
+                        icon={(busy === 'credentials') ? 'busy' : 'login'}
+                        
+                        
+                        
+                        // handlers:
+                        onClick={handleLoginUsingCredentials}
+                    >
                         Login
                     </ButtonIcon>
                     <hr />
-                    <ButtonIcon icon='facebook' onClick={handleLoginUsingFacebook}>
+                    <ButtonIcon
+                        // appearances:
+                        icon={(busy === 'facebook') ? 'busy' : 'facebook'}
+                        
+                        
+                        
+                        // handlers:
+                        onClick={handleLoginUsingFacebook}
+                    >
                         Login with Facebook
                     </ButtonIcon>
-                    <ButtonIcon icon='login'    onClick={handleLoginUsingGithub}>
+                    <ButtonIcon
+                        // appearances:
+                        icon={(busy === 'login') ? 'busy' : 'login'}
+                        
+                        
+                        
+                        // handlers:
+                        onClick={handleLoginUsingGithub}
+                    >
                         Login with Github
                     </ButtonIcon>
                 </ValidationProvider>

@@ -4,7 +4,7 @@ import { Container } from '@reusable-ui/components'
 import { StylesCSR } from './StylesCSR' // client_side_rendering CSS (required)
 import { StylesSSR } from './StylesSSR' // server_side_rendering CSS (optional)
 
-// import '@/theme.config'
+import '@/theme.config'
 
 import './layoutStyles.css'
 
