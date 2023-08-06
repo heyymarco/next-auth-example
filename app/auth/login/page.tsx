@@ -69,6 +69,7 @@ import {
     
     // simple-components:
     Icon,
+    Label,
     ButtonIcon,
     TextInput,
     PasswordInput,
@@ -94,6 +95,7 @@ import {
     
     
     // composite-components:
+    Group,
     TabPanel,
     Tab,
 }                           from '@reusable-ui/components'
@@ -580,45 +582,67 @@ const TabLogin  = () => {
                     // validations:
                     enableValidation={enableValidation}
                 >
-                    <TextInput
-                        // refs:
-                        elmRef={usernameRef}
-                        
-                        
-                        
-                        // accessibilities:
-                        placeholder='Username or Email'
-                        autoComplete='username'
-                        
-                        
-                        
-                        // values:
-                        value={username}
-                        onChange={handleUsernameChange}
-                        
-                        
-                        
-                        // validations:
-                        isValid={username.length >= 1}
-                        required={true}
-                    />
-                    <PasswordInput
-                        // accessibilities:
-                        placeholder='Password'
-                        autoComplete='current-password'
-                        
-                        
-                        
-                        // values:
-                        value={password}
-                        onChange={handlePasswordChange}
-                        
-                        
-                        
-                        // validations:
-                        isValid={password.length >= 1}
-                        required={true}
-                    />
+                    <Group>
+                        <Label
+                            // classes:
+                            className='solid'
+                        >
+                            <Icon
+                                // appearances:
+                                icon='supervisor_account'
+                            />
+                        </Label>
+                        <TextInput
+                            // refs:
+                            elmRef={usernameRef}
+                            
+                            
+                            
+                            // accessibilities:
+                            placeholder='Username or Email'
+                            autoComplete='username'
+                            
+                            
+                            
+                            // values:
+                            value={username}
+                            onChange={handleUsernameChange}
+                            
+                            
+                            
+                            // validations:
+                            isValid={username.length >= 1}
+                            required={true}
+                        />
+                    </Group>
+                    <Group>
+                        <Label
+                            // classes:
+                            className='solid'
+                        >
+                            <Icon
+                                // appearances:
+                                icon='lock'
+                            />
+                        </Label>
+                        <PasswordInput
+                            // accessibilities:
+                            placeholder='Password'
+                            autoComplete='current-password'
+                            
+                            
+                            
+                            // values:
+                            value={password}
+                            onChange={handlePasswordChange}
+                            
+                            
+                            
+                            // validations:
+                            isValid={password.length >= 1}
+                            required={true}
+                        />
+                    </Group>
                     <ButtonIcon
                         // actions:
                         type='submit'
@@ -834,28 +858,39 @@ const TabForgot = () => {
                     // validations:
                     enableValidation={enableValidation}
                 >
-                    <TextInput
-                        // refs:
-                        elmRef={usernameRef}
-                        
-                        
-                        
-                        // accessibilities:
-                        placeholder='Username or Email'
-                        autoComplete='username'
-                        
-                        
-                        
-                        // values:
-                        value={username}
-                        onChange={handleUsernameChange}
-                        
-                        
-                        
-                        // validations:
-                        isValid={username.length >= 1}
-                        required={true}
-                    />
+                    <Group>
+                        <Label
+                            // classes:
+                            className='solid'
+                        >
+                            <Icon
+                                // appearances:
+                                icon='supervisor_account'
+                            />
+                        </Label>
+                        <TextInput
+                            // refs:
+                            elmRef={usernameRef}
+                            
+                            
+                            
+                            // accessibilities:
+                            placeholder='Username or Email'
+                            autoComplete='username'
+                            
+                            
+                            
+                            // values:
+                            value={username}
+                            onChange={handleUsernameChange}
+                            
+                            
+                            
+                            // validations:
+                            isValid={username.length >= 1}
+                            required={true}
+                        />
+                    </Group>
                     <ButtonIcon
                         // actions:
                         type='submit'
@@ -1144,47 +1179,114 @@ const TabReset  = () => {
                     // validations:
                     enableValidation={enableValidation}
                 >
-                    <EmailInput
-                        // accessibilities:
-                        readOnly={true}
-                        
-                        
-                        
-                        // values:
-                        value={(!!verified && verified?.email) || ''}
-                    />
-                    <PasswordInput
-                        // refs:
-                        elmRef={passwordRef}
-                        
-                        
-                        
-                        // accessibilities:
-                        placeholder='New Password'
-                        autoComplete='new-password'
-                        
-                        
-                        
-                        // values:
-                        value={password}
-                        onChange={handlePasswordChange}
-                        
-                        
-                        
-                        // validations:
-                        isValid={
-                            passwordValidationLength
-                            &&
-                            passwordValidationCapital
-                        }
-                        required={true}
-                        
-                        
-                        
-                        // handlers:
-                        onFocus={handlePasswordFocus}
-                        onBlur={handlePasswordBlur}
-                    />
+                    <Group>
+                        <Label
+                            // classes:
+                            className='solid'
+                        >
+                            <Icon
+                                // appearances:
+                                icon='supervisor_account'
+                            />
+                        </Label>
+                        <EmailInput
+                            // accessibilities:
+                            readOnly={true}
+                            
+                            
+                            
+                            // values:
+                            value={(!!verified && verified?.email) || ''}
+                        />
+                    </Group>
+                    <Group>
+                        <Label
+                            // classes:
+                            className='solid'
+                        >
+                            <Icon
+                                // appearances:
+                                icon='lock'
+                            />
+                        </Label>
+                        <PasswordInput
+                            // refs:
+                            elmRef={passwordRef}
+                            
+                            
+                            
+                            // accessibilities:
+                            placeholder='New Password'
+                            autoComplete='new-password'
+                            
+                            
+                            
+                            // values:
+                            value={password}
+                            onChange={handlePasswordChange}
+                            
+                            
+                            
+                            // validations:
+                            isValid={
+                                passwordValidationLength
+                                &&
+                                passwordValidationCapital
+                            }
+                            required={true}
+                            
+                            
+                            
+                            // handlers:
+                            onFocus={handlePasswordFocus}
+                            onBlur={handlePasswordBlur}
+                        />
+                    </Group>
+                    <Group>
+                        <Label
+                            // classes:
+                            className='solid'
+                        >
+                            <Icon
+                                // appearances:
+                                icon='lock'
+                            />
+                        </Label>
+                        <PasswordInput
+                            // refs:
+                            elmRef={password2Ref}
+                            
+                            
+                            
+                            // accessibilities:
+                            placeholder='Confirm New Password'
+                            autoComplete='new-password'
+                            
+                            
+                            
+                            // values:
+                            value={password2}
+                            onChange={handlePassword2Change}
+                            
+                            
+                            
+                            // validations:
+                            isValid={
+                                password2ValidationLength
+                                &&
+                                password2ValidationCapital
+                                &&
+                                password2ValidationMatch
+                            }
+                            required={true}
+                            
+                            
+                            
+                            // handlers:
+                            onFocus={handlePassword2Focus}
+                            onBlur={handlePassword2Blur}
+                        />
+                    </Group>
                     <Tooltip
                         // variants:
                         theme='warning'
@@ -1232,40 +1334,6 @@ const TabReset  = () => {
                             </ListItem>
                         </List>
                     </Tooltip>
-                    <PasswordInput
-                        // refs:
-                        elmRef={password2Ref}
-                        
-                        
-                        
-                        // accessibilities:
-                        placeholder='Confirm New Password'
-                        autoComplete='new-password'
-                        
-                        
-                        
-                        // values:
-                        value={password2}
-                        onChange={handlePassword2Change}
-                        
-                        
-                        
-                        // validations:
-                        isValid={
-                            password2ValidationLength
-                            &&
-                            password2ValidationCapital
-                            &&
-                            password2ValidationMatch
-                        }
-                        required={true}
-                        
-                        
-                        
-                        // handlers:
-                        onFocus={handlePassword2Focus}
-                        onBlur={handlePassword2Blur}
-                    />
                     <Tooltip
                         // variants:
                         theme='warning'
