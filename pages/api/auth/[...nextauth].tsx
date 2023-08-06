@@ -46,6 +46,9 @@ import {
 import {
   default as authConfig,
 }                           from '@/auth.config'
+import {
+  default as credentialsConfig,
+}                           from '@/credentials.config'
 
 
 
@@ -434,16 +437,31 @@ async function handleApplyPasswordReset(path: string, req: NextApiRequest, res: 
     });
     return true; // handled with error
   } // if
-  // the minimum constraint belong to FE level
-  // if (password.length < 5) {
-  //   res.status(400).json({
-  //     error: 'The password is too short. Minimum is 5 characters.',
-  //   });
-  //   return true; // handled with error
-  // } // if
-  if (password.length > 20) {
+  const passwordMinLength = credentialsConfig.PASSWORD_MIN_LENGTH;
+  if ((typeof(passwordMinLength) === 'number') && Number.isFinite(passwordMinLength) && (password.length < passwordMinLength)) {
     res.status(400).json({
-      error: 'The password is too long. Maximum is 20 characters.',
+      error: `The password is too short. Minimum is ${passwordMinLength} characters.`,
+    });
+    return true; // handled with error
+  } // if
+  const passwordMaxLength = credentialsConfig.PASSWORD_MAX_LENGTH;
+  if ((typeof(passwordMaxLength) === 'number') && Number.isFinite(passwordMaxLength) && (password.length > passwordMaxLength)) {
+    res.status(400).json({
+      error: `The password is too long. Maximum is ${passwordMaxLength} characters.`,
+    });
+    return true; // handled with error
+  } // if
+  const passwordHasUppercase = credentialsConfig.PASSWORD_HAS_UPPERCASE;
+  if (passwordHasUppercase && !password.match(/[A-Z]/)) {
+    res.status(400).json({
+      error: `The password must have at least one capital letter.`,
+    });
+    return true; // handled with error
+  } // if
+  const passwordHasLowercase = credentialsConfig.PASSWORD_HAS_LOWERCASE;
+  if (passwordHasLowercase && !password.match(/[a-z]/)) {
+    res.status(400).json({
+      error: `The password must have at least one non-capital letter.`,
     });
     return true; // handled with error
   } // if

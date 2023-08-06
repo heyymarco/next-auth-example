@@ -113,6 +113,11 @@ import {
 // other libs:
 import axios                from 'axios'
 
+// configs:
+import {
+    default as credentialsConfig,
+}                           from '@/credentials.config'
+
 
 
 // contexts:
@@ -1146,12 +1151,47 @@ const TabReset  = () => {
     
     
     // fn props:
-    const passwordValidationLength   = (password.length >= 5) && (password.length <= 20);   // 5-20 characters
-    const passwordValidationCapital  = !!password.match(/[A-Z]/);                           // At least one capital letter
+    const passwordMinLength            = credentialsConfig.PASSWORD_MIN_LENGTH;
+    const passwordMaxLength            = credentialsConfig.PASSWORD_MAX_LENGTH;
+    const passwordHasUppercase         = credentialsConfig.PASSWORD_HAS_UPPERCASE;
+    const passwordHasLowercase         = credentialsConfig.PASSWORD_HAS_LOWERCASE;
     
-    const password2ValidationLength  = (password2.length >= 5) && (password2.length <= 20); // 5-20 characters
-    const password2ValidationCapital = !!password2.match(/[A-Z]/);                          // At least one capital letter
-    const password2ValidationMatch   = !!password && (password2 === password);              // Exact match to previous password
+    const passwordValidationLength     = (
+        (password.length >= passwordMinLength)
+        &&
+        (password.length <= passwordMaxLength)
+    );                                         // min-max characters
+    const passwordValidationUppercase  = (
+        !passwordHasUppercase
+        ||
+        !!password.match(/[A-Z]/)
+    );                                         // At least one capital letter
+    const passwordValidationLowercase  = (
+        !passwordHasLowercase
+        ||
+        !!password.match(/[a-z]/)
+    );                                         // At least one non-capital letter
+    
+    const password2ValidationLength    = (
+        (password2.length >= passwordMinLength)
+        &&
+        (password2.length <= passwordMaxLength)
+    );                                         // min-max characters
+    const password2ValidationUppercase = (
+        !passwordHasUppercase
+        ||
+        !!password2.match(/[A-Z]/)
+    );                                         // At least one capital letter
+    const password2ValidationLowercase = (
+        !passwordHasLowercase
+        ||
+        !!password2.match(/[a-z]/)
+    );                                         // At least one non-capital letter
+    const password2ValidationMatch     = (
+        !!password
+        &&
+        (password2 === password)
+    );                                         // Exact match to previous password
     
     
     
@@ -1231,11 +1271,13 @@ const TabReset  = () => {
                             isValid={
                                 passwordValidationLength
                                 &&
-                                passwordValidationCapital
+                                passwordValidationUppercase
+                                &&
+                                passwordValidationLowercase
                             }
                             required={true}
-                            // minLength={5}  // validate on JS level
-                            // maxLength={20} // validate on JS level
+                            // minLength={passwordMinLength} // validate on JS level
+                            // maxLength={passwordMaxLength} // validate on JS level
                             
                             
                             
@@ -1276,13 +1318,15 @@ const TabReset  = () => {
                             isValid={
                                 password2ValidationLength
                                 &&
-                                password2ValidationCapital
+                                password2ValidationUppercase
+                                &&
+                                password2ValidationLowercase
                                 &&
                                 password2ValidationMatch
                             }
                             required={true}
-                            // minLength={5}  // validate on JS level
-                            // maxLength={20} // validate on JS level
+                            // minLength={passwordMinLength} // validate on JS level
+                            // maxLength={passwordMaxLength} // validate on JS level
                             
                             
                             
@@ -1321,21 +1365,34 @@ const TabReset  = () => {
                                     icon={passwordValidationLength ? 'check' : 'error_outline'}
                                 />
                                 &nbsp;
-                                5-20 characters
+                                {passwordMinLength}-{passwordMaxLength} characters
                             </ListItem>
-                            <ListItem
+                            {!!passwordHasUppercase && <ListItem
                                 // variants:
                                 size='sm'
-                                theme={passwordValidationCapital ? 'success' : 'danger'}
+                                theme={passwordValidationUppercase ? 'success' : 'danger'}
                                 outlined={true}
                             >
                                 <Icon
                                     // appearances:
-                                    icon={passwordValidationCapital ? 'check' : 'error_outline'}
+                                    icon={passwordValidationUppercase ? 'check' : 'error_outline'}
                                 />
                                 &nbsp;
                                 At least one capital letter
-                            </ListItem>
+                            </ListItem>}
+                            {!!passwordHasLowercase && <ListItem
+                                // variants:
+                                size='sm'
+                                theme={passwordValidationLowercase ? 'success' : 'danger'}
+                                outlined={true}
+                            >
+                                <Icon
+                                    // appearances:
+                                    icon={passwordValidationLowercase ? 'check' : 'error_outline'}
+                                />
+                                &nbsp;
+                                At least one non-capital letter
+                            </ListItem>}
                         </List>
                     </Tooltip>
                     <Tooltip
@@ -1368,21 +1425,34 @@ const TabReset  = () => {
                                     icon={password2ValidationLength ? 'check' : 'error_outline'}
                                 />
                                 &nbsp;
-                                5-20 characters
+                                {passwordMinLength}-{passwordMaxLength} characters
                             </ListItem>
-                            <ListItem
+                            {!!passwordHasUppercase && <ListItem
                                 // variants:
                                 size='sm'
-                                theme={password2ValidationCapital ? 'success' : 'danger'}
+                                theme={password2ValidationUppercase ? 'success' : 'danger'}
                                 outlined={true}
                             >
                                 <Icon
                                     // appearances:
-                                    icon={password2ValidationCapital ? 'check' : 'error_outline'}
+                                    icon={password2ValidationUppercase ? 'check' : 'error_outline'}
                                 />
                                 &nbsp;
                                 At least one capital letter
-                            </ListItem>
+                            </ListItem>}
+                            {!!passwordHasLowercase && <ListItem
+                                // variants:
+                                size='sm'
+                                theme={password2ValidationLowercase ? 'success' : 'danger'}
+                                outlined={true}
+                            >
+                                <Icon
+                                    // appearances:
+                                    icon={password2ValidationLowercase ? 'check' : 'error_outline'}
+                                />
+                                &nbsp;
+                                At least one non-capital letter
+                            </ListItem>}
                             <ListItem
                                 // variants:
                                 size='sm'
