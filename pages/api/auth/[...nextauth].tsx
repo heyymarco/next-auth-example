@@ -1,23 +1,77 @@
-import { renderToStaticMarkup } from 'react-dom/server'
-import NextAuth, { NextAuthOptions, SessionOptions, User } from 'next-auth'
-import GoogleProvider from 'next-auth/providers/google'
-import FacebookProvider from 'next-auth/providers/facebook'
-import GithubProvider from 'next-auth/providers/github'
-import TwitterProvider from 'next-auth/providers/twitter'
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
-import { AdapterUser } from 'next-auth/adapters'
-import { NextApiRequest, NextApiResponse } from 'next'
-import CredentialsProvider from 'next-auth/providers/credentials'
+// react:
+import {
+    // utilities:
+    renderToStaticMarkup,
+}                           from 'react-dom/server'
 
-import { randomUUID } from 'crypto'
-import { customAlphabet } from 'nanoid/async'
-import Cookies from 'cookies'
-import { encode, decode } from 'next-auth/jwt'
-import bcrypt from 'bcrypt'
-import moment from 'moment'
+import {
+    // types:
+    type NextApiRequest,
+    type NextApiResponse,
+}                           from 'next'
 
-import { default as nodemailer } from 'nodemailer'
+// next auth:
+import {
+    // routers:
+    default as NextAuth,
+    
+    
+    
+    // types:
+    type NextAuthOptions,
+    type SessionOptions,
+    
+    
+    
+    // models:
+    type User,
+}                           from 'next-auth'
+import {
+    encode,
+    decode,
+}                           from 'next-auth/jwt'
+import {
+    // databases:
+    PrismaAdapter,
+}                           from '@auth/prisma-adapter'
+import {
+    // models:
+    type AdapterUser,
+}                           from 'next-auth/adapters'
+
+// credentials providers:
+import CredentialsProvider  from 'next-auth/providers/credentials'
+
+// OAuth providers:
+import GoogleProvider       from 'next-auth/providers/google'
+import FacebookProvider     from 'next-auth/providers/facebook'
+import InstagramProvider    from 'next-auth/providers/instagram'
+import TwitterProvider      from 'next-auth/providers/twitter'
+import GithubProvider       from 'next-auth/providers/github'
+
+// networks:
+import {
+    default as Cookies,
+}                           from 'cookies'
+import {
+    default as nodemailer,
+}                           from 'nodemailer'
+
+// cryptographies:
+import {
+    randomUUID,
+}                           from 'crypto'
+import {
+    customAlphabet,
+}                           from 'nanoid/async'
+import {
+    default as bcrypt,
+}                           from 'bcrypt'
+
+// formats:
+import {
+    default as moment,
+}                           from 'moment'
 
 // ORMs:
 import {
@@ -26,28 +80,28 @@ import {
 
 // templates:
 import {
-  // react:
-  UserContextProvider,
+    // react:
+    UserContextProvider,
 }                           from '@/templates/UserContextProvider'
 import {
-  // react:
-  ResetPasswordContextProvider,
+    // react:
+    ResetPasswordContextProvider,
 }                           from '@/templates/ResetPasswordContextProvider'
 import {
-  // react:
-  User as TemplateUser,
+    // react:
+    User as TemplateUser,
 }                           from '@/templates/User'
 import {
-  // react:
-  ResetPassword,
+    // react:
+    ResetPassword,
 }                           from '@/templates/ResetPassword'
 
 // configs:
 import {
-  default as authConfig,
+    default as authConfig,
 }                           from '@/auth.config'
 import {
-  default as credentialsConfig,
+    default as credentialsConfig,
 }                           from '@/credentials.config'
 
 
