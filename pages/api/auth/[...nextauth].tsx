@@ -434,6 +434,19 @@ async function handleApplyPasswordReset(path: string, req: NextApiRequest, res: 
     });
     return true; // handled with error
   } // if
+  // the minimum constraint belong to FE level
+  // if (password.length < 5) {
+  //   res.status(400).json({
+  //     error: 'The password is too short. Minimum is 5 characters.',
+  //   });
+  //   return true; // handled with error
+  // } // if
+  if (password.length > 20) {
+    res.status(400).json({
+      error: 'The password is too long. Maximum is 20 characters.',
+    });
+    return true; // handled with error
+  } // if
   const hashedPassword = await bcrypt.hash(password, 10);
   
   
