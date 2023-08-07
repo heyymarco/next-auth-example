@@ -302,9 +302,9 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
     
     
     
-    const resetLimitInMinutes = (authConfig.EMAIL_RESET_LIMITS ?? 5);
-    if (resetLimitInMinutes) {
-      // const now = new Date(Date.now() - (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */));
+    const resetLimitInHours = (authConfig.EMAIL_RESET_LIMITS ?? 0.25);
+    if (resetLimitInHours) {
+      // const now = new Date(Date.now() - (resetLimitInHours * 60 * 60 * 1000 /* convert to milliseconds */));
       const {updatedAt} = await prismaTransaction.resetPasswordToken.findUnique({
         where       : {
           userId    : userId,
@@ -314,7 +314,7 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
         },
       }) ?? {};
       const now         = Date.now();
-      const minInterval = (resetLimitInMinutes * 60 * 1000 /* convert to milliseconds */);
+      const minInterval = (resetLimitInHours * 60 * 60 * 1000 /* convert to milliseconds */);
       if (!!updatedAt && ((now - updatedAt.valueOf()) <= minInterval)) {
         // the reset request is too frequent => reject:
         return Error(`The password reset request is too often. Please try again ${moment(now).to(updatedAt.valueOf() + minInterval)}.`, { cause: 400 });

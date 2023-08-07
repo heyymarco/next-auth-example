@@ -11,8 +11,8 @@ import {
 
 
 export default {
-    SESSION_MAX_AGE     : 24 /* hours */,
-    SESSION_UPDATE_AGE  : 6  /* hours */,
+    SESSION_MAX_AGE     : 24   /* hours */,
+    SESSION_UPDATE_AGE  : 6    /* hours */,
     
     
     
@@ -24,6 +24,6 @@ export default {
         <p>Or copy and paste the URL into your browser:<br /><u><ResetPassword.Url /></u></p>
         <p>If you did not make this request then please ignore this email.</p>
     </>,
-    EMAIL_RESET_LIMITS  : 15 /* minutes */,
-    EMAIL_RESET_MAX_AGE : 24 /* hours */,
+    EMAIL_RESET_LIMITS  : 0.25 /* hours */,
+    EMAIL_RESET_MAX_AGE : 24   /* hours */,
 };
