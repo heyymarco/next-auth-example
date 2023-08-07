@@ -148,7 +148,7 @@ export const authOptions: NextAuthOptions = {
                 
                 
                 
-                // get user data by given username (or email):
+                // find user data by given username (or email):
                 const userDetail = await prisma.user.findFirst({
                     where  :
                         credentials.username.includes('@') // if username contains '@' => treat as email, otherwise regular username
@@ -338,7 +338,7 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
     
     // an atomic transaction of [`find user by username (or email)`, `find resetPasswordToken by user id`, `create/update the new resetPasswordToken`]:
     const user = await prisma.$transaction(async (prismaTransaction) => {
-        // get user id by given username (or email):
+        // find user id by given username (or email):
         const {id: userId} = await prismaTransaction.user.findFirst({
             where  :
                 username.includes('@') // if username contains '@' => treat as email, otherwise regular username
@@ -361,7 +361,7 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
         // limits the resetPasswordToken request:
         const resetLimitInHours = (authConfig.EMAIL_RESET_LIMITS ?? 0.25);
         if (resetLimitInHours) {
-            // get the last request date (if found) of resetPasswordToken by user id:
+            // find the last request date (if found) of resetPasswordToken by user id:
             const {updatedAt: lastRequestDate} = await prismaTransaction.resetPasswordToken.findUnique({
                 where  : {
                     userId       : userId,
@@ -537,131 +537,142 @@ const handleValidatePasswordReset = async (path: string, req: NextApiRequest, re
     } // try
 };
 const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
-  if (req.method !== 'PATCH')           return false; // ignore
-  if (req.query.nextauth?.[0] !== path) return false; // ignore
-  
-  
-  
-  await new Promise((resolved) => {
-    setTimeout(resolved, 2000);
-  });
-  
-  
-  
-  const {
-    resetPasswordToken,
-    password,
-  } = req.body;
-  if (!resetPasswordToken || (typeof(resetPasswordToken) !== 'string')) {
-    res.status(400).json({
-      error: 'The required resetPasswordToken is not provided.',
-    });
-    return true; // handled with error
-  } // if
-  if (!password || (typeof(password) !== 'string')) {
-    res.status(400).json({
-      error: 'The required password is not provided.',
-    });
-    return true; // handled with error
-  } // if
-  const passwordMinLength = credentialsConfig.PASSWORD_MIN_LENGTH;
-  if ((typeof(passwordMinLength) === 'number') && Number.isFinite(passwordMinLength) && (password.length < passwordMinLength)) {
-    res.status(400).json({
-      error: `The password is too short. Minimum is ${passwordMinLength} characters.`,
-    });
-    return true; // handled with error
-  } // if
-  const passwordMaxLength = credentialsConfig.PASSWORD_MAX_LENGTH;
-  if ((typeof(passwordMaxLength) === 'number') && Number.isFinite(passwordMaxLength) && (password.length > passwordMaxLength)) {
-    res.status(400).json({
-      error: `The password is too long. Maximum is ${passwordMaxLength} characters.`,
-    });
-    return true; // handled with error
-  } // if
-  const passwordHasUppercase = credentialsConfig.PASSWORD_HAS_UPPERCASE;
-  if (passwordHasUppercase && !password.match(/[A-Z]/)) {
-    res.status(400).json({
-      error: `The password must have at least one capital letter.`,
-    });
-    return true; // handled with error
-  } // if
-  const passwordHasLowercase = credentialsConfig.PASSWORD_HAS_LOWERCASE;
-  if (passwordHasLowercase && !password.match(/[a-z]/)) {
-    res.status(400).json({
-      error: `The password must have at least one non-capital letter.`,
-    });
-    return true; // handled with error
-  } // if
-  const hashedPassword = await bcrypt.hash(password, 10);
-  
-  
-  
-  try {
-    return await prisma.$transaction(async (prismaTransaction): Promise<boolean> => {
-      const { id: userId } = await prismaTransaction.user.findFirst({
-        where                : {
-          resetPasswordToken : {
-            token            : resetPasswordToken,
-            expiresAt        : {
-              gt             : new Date(Date.now()),
-            },
-          },
-        },
-        select               : {
-          id                 : true,
-        },
-      }) ?? {};
-      if (!userId) {
-        res.status(404).json({
-          error: 'The reset password token is invalid or expired.',
+    // filters the request type:
+    if (req.method !== 'PATCH')           return false; // ignore
+    if (req.query.nextauth?.[0] !== path) return false; // ignore
+    
+    
+    
+    // validate the request parameter(s):
+    const {
+        resetPasswordToken,
+        password,
+    } = req.body;
+    if ((typeof(resetPasswordToken) !== 'string') || !resetPasswordToken) {
+        res.status(400).json({
+            error: 'The required reset password token is not provided.',
         });
         return true; // handled with error
-      } // if
-      
-      
-      
-      await prismaTransaction.resetPasswordToken.delete({
-        where    : {
-          userId : userId,
-        },
-        select   : {
-          id     : true,
-        },
-      });
-      
-      
-      
-      await prismaTransaction.credentials.upsert({
-        where      : {
-          userId   : userId,
-        },
-        create     : {
-          userId   : userId,
-          password : hashedPassword,
-        },
-        update     : {
-          password : hashedPassword,
-        },
-        select     : {
-          id       : true,
-        },
-      });
-      
-      
-      
-      res.json({
-        ok       : true,
-        message  : 'The password has been successfully changed. Now you can login with the new password.',
-      });
-      return true; // handled with success
-    });
-  }
-  catch (error: any) {
-    res.status(500).json({
-      error: 'An unexpected error occured.',
-    });
-    return true; // handled with error
-  } // try
+    } // if
+    if (resetPasswordToken.length > 50) { // prevents of DDOS attack
+        res.status(400).json({
+            error: 'The reset password token is too long.',
+        });
+        return true; // handled with error
+    } // if
+    if ((typeof(password) !== 'string') || !password) {
+        res.status(400).json({
+            error: 'The required password is not provided.',
+        });
+        return true; // handled with error
+    } // if
+    const passwordMinLength = credentialsConfig.PASSWORD_MIN_LENGTH;
+    if ((typeof(passwordMinLength) === 'number') && Number.isFinite(passwordMinLength) && (password.length < passwordMinLength)) {
+        res.status(400).json({
+            error: `The password is too short. Minimum is ${passwordMinLength} characters.`,
+        });
+        return true; // handled with error
+    } // if
+    const passwordMaxLength = credentialsConfig.PASSWORD_MAX_LENGTH;
+    if ((typeof(passwordMaxLength) === 'number') && Number.isFinite(passwordMaxLength) && (password.length > passwordMaxLength)) {
+        res.status(400).json({
+            error: `The password is too long. Maximum is ${passwordMaxLength} characters.`,
+        });
+        return true; // handled with error
+    } // if
+    const passwordHasUppercase = credentialsConfig.PASSWORD_HAS_UPPERCASE;
+    if (passwordHasUppercase && !password.match(/[A-Z]/)) {
+        res.status(400).json({
+            error: `The password must have at least one capital letter.`,
+        });
+        return true; // handled with error
+    } // if
+    const passwordHasLowercase = credentialsConfig.PASSWORD_HAS_LOWERCASE;
+    if (passwordHasLowercase && !password.match(/[a-z]/)) {
+        res.status(400).json({
+            error: `The password must have at least one non-capital letter.`,
+        });
+        return true; // handled with error
+    } // if
+    
+    
+    
+    // generate the hashed password:
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    
+    
+    try {
+        // an atomic transaction of [`find user id by resetPasswordToken`, `delete current resetPasswordToken record`, `create/update user's credentials`]:
+        return await prisma.$transaction(async (prismaTransaction): Promise<boolean> => {
+            // find the related user id by given resetPasswordToken:
+            const {id: userId} = await prismaTransaction.user.findFirst({
+                where  : {
+                    resetPasswordToken : {
+                        token        : resetPasswordToken,
+                        expiresAt : {
+                            gt       : new Date(Date.now()),
+                        },
+                    },
+                },
+                select : {
+                    id               : true, // required: for id key
+                },
+            }) ?? {};
+            if (userId === undefined) {
+                res.status(404).json({
+                    error: 'The reset password token is invalid or expired.',
+                });
+                return true; // handled with error
+            } // if
+            
+            
+            
+            // delete the current resetPasswordToken record so it cannot be re-use again:
+            await prismaTransaction.resetPasswordToken.delete({
+                where  : {
+                    userId : userId,
+                },
+                select : {
+                    id     : true,
+                },
+            });
+            
+            
+            
+            // create/update user's credentials:
+            await prismaTransaction.credentials.upsert({
+                where  : {
+                    userId   : userId,
+                },
+                create : {
+                    userId   : userId,
+                    password : hashedPassword,
+                },
+                update : {
+                    password : hashedPassword,
+                },
+                select : {
+                    id       : true,
+                },
+            });
+            
+            
+            
+            // report the success:
+            res.json({
+                ok       : true,
+                message  : 'The password has been successfully changed. Now you can login with the new password.',
+            });
+            return true; // handled with success
+        });
+    }
+    catch (error: any) {
+        res.status(500).json({
+            error: 'An unexpected error occured.',
+        });
+        return true; // handled with error
+    } // try
 };
 
 const auth = async (req: NextApiRequest, res: NextApiResponse) => {
