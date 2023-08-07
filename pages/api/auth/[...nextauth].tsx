@@ -227,32 +227,28 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks : {
-        async signIn({ user, account, profile, email, credentials }) {
-        if (!('emailVerified' in user)) {
-            const newUser : User = user;
-            if (!newUser.name ) return false; // the name  field is required to be stored to model User
-            if (!newUser.email) return false; // the email field is required to be stored to model User
-            console.log('SIGN UP', { user, account, profile, email, credentials });
-        }
-        else {
-            const dbUser : AdapterUser = user;
-            console.log('SIGN IN', { user, account, profile, email, credentials });
-        } // if
-        
-        
-        
-        if (email) {
-            if (email.verificationRequest) {
-            console.log('SIGN UP using email', { user, account, profile, email, credentials });
+        async signIn({ user, account, credentials, profile: oAuthProfile }) {
+            if (!('emailVerified' in user)) {
+                // sign up (new user)
+                
+                
+                
+                const newUser : User = user;
+                if (!newUser.name ) return false; // the name  field is required to be stored to model User => sign up failed
+                if (!newUser.email) return false; // the email field is required to be stored to model User => sign up failed
             }
             else {
-            console.log('SIGN IN using email', { user, account, profile, email, credentials });
+                // sign in (existing user)
+                
+                
+                
+                // const dbUser : AdapterUser = user;
             } // if
-        } // if
-        
-        
-        
-        return true;
+            
+            
+            
+            // all verification passed => logged in
+            return true;
         },
         async jwt({ token, account, profile, user }) {
         console.log('jwt: ', { token, account, profile });
