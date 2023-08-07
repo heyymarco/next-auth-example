@@ -314,7 +314,7 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
     const {
         username,
     } = req.body;
-    if (!username || (typeof(username) !== 'string')) {
+    if ((typeof(username) !== 'string') || !username) {
         res.status(400).json({
             error: 'The required username or email is not provided.',
         });
@@ -466,70 +466,75 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
     } // try
 };
 const handleValidatePasswordReset = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
-  if (req.method !== 'GET')             return false; // ignore
-  if (req.query.nextauth?.[0] !== path) return false; // ignore
-  
-  
-  
-  await new Promise((resolved) => {
-    setTimeout(resolved, 2000);
-  });
-  
-  
-  
-  const {
-    resetPasswordToken,
-  } = req.query;
-  if ((typeof(resetPasswordToken) !== 'string') || !resetPasswordToken) {
-    res.status(400).json({
-      error: 'The required reset password token is not provided.',
-    });
-    return true; // handled with error
-  } // if
-  
-  
-  
-  try {
-    const user = await prisma.user.findFirst({
-      where                : {
-        resetPasswordToken : {
-          token            : resetPasswordToken,
-          expiresAt        : {
-            gt             : new Date(Date.now()),
-          },
-        },
-      },
-      select               : {
-        email              : true,
-        credentials        : {
-          select           : {
-            username       : true,
-          },
-        },
-      },
-    });
-    if (!user) {
-      res.status(404).json({
-        error: 'The reset password token is invalid or expired.',
-      });
-      return true; // handled with error
+    // filters the request type:
+    if (req.method !== 'GET')             return false; // ignore
+    if (req.query.nextauth?.[0] !== path) return false; // ignore
+    
+    
+    
+    // validate the request parameter(s):
+    const {
+        resetPasswordToken,
+    } = req.query;
+    if ((typeof(resetPasswordToken) !== 'string') || !resetPasswordToken) {
+        res.status(400).json({
+            error: 'The required reset password token is not provided.',
+        });
+        return true; // handled with error
+    } // if
+    if (resetPasswordToken.length > 50) { // prevents of DDOS attack
+        res.status(400).json({
+            error: 'The reset password token is too long.',
+        });
+        return true; // handled with error
     } // if
     
     
     
-    res.json({
-      ok       : true,
-      email    : user.email,
-      username : user.credentials?.username ?? null,
-    });
-    return true; // handled with success
-  }
-  catch (error: any) {
-    res.status(500).json({
-      error: 'An unexpected error occured.',
-    });
-    return true; // handled with error
-  } // try
+    // find the related email & username of given resetPasswordToken:
+    try {
+        const user = await prisma.user.findFirst({
+            where  : {
+                resetPasswordToken : {
+                    token        : resetPasswordToken,
+                    expiresAt : {
+                        gt       : new Date(Date.now()),
+                    },
+                },
+            },
+            select : {
+                email            : true,
+                credentials : {
+                    select : {
+                        username : true,
+                    },
+                },
+            },
+        });
+        if (!user) {
+            res.status(404).json({
+                error: 'The reset password token is invalid or expired.',
+            });
+            return true; // handled with error
+        } // if
+        
+        
+        
+        // report the success:
+        res.json({
+            ok       : true,
+            email    : user.email,
+            username : user.credentials?.username ?? null,
+        });
+        return true; // handled with success
+    }
+    catch (error: any) {
+        // report the failure:
+        res.status(500).json({
+            error: 'An unexpected error occured.',
+        });
+        return true; // handled with error
+    } // try
 };
 const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
   if (req.method !== 'PATCH')           return false; // ignore
