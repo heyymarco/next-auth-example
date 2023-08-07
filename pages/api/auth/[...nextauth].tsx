@@ -168,8 +168,8 @@ export const authOptions: NextAuthOptions = {
                         emailVerified    : true, // required: for distinguish between `AdapterUser` vs `User`
                         image            : true, // optional: for profile image
                         
-                        credentials      : {
-                            select       : {
+                        credentials : {
+                            select : {
                                 password : true, // required: for password hash comparison
                             },
                         },
@@ -295,149 +295,175 @@ export const authOptions: NextAuthOptions = {
 };
 
 const handlePasswordReset         = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
-  return (
-    await handleRequestPasswordReset(path, req, res)
-    ||
-    await handleValidatePasswordReset(path, req, res)
-    ||
-    await handleApplyPasswordReset(path, req, res)
-  );
+    return (
+        await handleRequestPasswordReset(path, req, res)
+        ||
+        await handleValidatePasswordReset(path, req, res)
+        ||
+        await handleApplyPasswordReset(path, req, res)
+    );
 };
 const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
-  if (req.method !== 'POST')            return false; // ignore
-  if (req.query.nextauth?.[0] !== path) return false; // ignore
-  
-  
-  
-  const {
-    username,
-  } = req.body;
-  if (!username || (typeof(username) !== 'string')) {
-    res.status(400).json({
-      error: 'The required username or email is not provided.',
-    });
-    return true; // handled with error
-  } // if
-  
-  
-  
-  const resetToken  = await customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 16)();
-  const resetMaxAge = (((authConfig.EMAIL_RESET_MAX_AGE ?? 24) || (1 * 24)) * 60 * 60 /* 1 day */) * 1000; // convert to milliseconds
-  const resetExpiry = new Date(Date.now() + resetMaxAge);
-  const user = await prisma.$transaction(async (prismaTransaction) => {
-    const { id: userId } = await prismaTransaction.user.findFirst({
-      where  :
-        username.includes('@')
-        ? {
-          email       : username,
-        }
-        : {
-          credentials : {
-            username  : username,
-          },
-        },
-      select : {
-        id : true,
-      },
-    }) ?? {};
-    if (userId === undefined) return Error('There is no user with the specified username or email.', { cause: 404 });
+    // filters the request type:
+    if (req.method !== 'POST')            return false; // ignore
+    if (req.query.nextauth?.[0] !== path) return false; // ignore
     
     
     
-    const resetLimitInHours = (authConfig.EMAIL_RESET_LIMITS ?? 0.25);
-    if (resetLimitInHours) {
-      // const now = new Date(Date.now() - (resetLimitInHours * 60 * 60 * 1000 /* convert to milliseconds */));
-      const {updatedAt} = await prismaTransaction.resetPasswordToken.findUnique({
-        where       : {
-          userId    : userId,
-        },
-        select      : {
-          updatedAt : true,
-        },
-      }) ?? {};
-      const now         = Date.now();
-      const minInterval = (resetLimitInHours * 60 * 60 * 1000 /* convert to milliseconds */);
-      if (!!updatedAt && ((now - updatedAt.valueOf()) <= minInterval)) {
-        // the reset request is too frequent => reject:
-        return Error(`The password reset request is too often. Please try again ${moment(now).to(updatedAt.valueOf() + minInterval)}.`, { cause: 400 });
-      } // if
+    // validate the request parameter(s):
+    const {
+        username,
+    } = req.body;
+    if (!username || (typeof(username) !== 'string')) {
+        res.status(400).json({
+            error: 'The required username or email is not provided.',
+        });
+        return true; // handled with error
+    } // if
+    if (username.length > 50) { // prevents of DDOS attack
+        res.status(400).json({
+            error: 'The username or email is too long.',
+        });
+        return true; // handled with error
     } // if
     
     
     
-    const {user} = await prismaTransaction.resetPasswordToken.upsert({
-      where       : {
-        userId    : userId,
-      },
-      create      : {
-        userId    : userId,
+    // generate the resetPasswordToken data:
+    const resetToken  = await customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 16)();
+    const resetMaxAge = (authConfig.EMAIL_RESET_MAX_AGE ?? 24) * 60 * 60 * 1000 /* convert to milliseconds */;
+    const resetExpiry = new Date(Date.now() + resetMaxAge);
+    
+    
+    
+    // an atomic transaction of [`find user by username (or email)`, `find resetPasswordToken by user id`, `create/update the new resetPasswordToken`]:
+    const user = await prisma.$transaction(async (prismaTransaction) => {
+        // get user id by given username (or email):
+        const {id: userId} = await prismaTransaction.user.findFirst({
+            where  :
+                username.includes('@') // if username contains '@' => treat as email, otherwise regular username
+                ? {
+                    email        : username,
+                }
+                : {
+                    credentials  : {
+                        username : username,
+                    },
+                },
+            select : {
+                id               : true, // required: for id key
+            },
+        }) ?? {};
+        if (userId === undefined) return Error('There is no user with the specified username or email.', { cause: 404 });
         
-        expiresAt : resetExpiry,
-        token     : resetToken
-      },
-      update      : {
-        expiresAt : resetExpiry,
-        token     : resetToken,
-      },
-      select      : {
-        user      : {
-          select  : {
-            name  : true,
-            email : true,
-          },
-        },
-      },
+        
+        
+        // limits the resetPasswordToken request:
+        const resetLimitInHours = (authConfig.EMAIL_RESET_LIMITS ?? 0.25);
+        if (resetLimitInHours) {
+            // get the last request date (if found) of resetPasswordToken by user id:
+            const {updatedAt: lastRequestDate} = await prismaTransaction.resetPasswordToken.findUnique({
+                where  : {
+                    userId       : userId,
+                },
+                select : {
+                    updatedAt    : true,
+                },
+            }) ?? {};
+            
+            // calculate how often the last request of resetPasswordToken:
+            if (!!lastRequestDate) {
+                const now         = Date.now();
+                const minInterval = resetLimitInHours * 60 * 60 * 1000 /* convert to milliseconds */;
+                if ((now - lastRequestDate.valueOf()) < minInterval) { // the request interval is shorter than minInterval  => reject the request
+                    // the reset request is too frequent => reject:
+                    return Error(`The password reset request is too often. Please try again ${moment(now).to(lastRequestDate.valueOf() + minInterval)}.`, { cause: 400 });
+                } // if
+            } // if
+        } // if
+        
+        
+        
+        // create/update the resetPasswordToken record and get the related user name & email:
+        const {user} = await prismaTransaction.resetPasswordToken.upsert({
+            where  : {
+                userId        : userId,
+            },
+            create : {
+                userId        : userId,
+                
+                expiresAt     : resetExpiry,
+                token         : resetToken,
+            },
+            update : {
+                expiresAt     : resetExpiry,
+                token         : resetToken,
+            },
+            select : {
+                user : {
+                    select : {
+                        name  : true, // get the related user name
+                        email : true, // get the related user email
+                    },
+                },
+            },
+        });
+        return user;
     });
-    return user;
-  });
-  if (user instanceof Error) {
-    res.status(Number.parseInt(user.cause as any) || 400).json({
-      error: user.message,
-    });
-    return true; // handled with error
-  } // if
-  
-  
-  
-  try {
-    const resetLinkUrl = `${process.env.WEBSITE_URL}/auth/login?resetPasswordToken=${encodeURIComponent(resetToken)}`
-    await transporter.sendMail({
-      from    : process.env.EMAIL_RESET_FROM, // sender address
-      to      : user.email, // list of receivers
-      subject : (authConfig.EMAIL_RESET_SUBJECT ?? 'Password Reset Request'),
-      html    : renderToStaticMarkup(
-        <ResetPasswordContextProvider url={resetLinkUrl}>
-          <UserContextProvider model={user}>
-            {
-              authConfig.EMAIL_RESET_MESSAGE
-              ??
-              <>
-                  <p>Hi <TemplateUser.Name />.</p>
-                  <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
-                  <p>To reset your password, click on the link below:<br /><ResetPassword.Link>Reset Password</ResetPassword.Link></p>
-                  <p>Or copy and paste the URL into your browser:<br /><u><ResetPassword.Url /></u></p>
-                  <p>If you did not make this request then please ignore this email.</p>
-              </>
-            }
-          </UserContextProvider>
-        </ResetPasswordContextProvider>
-      )
-    });
+    if (user instanceof Error) {
+        res.status(Number.parseInt(user.cause as any) || 400).json({
+            error: user.message,
+        });
+        return true; // handled with error
+    } // if
     
     
     
-    res.json({
-      ok      : true,
-      message : 'A password reset link sent to your email. Please check your inbox in a moment.',
-    });
-    return true; // handled with success
-  }
-  catch (error: any) {
-    res.status(500).json({
-      error: 'An error occured.',
-    });
-    return true; // handled with error
-  } // try
+    // send a link of resetPasswordToken to the user's email:
+    try {
+        // generate a link to a page for resetting password:
+        const resetLinkUrl = `${process.env.WEBSITE_URL}/auth/login?resetPasswordToken=${encodeURIComponent(resetToken)}`
+        
+        // sending an email:
+        await transporter.sendMail({
+            from    : process.env.EMAIL_RESET_FROM, // sender address
+            to      : user.email, // list of receivers
+            subject : authConfig.EMAIL_RESET_SUBJECT ?? 'Password Reset Request',
+            html    : renderToStaticMarkup(
+                <ResetPasswordContextProvider url={resetLinkUrl}>
+                    <UserContextProvider model={user}>
+                        {
+                            authConfig.EMAIL_RESET_MESSAGE
+                            ??
+                            <>
+                                <p>Hi <TemplateUser.Name />.</p>
+                                <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
+                                <p>To reset your password, click on the link below:<br /><ResetPassword.Link>Reset Password</ResetPassword.Link></p>
+                                <p>Or copy and paste the URL into your browser:<br /><u><ResetPassword.Url /></u></p>
+                                <p>If you did not make this request then please ignore this email.</p>
+                            </>
+                        }
+                    </UserContextProvider>
+                </ResetPasswordContextProvider>
+            ),
+        });
+        
+        
+        
+        // report the success:
+        res.json({
+            ok      : true,
+            message : 'A password reset link sent to your email. Please check your inbox in a moment.',
+        });
+        return true; // handled with success
+    }
+    catch (error: any) {
+        // report the failure:
+        res.status(500).json({
+            error: 'An unexpected error occured.',
+        });
+        return true; // handled with error
+    } // try
 };
 const handleValidatePasswordReset = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
   if (req.method !== 'GET')             return false; // ignore
@@ -500,7 +526,7 @@ const handleValidatePasswordReset = async (path: string, req: NextApiRequest, re
   }
   catch (error: any) {
     res.status(500).json({
-      error: 'An error occured.',
+      error: 'An unexpected error occured.',
     });
     return true; // handled with error
   } // try
@@ -627,7 +653,7 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
   }
   catch (error: any) {
     res.status(500).json({
-      error: 'An error occured.',
+      error: 'An unexpected error occured.',
     });
     return true; // handled with error
   } // try
