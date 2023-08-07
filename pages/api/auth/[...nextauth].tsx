@@ -676,66 +676,89 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
 };
 
 const auth = async (req: NextApiRequest, res: NextApiResponse) => {
-  if(req.method === 'HEAD') return res.status(200);
-  
-  if (await handlePasswordReset('reset', req, res)) return;
-  
-  const isCredentialsCallback = () => (
-    (req.method === 'POST')
-    &&
-    req.query.nextauth
-    &&
-    req.query.nextauth.includes('callback')
-    &&
-    req.query.nextauth.includes('credentials')
-  );
-  
-  await NextAuth(req, res, {
-    ...authOptions,
-    callbacks : {
-      ...authOptions.callbacks,
-      async signIn(params) {
-        if ((session.strategy === 'database') && isCredentialsCallback()) {
-          const { user } = params;
-          
-          const sessionToken  = await session.generateSessionToken();
-          const sessionMaxAge = session.maxAge * 1000; // convert to milliseconds
-          const sessionExpiry = new Date(Date.now() + sessionMaxAge);
-          
-          await adapter.createSession?.({
-            sessionToken : sessionToken,
-            expires      : sessionExpiry,
-            
-            userId       : user.id,
-          });
-          
-          const cookies = new Cookies(req, res);
-          cookies.set('next-auth.session-token', sessionToken, {
-            expires      : sessionExpiry
-          });
-        } // if
-        
-        
-        
-        return await authOptions.callbacks?.signIn?.(params) ?? true;
-      },
-    },
-    jwt : {
-      async encode(params) {
-        if ((session.strategy === 'database') && isCredentialsCallback()) return ''; // force not to use jwt token => fallback to database token
-        
-        
-        
-        return encode(params);
-      },
-      async decode(params) {
-        if ((session.strategy === 'database') && isCredentialsCallback()) return null; // force not to use jwt token => fallback to database token
-        
-        
-        
-        return decode(params);
-      }
-    },
-  });
+    // responses HEAD request as success:
+    if(req.method === 'HEAD') return res.status(200);
+    
+    
+    
+    // custom handlers:
+    if (await handlePasswordReset('reset', req, res)) return;
+    
+    
+    
+    // tests:
+    const isCredentialsCallback = () => (
+        (req.method === 'POST')
+        &&
+        req.query.nextauth
+        &&
+        req.query.nextauth.includes('callback')
+        &&
+        req.query.nextauth.includes('credentials')
+    );
+    
+    
+    
+    // next-auth's built in handlers:
+    await NextAuth(req, res, {
+        ...authOptions,
+        callbacks : {
+            ...authOptions.callbacks,
+            async signIn(params) {
+                if ((session.strategy === 'database') && isCredentialsCallback()) {
+                    // extract the user detail:
+                    const {user: userDetail} = params;
+                    
+                    
+                    
+                    // generate the sessionToken data:
+                    const sessionToken  = await session.generateSessionToken();
+                    const sessionMaxAge = session.maxAge /* relative time from now in seconds */ * 1000 /* convert to milliseconds */;
+                    const sessionExpiry = new Date(Date.now() + sessionMaxAge);
+                    
+                    
+                    
+                    // create the sessionToken record into database:
+                    await adapter.createSession?.({
+                        sessionToken : sessionToken,
+                        expires      : sessionExpiry,
+                        
+                        userId       : userDetail.id,
+                    });
+                    
+                    
+                    
+                    // create the sessionToken record into cookie:
+                    const cookies = new Cookies(req, res);
+                    cookies.set('next-auth.session-token', sessionToken, {
+                        expires      : sessionExpiry,
+                    });
+                } // if
+                
+                
+                
+                // config's origin signIn handler:
+                return await authOptions.callbacks?.signIn?.(params) ?? true;
+            },
+        },
+        jwt : {
+            async encode(params) {
+                if ((session.strategy === 'database') && isCredentialsCallback()) return ''; // force not to use jwt token => fallback to database token
+                
+                
+                
+                // jwt's built in encode handler:
+                return encode(params);
+            },
+            async decode(params) {
+                if ((session.strategy === 'database') && isCredentialsCallback()) return null; // force not to use jwt token => fallback to database token
+                
+                
+                
+                // jwt's built in decode handler:
+                return decode(params);
+            },
+        },
+    });
 };
 export default auth;
