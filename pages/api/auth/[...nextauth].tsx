@@ -229,7 +229,7 @@ export const authOptions: NextAuthOptions = {
     callbacks : {
         async signIn({ user, account, credentials, profile: oAuthProfile }) {
             if (!('emailVerified' in user)) {
-                // sign up (new user)
+                // sign up (register a new user)
                 
                 
                 
@@ -250,22 +250,28 @@ export const authOptions: NextAuthOptions = {
             // all verification passed => logged in
             return true;
         },
-        async jwt({ token, account, profile, user }) {
-        console.log('jwt: ', { token, account, profile });
-        if (account) { // if `account` exist, this means that the callback is being invoked for the first time (i.e. the user is being signed in).
-            token.userRole ='admin'
-        } // if
-        return token;
+        async jwt({ token, user, account, profile: oAuthProfile }) {
+            // assigning userRole(s):
+            if (account) { // if `account` exist, this means that the callback is being invoked for the first time (i.e. the user is being signed in).
+                token.userRole ='admin';
+            } // if
+            
+            
+            
+            // the token object will be attached to the client side cookie:
+            return token;
         },
-        async session({ session, token, user: dbUser }) {
-        // getSession(), useSession(), /api/auth/session
-        console.log('session: ', { session, token, dbUser });
-        // TODO: inject authorization here
-        const sessionUser = session.user;
-        if (sessionUser) {
-            // sessionUser.roles = dbUser.roles; // the session object will be synced to the client side
-        } // if
-        return session;
+        async session({ session, user: dbUser, token }) {
+            // assigning userRole(s):
+            const sessionUser = session.user;
+            if (sessionUser) {
+                // sessionUser.userRole ='admin';
+            } // if
+            
+            
+            
+            // the session object will be synced to the client side:
+            return session;
         },
     },
     pages     : {
