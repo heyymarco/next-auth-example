@@ -4,6 +4,7 @@ import {
     renderToStaticMarkup,
 }                           from 'react-dom/server'
 
+// nextJS:
 import {
     // types:
     type NextApiRequest,
@@ -12,14 +13,14 @@ import {
 
 // next auth:
 import {
-    // routers:
-    default as NextAuth,
-    
-    
-    
     // types:
     type NextAuthOptions,
     type SessionOptions,
+    
+    
+    
+    // routers:
+    default as NextAuth,
     
     
     
@@ -27,6 +28,7 @@ import {
     type User,
 }                           from 'next-auth'
 import {
+    // cryptos:
     encode,
     decode,
 }                           from 'next-auth/jwt'
@@ -49,7 +51,7 @@ import InstagramProvider    from 'next-auth/providers/instagram'
 import TwitterProvider      from 'next-auth/providers/twitter'
 import GithubProvider       from 'next-auth/providers/github'
 
-// networks:
+// webs:
 import {
     default as Cookies,
 }                           from 'cookies'
@@ -57,7 +59,7 @@ import {
     default as nodemailer,
 }                           from 'nodemailer'
 
-// cryptographies:
+// cryptos:
 import {
     randomUUID,
 }                           from 'crypto'
@@ -80,19 +82,19 @@ import {
 
 // templates:
 import {
-    // react:
+    // react components:
     UserContextProvider,
 }                           from '@/templates/UserContextProvider'
 import {
-    // react:
+    // react components:
     ResetPasswordContextProvider,
 }                           from '@/templates/ResetPasswordContextProvider'
 import {
-    // react:
+    // react components:
     User as TemplateUser,
 }                           from '@/templates/User'
 import {
-    // react:
+    // react components:
     ResetPassword,
 }                           from '@/templates/ResetPassword'
 
