@@ -294,7 +294,7 @@ export const authOptions: NextAuthOptions = {
     },
 };
 
-async function handlePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+const handlePasswordReset         = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
   return (
     await handleRequestPasswordReset(path, req, res)
     ||
@@ -302,8 +302,8 @@ async function handlePasswordReset(path: string, req: NextApiRequest, res: NextA
     ||
     await handleApplyPasswordReset(path, req, res)
   );
-}
-async function handleRequestPasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+};
+const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
   if (req.method !== 'POST')            return false; // ignore
   if (req.query.nextauth?.[0] !== path) return false; // ignore
   
@@ -438,8 +438,8 @@ async function handleRequestPasswordReset(path: string, req: NextApiRequest, res
     });
     return true; // handled with error
   } // try
-}
-async function handleValidatePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+};
+const handleValidatePasswordReset = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
   if (req.method !== 'GET')             return false; // ignore
   if (req.query.nextauth?.[0] !== path) return false; // ignore
   
@@ -504,8 +504,8 @@ async function handleValidatePasswordReset(path: string, req: NextApiRequest, re
     });
     return true; // handled with error
   } // try
-}
-async function handleApplyPasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+};
+const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
   if (req.method !== 'PATCH')           return false; // ignore
   if (req.query.nextauth?.[0] !== path) return false; // ignore
   
@@ -631,9 +631,9 @@ async function handleApplyPasswordReset(path: string, req: NextApiRequest, res: 
     });
     return true; // handled with error
   } // try
-}
+};
 
-export default async function auth(req: NextApiRequest, res: NextApiResponse) {
+const auth = async (req: NextApiRequest, res: NextApiResponse) => {
   if(req.method === 'HEAD') return res.status(200);
   
   if (await handlePasswordReset('reset', req, res)) return;
@@ -695,4 +695,5 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
       }
     },
   });
-}
+};
+export default auth;
