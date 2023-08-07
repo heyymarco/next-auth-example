@@ -233,6 +233,17 @@ export const authOptions: NextAuthOptions = {
                 
                 
                 
+                // if sign up is disabled => refuse any registration:
+                const envUserSignupEnable = process.env.USER_SIGNUP_ENABLE ?? '';
+                const    userSignupEnable = (
+                    !!envUserSignupEnable
+                    ? (envUserSignupEnable === 'true')
+                    : authConfig.USER_SIGNUP_ENABLE
+                );
+                if (!userSignupEnable) return false;
+                
+                
+                
                 const newUser : User = user;
                 if (!newUser.name ) return false; // the name  field is required to be stored to model User => sign up failed
                 if (!newUser.email) return false; // the email field is required to be stored to model User => sign up failed

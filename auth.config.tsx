@@ -11,6 +11,10 @@ import {
 
 
 export default {
+    USER_SIGNUP_ENABLE  : true,
+    
+    
+    
     SESSION_MAX_AGE     : 24   /* hours */,
     SESSION_UPDATE_AGE  : 6    /* hours */,
     
