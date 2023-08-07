@@ -565,6 +565,9 @@ const TabSignIn  = () => {
     const handleSignInUsingFacebook    = useEvent(async (): Promise<void> => {
         await handleSignInUsingOAuth('facebook');
     });
+    const handleSignInUsingInstagram   = useEvent(async (): Promise<void> => {
+        await handleSignInUsingOAuth('instagram');
+    });
     const handleSignInUsingGithub      = useEvent(async (): Promise<void> => {
         await handleSignInUsingOAuth('github');
     });
@@ -701,6 +704,17 @@ const TabSignIn  = () => {
                         onClick={handleSignInUsingFacebook}
                     >
                         Sign In using Facebook
+                    </ButtonIcon>
+                    <ButtonIcon
+                        // appearances:
+                        icon={(busy === 'instagram') ? 'busy' : 'instagram'}
+                        
+                        
+                        
+                        // handlers:
+                        onClick={handleSignInUsingInstagram}
+                    >
+                        Sign In using Instagram
                     </ButtonIcon>
                     <ButtonIcon
                         // appearances:
