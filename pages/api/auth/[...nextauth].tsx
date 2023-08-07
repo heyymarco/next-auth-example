@@ -228,7 +228,6 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks : {
         async signIn({ user, account, credentials, profile: oAuthProfile }) {
-            return false;
             if (!('emailVerified' in user)) {
                 // sign up (register a new user)
                 
