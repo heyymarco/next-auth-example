@@ -11,6 +11,11 @@ import {
 
 
 export default {
+    SESSION_MAX_AGE     : 24 /* hours */,
+    SESSION_UPDATE_AGE  : 6  /* hours */,
+    
+    
+    
     EMAIL_RESET_SUBJECT : 'Password Reset Request',
     EMAIL_RESET_MESSAGE : <>
         <p>Hi <User.Name />.</p>

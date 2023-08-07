@@ -109,29 +109,27 @@ import {
 
 
 const transporter = nodemailer.createTransport({
-  host   : process.env.EMAIL_RESET_SERVER_HOST ?? '',
-  port   : Number.parseInt(process.env.EMAIL_RESET_SERVER_PORT ?? '465'),
-  secure : (process.env.EMAIL_RESET_SERVER_SECURE === 'true'),
-  auth   : {
-    user: process.env.EMAIL_RESET_SERVER_USER,
-    pass: process.env.EMAIL_RESET_SERVER_PASSWORD,
-  },
+    host     :  process.env.EMAIL_RESET_SERVER_HOST ?? '',
+    port     : Number.parseInt(process.env.EMAIL_RESET_SERVER_PORT ?? '465'),
+    secure   : (process.env.EMAIL_RESET_SERVER_SECURE === 'true'),
+    auth     : {
+        user :  process.env.EMAIL_RESET_SERVER_USERNAME,
+        pass :  process.env.EMAIL_RESET_SERVER_PASSWORD,
+    },
 });
 
 
 
-// For more information on each option (and a full list of options) go to
-// https://next-auth.js.org/configuration/options
 const adapter = PrismaAdapter(prisma);
 const session : SessionOptions = {
-  strategy  : 'database',
-  
-  maxAge    : 1 * 24 * 60 * 60, // 1 day
-  updateAge :      6 * 60 * 60, // 6 hours
-  
-  generateSessionToken() {
-    return randomUUID();
-  },
+    strategy  : 'database',
+    
+    maxAge    : (authConfig.SESSION_MAX_AGE    ?? 24) * 60 * 60, // hours
+    updateAge : (authConfig.SESSION_UPDATE_AGE ??  6) * 60 * 60, // hours
+    
+    generateSessionToken() {
+        return randomUUID();
+    },
 };
 export const authOptions: NextAuthOptions = {
   adapter   : adapter as any,
