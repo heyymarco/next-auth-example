@@ -121,7 +121,7 @@ import {
 
 
 // contexts:
-interface LoginApi {
+interface SigninApi {
     // states:
     expandedTabIndex   : number
     callbackUrl        : string|null
@@ -130,9 +130,9 @@ interface LoginApi {
     
     
     // navigations:
-    backLogin          : () => void
+    backSignIn         : () => void
 }
-const LoginContext = createContext<LoginApi>({
+const SigninContext = createContext<SigninApi>({
     // states:
     expandedTabIndex   : 0,
     callbackUrl        : null,
@@ -141,10 +141,10 @@ const LoginContext = createContext<LoginApi>({
     
     
     // navigations:
-    backLogin          : () => {},
+    backSignIn         : () => {},
 });
-const useLoginContext = (): LoginApi => {
-    return useContext(LoginContext);
+const useSigninContext = (): SigninApi => {
+    return useContext(SigninContext);
 };
 
 
@@ -154,16 +154,16 @@ const invalidSelector = ':is(.invalidating, .invalidated)';
 const getAuthErrorDescription = (errorCode: string): React.ReactNode => {
     switch (errorCode) {
         case 'SessionRequired'   : // the content of this page requires you to be signed in at all times
-            return <p>You are not logged in. Please <strong>login to continue</strong>.</p>;
+            return <p>You are not signed in. Please <strong>sign in to continue</strong>.</p>;
         
         case 'CredentialsSignin' : // the authorize callback returned null in the Credentials provider
-            return <p>Login failed. Make sure <strong>your username (or email)</strong> and <strong>your password</strong> are correct.</p>;
+            return <p>Sign in failed. Make sure <strong>your username (or email)</strong> and <strong>your password</strong> are correct.</p>;
         
         case 'OAuthSignin'       : // error in constructing an authorization URL
         case 'OAuthCallback'     : // error in handling the response from an OAuth provider
         case 'OAuthCreateAccount': // could not create OAuth provider user in the database
         case 'Callback'          : // error in the OAuth callback handler route
-            return <p>Login failed. Make sure you have <strong>granted access</strong> from your 3rd party account.</p>;
+            return <p>Sign in failed. Make sure you have <strong>granted access</strong> from your 3rd party account.</p>;
         
         case 'AccessDenied'      :
             return <p>You do <strong>not have permission</strong> to sign in.</p>;
@@ -193,7 +193,7 @@ const handlePreventSubmit : React.FormEventHandler<HTMLFormElement> = (event) =>
 
 
 // react components:
-const Login     = () => {
+const SignIn     = () => {
     // navigations:
     const router       = useRouter();
     const pathName     = usePathname() ?? '/'
@@ -266,25 +266,25 @@ const Login     = () => {
     
     
     // stable callbacks:
-    const backLogin = useEvent(() => {
+    const backSignIn = useEvent(() => {
         setExpandedTabIndex(0);
     });
     
     
     
     // handlers:
-    const handleBackLogin = backLogin;
-    const handleGotoReset = useEvent(() => {
+    const handleBackSignIn = backSignIn;
+    const handleGotoReset  = useEvent(() => {
         setExpandedTabIndex(1);
     });
-    const handleBackHome  = useEvent(() => {
+    const handleBackHome   = useEvent(() => {
         router.push('/');
     });
     
     
     
     // jsx:
-    const ButtonGotoHome  = () => {
+    const ButtonGotoHome   = () => {
         // jsx:
         return (
             <ButtonIcon
@@ -305,7 +305,7 @@ const Login     = () => {
             </ButtonIcon>
         );
     };
-    const ButtonGotoLogin = () => {
+    const ButtonGotoSignIn = () => {
         // jsx:
         return (
             <ButtonIcon
@@ -320,13 +320,13 @@ const Login     = () => {
                 
                 
                 // handlers:
-                onClick={handleBackLogin}
+                onClick={handleBackSignIn}
             >
-                Back to Login Page
+                Back to Sign In Page
             </ButtonIcon>
         );
     };
-    const ButtonGotoReset = () => {
+    const ButtonGotoReset  = () => {
         // jsx:
         return (
             <ButtonIcon
@@ -349,16 +349,16 @@ const Login     = () => {
     };
     return (
         <Content theme='primary'>
-            <LoginContext.Provider value={useMemo(() => ({
+            <SigninContext.Provider value={useMemo(() => ({
                 expandedTabIndex   : expandedTabIndex,
                 callbackUrl        : callbackUrlRef.current,
                 resetPasswordToken : resetPasswordTokenRef.current,
                 
-                backLogin          : backLogin,
+                backSignIn         : backSignIn,
             }), [expandedTabIndex])}>
                 <Tab
                     // identifiers:
-                    id='tabLogin'
+                    id='tabSignIn'
                     
                     
                     
@@ -370,29 +370,29 @@ const Login     = () => {
                     // components:
                     bodyComponent={<Content mild={true} />}
                 >
-                    <TabPanel label='Login'>
-                        <TabLogin />
+                    <TabPanel label='Sign In'>
+                        <TabSignIn />
                         <ButtonGotoReset />
                         <ButtonGotoHome />
                     </TabPanel>
                     <TabPanel label='Recovery'>
                         <TabForgot />
-                        <ButtonGotoLogin />
+                        <ButtonGotoSignIn />
                         <ButtonGotoHome />
                     </TabPanel>
                     <TabPanel label='Reset'>
                         <TabReset />
-                        <ButtonGotoLogin />
+                        <ButtonGotoSignIn />
                         <ButtonGotoHome />
                     </TabPanel>
                 </Tab>
-            </LoginContext.Provider>
+            </SigninContext.Provider>
         </Content>
     )
 };
-export default Login;
+export default SignIn;
 
-const TabLogin  = () => {
+const TabSignIn  = () => {
     // navigations:
     const router = useRouter();
     
@@ -403,12 +403,12 @@ const TabLogin  = () => {
         // states:
         expandedTabIndex,
         callbackUrl,
-    } = useLoginContext();
+    } = useSigninContext();
     
     
     
     // redirects:
-    const loggedInRedirectPath = callbackUrl || '/'; // redirect to origin page if login is successful
+    const loggedInRedirectPath = callbackUrl || '/'; // redirect to origin page if sign in is successful
     
     
     
@@ -432,17 +432,17 @@ const TabLogin  = () => {
     
     
     // refs:
-    const formLoginRef = useRef<HTMLFormElement|null>(null);
-    const usernameRef  = useRef<HTMLInputElement|null>(null);
+    const formSignInRef = useRef<HTMLFormElement|null>(null);
+    const usernameRef   = useRef<HTMLInputElement|null>(null);
     
     
     
     // dom effects:
     
-    // focus on username field when the <TabLogin> is active:
+    // focus on username field when the <TabSignIn> is active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex !== 0) return; // <TabLogin> is NOT active => ignore
+        if (expandedTabIndex !== 0) return; // <TabSignIn> is NOT active => ignore
         
         
         
@@ -450,10 +450,10 @@ const TabLogin  = () => {
         usernameRef.current?.focus();
     }, [expandedTabIndex]);
     
-    // resets input states when the <TabLogin> is NOT active:
+    // resets input states when the <TabSignIn> is NOT active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex === 0) return; // <TabLogin> is active => ignore
+        if (expandedTabIndex === 0) return; // <TabSignIn> is active => ignore
         
         
         
@@ -466,7 +466,7 @@ const TabLogin  = () => {
     
     
     // handlers:
-    const handleLoginUsingCredentials = useEvent(async (): Promise<void> => {
+    const handleSignInUsingCredentials = useEvent(async (): Promise<void> => {
         // conditions:
         if (busy) return; // ignore when busy
         
@@ -483,7 +483,7 @@ const TabLogin  = () => {
             }, 0);
         });
         if (!isMounted.current) return; // unmounted => abort
-        const invalidFields = formLoginRef?.current?.querySelectorAll?.(invalidSelector);
+        const invalidFields = formSignInRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
             return;
@@ -491,14 +491,14 @@ const TabLogin  = () => {
         
         
         
-        // attempts login with credentials:
+        // attempts sign in using credentials:
         setBusy(busy = 'credentials'); // mark as busy
         const result = await signIn('credentials', { username, password, redirect: false });
         if (!isMounted.current) return; // unmounted => abort
         
         
         
-        // verify the login status:
+        // verify the sign in status:
         if (!result?.ok) { // error
             setBusy(busy = ''); // unmark as busy
             
@@ -530,20 +530,20 @@ const TabLogin  = () => {
             router.replace(loggedInRedirectPath);
         } // if
     });
-    const handleLoginUsingOAuth       = useEvent(async (providerType: LiteralUnion<BuiltInProviderType>): Promise<void> => {
+    const handleSignInUsingOAuth       = useEvent(async (providerType: LiteralUnion<BuiltInProviderType>): Promise<void> => {
         // conditions:
         if (busy) return; // ignore when busy
         
         
         
-        // attempts login with OAuth:
+        // attempts sign in using OAuth:
         setBusy(busy = providerType); // mark as busy
         const result = await signIn(providerType, { callbackUrl: loggedInRedirectPath });
         if (!isMounted.current) return; // unmounted => abort
         
         
         
-        // verify the login status:
+        // verify the sign in status:
         if ((result !== undefined) && !result?.ok) { // error
             setBusy(busy = ''); // unmark as busy
             
@@ -555,21 +555,21 @@ const TabLogin  = () => {
         else { // success
             // report the success:
             showMessageNotification(
-                <p>You are being redirected to <strong>{providerType} login page</strong>. Please wait...</p>
+                <p>You are being redirected to <strong>{providerType} sign in page</strong>. Please wait...</p>
             );
         } // if
     });
-    const handleLoginUsingFacebook    = useEvent(async (): Promise<void> => {
-        await handleLoginUsingOAuth('facebook');
+    const handleSignInUsingFacebook    = useEvent(async (): Promise<void> => {
+        await handleSignInUsingOAuth('facebook');
     });
-    const handleLoginUsingGithub      = useEvent(async (): Promise<void> => {
-        await handleLoginUsingOAuth('github');
+    const handleSignInUsingGithub      = useEvent(async (): Promise<void> => {
+        await handleSignInUsingOAuth('github');
     });
     
-    const handleUsernameChange        = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+    const handleUsernameChange         = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
         setUsername(value);
     });
-    const handlePasswordChange        = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+    const handlePasswordChange         = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
         setPassword(value);
     });
     
@@ -579,7 +579,7 @@ const TabLogin  = () => {
     return (
         <form
             // refs:
-            ref={formLoginRef}
+            ref={formSignInRef}
             
             
             
@@ -672,9 +672,9 @@ const TabLogin  = () => {
                         
                         
                         // handlers:
-                        onClick={handleLoginUsingCredentials}
+                        onClick={handleSignInUsingCredentials}
                     >
-                        Login
+                        Sign In
                     </ButtonIcon>
                     <hr />
                     <ButtonIcon
@@ -684,20 +684,20 @@ const TabLogin  = () => {
                         
                         
                         // handlers:
-                        onClick={handleLoginUsingFacebook}
+                        onClick={handleSignInUsingFacebook}
                     >
-                        Login with Facebook
+                        Sign In using Facebook
                     </ButtonIcon>
                     <ButtonIcon
                         // appearances:
-                        icon={(busy === 'login') ? 'busy' : 'login'}
+                        icon={(busy === 'github') ? 'busy' : 'login'}
                         
                         
                         
                         // handlers:
-                        onClick={handleLoginUsingGithub}
+                        onClick={handleSignInUsingGithub}
                     >
-                        Login with Github
+                        Sign In using Github
                     </ButtonIcon>
                 </ValidationProvider>
             </AccessibilityProvider>
@@ -713,8 +713,8 @@ const TabForgot = () => {
         
         
         // navigations:
-        backLogin,
-    } = useLoginContext();
+        backSignIn,
+    } = useSigninContext();
     
     
     
@@ -821,8 +821,8 @@ const TabForgot = () => {
             
             
             
-            // redirect to login tab:
-            backLogin();
+            // redirect to sign in tab:
+            backSignIn();
         }
         catch (error: any) { // error
             setBusy(busy = false); // unmark as busy
@@ -938,8 +938,8 @@ const TabReset  = () => {
         
         
         // navigations:
-        backLogin,
-    } = useLoginContext();
+        backSignIn,
+    } = useSigninContext();
     
     
     
@@ -1018,8 +1018,8 @@ const TabReset  = () => {
                 const errorCode     = error?.response?.status;
                 const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
                 if (isClientError) {
-                    // redirect to login tab:
-                    backLogin();
+                    // redirect to sign in tab:
+                    backSignIn();
                 } // if
                 // nothing to do with unverified token & server_side_error => keeps the UI disabled
                 // else {
@@ -1098,15 +1098,15 @@ const TabReset  = () => {
             // report the success:
             await showMessageSuccess(
                 <p>
-                    {result.data.message ?? 'The password has been successfully changed. Now you can login with the new password.'}
+                    {result.data.message ?? 'The password has been successfully changed. Now you can sign in with the new password.'}
                 </p>
             );
             if (!isMounted.current) return; // unmounted => abort
             
             
             
-            // redirect to login tab:
-            backLogin();
+            // redirect to sign in tab:
+            backSignIn();
         }
         catch (error: any) { // error
             setBusy(busy = false); // unmark as busy
@@ -1129,8 +1129,8 @@ const TabReset  = () => {
             const errorCode     = error?.response?.status;
             const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
             if (isClientError) {
-                // redirect to login tab:
-                backLogin();
+                // redirect to sign in tab:
+                backSignIn();
             }
             else {
                 // focus to password field:

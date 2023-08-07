@@ -286,9 +286,9 @@ export const authOptions: NextAuthOptions = {
         },
     },
     pages     : {
-        signIn        : '/auth/login',
+        signIn        : '/auth/signin',
      // signOut       : '/auth/signout',
-        error         : '/auth/login',          // Error code passed in query string as ?error=
+        error         : '/auth/signin',         // Error code passed in query string as ?error=
      // verifyRequest : '/auth/verify-request', // (used for check email message)
      // newUser       : '/auth/new-user',       // New users will be directed here on first sign in (leave the property out if not of interest)
     },
@@ -422,7 +422,7 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
     // send a link of resetPasswordToken to the user's email:
     try {
         // generate a link to a page for resetting password:
-        const resetLinkUrl = `${process.env.WEBSITE_URL}/auth/login?resetPasswordToken=${encodeURIComponent(resetToken)}`
+        const resetLinkUrl = `${process.env.WEBSITE_URL}/auth/signin?resetPasswordToken=${encodeURIComponent(resetToken)}`
         
         // sending an email:
         await transporter.sendMail({
@@ -662,7 +662,7 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
             // report the success:
             res.json({
                 ok       : true,
-                message  : 'The password has been successfully changed. Now you can login with the new password.',
+                message  : 'The password has been successfully changed. Now you can sign in with the new password.',
             });
             return true; // handled with success
         });
