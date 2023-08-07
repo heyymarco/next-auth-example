@@ -559,6 +559,9 @@ const TabSignIn  = () => {
             );
         } // if
     });
+    const handleSignInUsingGoogle      = useEvent(async (): Promise<void> => {
+        await handleSignInUsingOAuth('google');
+    });
     const handleSignInUsingFacebook    = useEvent(async (): Promise<void> => {
         await handleSignInUsingOAuth('facebook');
     });
@@ -677,6 +680,17 @@ const TabSignIn  = () => {
                         Sign In
                     </ButtonIcon>
                     <hr />
+                    <ButtonIcon
+                        // appearances:
+                        icon={(busy === 'google') ? 'busy' : 'login'}
+                        
+                        
+                        
+                        // handlers:
+                        onClick={handleSignInUsingGoogle}
+                    >
+                        Sign In using Google
+                    </ButtonIcon>
                     <ButtonIcon
                         // appearances:
                         icon={(busy === 'facebook') ? 'busy' : 'facebook'}
