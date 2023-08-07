@@ -165,8 +165,20 @@ const getAuthErrorDescription = (errorCode: string): React.ReactNode => {
         case 'Callback'          : // error in the OAuth callback handler route
             return <p>Login failed. Make sure you have <strong>granted access</strong> from your 3rd party account.</p>;
         
-        case 'Default':
-        default:
+        case 'AccessDenied'      :
+            return <p>You do <strong>not have permission</strong> to sign in.</p>;
+        
+        case 'Verification'      :
+            return <p>The token has <strong>expired</strong> or has <strong>already been used</strong>.</p>;
+        
+        case 'Configuration'     :
+            return <>
+                <p>There is a problem with the <strong>server configuration</strong>.</p>
+                <p>Please contact our technical support for assistance.</p>
+            </>;
+        
+        case 'Default'           :
+        default                  :
             return <p>Oops, an <strong>error occured</strong>.</p>;
     } // switch
 };
