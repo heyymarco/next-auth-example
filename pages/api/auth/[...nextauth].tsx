@@ -132,125 +132,154 @@ const session : SessionOptions = {
     },
 };
 export const authOptions: NextAuthOptions = {
-  adapter   : adapter as any,
-  session   : session,
-  providers : [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        username: { label: 'Username or Email', type: 'text'    , placeholder: 'jsmith' },
-        password: { label: 'Password'         , type: 'password'                        },
-      },
-      async authorize(credentials, req) {
-        if (!credentials) return null;
-        // const userDetail = await adapter.getUserByEmail?.(credentials.username);
-        const userDetail = await prisma.user.findFirst({
-          where  :
-            credentials.username.includes('@')
-            ? {
-              email : credentials.username,
-            }
-            : {
-              credentials   : {
-                username    : credentials.username,
-              },
+    adapter   : adapter as any,
+    session   : session,
+    providers : [
+        // credentials providers:
+        CredentialsProvider({
+            name         : 'Credentials',
+            credentials  : {
+                username : { label: 'Username or Email', type: 'text'    , placeholder: 'jsmith' },
+                password : { label: 'Password'         , type: 'password'                        },
             },
-          select : {
-            id            : true,
-            
-            name          : true,
-            email         : true,
-            emailVerified : true,
-            image         : true,
-            
-            credentials   : {
-              select : {
-                password  : true,
-              },
+            async authorize(credentials, req): Promise<AdapterUser|null> {
+                // conditions:
+                if (!credentials) return null; // a credentials must be provided to be verified
+                
+                
+                
+                // get user data by given username (or email):
+                const userDetail = await prisma.user.findFirst({
+                    where  :
+                        credentials.username.includes('@') // if username contains '@' => treat as email, otherwise regular username
+                        ? {
+                            email        : credentials.username,
+                        }
+                        : {
+                            credentials  : {
+                                username : credentials.username,
+                            },
+                        },
+                    select : {
+                        id               : true, // required: for id key
+                        
+                        name             : true, // optional: for profile name
+                        email            : true, // required: for email account linking
+                        emailVerified    : true, // required: for distinguish between `AdapterUser` vs `User`
+                        image            : true, // optional: for profile image
+                        
+                        credentials      : {
+                            select       : {
+                                password : true, // required: for password hash comparison
+                            },
+                        },
+                    },
+                });
+                if (!userDetail) return null; // no user found with given username (or email) => return null (not found)
+                
+                
+                
+                // remove credentials property to increase security strength:
+                const {
+                    credentials : expectedCredentials,
+                    ...restAdapterUser
+                } = userDetail;
+                
+                
+                
+                // perform password hash comparison:
+                if (!expectedCredentials) return null; // no credential was configured on the user's account => unable to compare => return null (assumes as password do not match)
+                if (!(await bcrypt.compare(credentials.password, expectedCredentials.password ?? ''))) return null; // password hash comparison do not match => return null (password do not match)
+                
+                
+                
+                // the verification passed => authorized => return An `AdapterUser` object:
+                return restAdapterUser;
             },
-          },
-        });
-        if (!userDetail) return null;
-        const { credentials : credentials2, ...userInfo } = userDetail;
-        if (!credentials2) return null;
-        if (!(await bcrypt.compare(credentials.password, credentials2.password ?? ''))) return null;
-        return userInfo;
-      },
-    }),
-    FacebookProvider({
-      clientId     : process.env.FACEBOOK_ID,
-      clientSecret : process.env.FACEBOOK_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
-    GithubProvider({
-      clientId     : process.env.GITHUB_ID,
-      clientSecret : process.env.GITHUB_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
-    // GoogleProvider({
-    //   clientId     : process.env.GOOGLE_ID,
-    //   clientSecret : process.env.GOOGLE_SECRET,
-    // }),
-    // TwitterProvider({
-    //   clientId     : process.env.TWITTER_ID,
-    //   clientSecret : process.env.TWITTER_SECRET,
-    //   version      : '2.0',
-    // }),
-  ],
-  callbacks : {
-    async signIn({ user, account, profile, email, credentials }) {
-      if (!('emailVerified' in user)) {
-        const newUser : User = user;
-        if (!newUser.name ) return false; // the name  field is required to be stored to model User
-        if (!newUser.email) return false; // the email field is required to be stored to model User
-        console.log('SIGN UP', { user, account, profile, email, credentials });
-      }
-      else {
-        const dbUser : AdapterUser = user;
-        console.log('SIGN IN', { user, account, profile, email, credentials });
-      } // if
-      
-      
-      
-      if (email) {
-        if (email.verificationRequest) {
-          console.log('SIGN UP using email', { user, account, profile, email, credentials });
+        }),
+        
+        // OAuth providers:
+        GoogleProvider({
+            clientId     : process.env.GOOGLE_ID,
+            clientSecret : process.env.GOOGLE_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+        FacebookProvider({
+            clientId     : process.env.FACEBOOK_ID,
+            clientSecret : process.env.FACEBOOK_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+        InstagramProvider({
+            clientId     : process.env.INSTAGRAM_ID,
+            clientSecret : process.env.INSTAGRAM_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+        TwitterProvider({
+            clientId     : process.env.TWITTER_ID,
+            clientSecret : process.env.TWITTER_SECRET,
+            version      : '2.0',
+            allowDangerousEmailAccountLinking: true,
+        }),
+        GithubProvider({
+            clientId     : process.env.GITHUB_ID,
+            clientSecret : process.env.GITHUB_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+    ],
+    callbacks : {
+        async signIn({ user, account, profile, email, credentials }) {
+        if (!('emailVerified' in user)) {
+            const newUser : User = user;
+            if (!newUser.name ) return false; // the name  field is required to be stored to model User
+            if (!newUser.email) return false; // the email field is required to be stored to model User
+            console.log('SIGN UP', { user, account, profile, email, credentials });
         }
         else {
-          console.log('SIGN IN using email', { user, account, profile, email, credentials });
+            const dbUser : AdapterUser = user;
+            console.log('SIGN IN', { user, account, profile, email, credentials });
         } // if
-      } // if
-      
-      
-      
-      return true;
+        
+        
+        
+        if (email) {
+            if (email.verificationRequest) {
+            console.log('SIGN UP using email', { user, account, profile, email, credentials });
+            }
+            else {
+            console.log('SIGN IN using email', { user, account, profile, email, credentials });
+            } // if
+        } // if
+        
+        
+        
+        return true;
+        },
+        async jwt({ token, account, profile, user }) {
+        console.log('jwt: ', { token, account, profile });
+        if (account) { // if `account` exist, this means that the callback is being invoked for the first time (i.e. the user is being signed in).
+            token.userRole ='admin'
+        } // if
+        return token;
+        },
+        async session({ session, token, user: dbUser }) {
+        // getSession(), useSession(), /api/auth/session
+        console.log('session: ', { session, token, dbUser });
+        // TODO: inject authorization here
+        const sessionUser = session.user;
+        if (sessionUser) {
+            // sessionUser.roles = dbUser.roles; // the session object will be synced to the client side
+        } // if
+        return session;
+        },
     },
-    async jwt({ token, account, profile, user }) {
-      console.log('jwt: ', { token, account, profile });
-      if (account) { // if `account` exist, this means that the callback is being invoked for the first time (i.e. the user is being signed in).
-        token.userRole ='admin'
-      } // if
-      return token;
+    pages     : {
+        signIn        : '/auth/login',
+    //   signOut       : '/auth/signout',
+    //   error         : '/auth/error',          // Error code passed in query string as ?error=
+    //   verifyRequest : '/auth/verify-request', // (used for check email message)
+    //   newUser       : '/auth/new-user',       // New users will be directed here on first sign in (leave the property out if not of interest)
     },
-    async session({ session, token, user: dbUser }) {
-      // getSession(), useSession(), /api/auth/session
-      console.log('session: ', { session, token, dbUser });
-      // TODO: inject authorization here
-      const sessionUser = session.user;
-      if (sessionUser) {
-        // sessionUser.roles = dbUser.roles; // the session object will be synced to the client side
-      } // if
-      return session;
-    },
-  },
-  pages: {
-    signIn        : '/auth/login',
-  //   signOut       : '/auth/signout',
-  //   error         : '/auth/error',          // Error code passed in query string as ?error=
-  //   verifyRequest : '/auth/verify-request', // (used for check email message)
-  //   newUser       : '/auth/new-user',       // New users will be directed here on first sign in (leave the property out if not of interest)
-  },
-}
+};
 
 async function handlePasswordReset(path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
   return (
