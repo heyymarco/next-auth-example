@@ -231,7 +231,7 @@ const SignIn     = () => {
     };
     return (
         <Content theme='primary'>
-            <SigninContextProvider value={useMemo(() => ({
+            <SigninContextProvider signinApi={useMemo(() => ({
                 expandedTabIndex   : expandedTabIndex,
                 callbackUrl        : callbackUrlRef.current,
                 resetPasswordToken : resetPasswordTokenRef.current,

@@ -38,16 +38,16 @@ const SigninContext = createContext<SigninApi>({
 });
 export interface SigninContextProviderProps {
     // contexts:
-    value    : SigninApi
+    signinApi : SigninApi
     
     
     
     // children:
-    children : React.ReactNode
+    children  : React.ReactNode
 }
 export const SigninContextProvider = (props: SigninContextProviderProps) => {
     return (
-        <SigninContext.Provider value={props.value}>
+        <SigninContext.Provider value={props.signinApi}>
             {props.children}
         </SigninContext.Provider>
     );
