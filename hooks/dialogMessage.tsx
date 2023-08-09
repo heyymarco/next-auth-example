@@ -159,7 +159,7 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                 )}
             </List>
         </>);
-        if (!isMounted.current) return;
+        if (!isMounted.current) return; // unmounted => abort
         
         
         
