@@ -249,17 +249,22 @@ export const DialogMessageProvider = (props: DialogMessageProviderProps) => {
     
     
     
+    // apis:
+    const dialogMessageApi = useMemo(() => ({
+        // dialogs:
+        showMessage,             // stable ref
+        showMessageError,        // stable ref
+        showMessageFieldError,   // stable ref
+        showMessageFetchError,   // stable ref
+        showMessageSuccess,      // stable ref
+        showMessageNotification, // stable ref
+    }), []);
+    
+    
+    
     // jsx:
     return (
-        <DialogMessageContext.Provider value={useMemo(() => ({
-            // dialogs:
-            showMessage,
-            showMessageError,
-            showMessageFieldError,
-            showMessageFetchError,
-            showMessageSuccess,
-            showMessageNotification,
-        }), [])}>
+        <DialogMessageContext.Provider value={dialogMessageApi}>
             {props.children}
             
             <ModalStatus
