@@ -250,7 +250,7 @@ export const DialogMessageProvider = (props: DialogMessageProviderProps) => {
     
     
     // apis:
-    const dialogMessageApi = useMemo(() => ({
+    const dialogMessageApi = useMemo<DialogMessageApi>(() => ({
         // dialogs:
         showMessage,             // stable ref
         showMessageError,        // stable ref

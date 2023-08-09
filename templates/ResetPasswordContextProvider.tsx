@@ -39,7 +39,7 @@ export interface ResetPasswordContextProviderProps {
 export const ResetPasswordContextProvider = (props: ResetPasswordContextProviderProps): React.ReactNode => {
     // jsx:
     return (
-        <ResetPasswordContext.Provider value={useMemo(() => ({ url: props.url }), [props.url])}>
+        <ResetPasswordContext.Provider value={useMemo<Partial<ResetPasswordApi>>(() => ({ url: props.url }), [props.url])}>
             {props.children}
         </ResetPasswordContext.Provider>
     );

@@ -79,7 +79,7 @@ export const TabForgot = () => {
         
         
         // navigations:
-        backSignIn,
+        gotoSignIn,
     } = useSigninContext();
     
     
@@ -188,7 +188,7 @@ export const TabForgot = () => {
             
             
             // redirect to sign in tab:
-            backSignIn();
+            gotoSignIn();
         }
         catch (error: any) { // error
             setBusy(busy = false); // unmark as busy

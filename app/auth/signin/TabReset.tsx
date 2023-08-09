@@ -106,7 +106,7 @@ export const TabReset  = () => {
         
         
         // navigations:
-        backSignIn,
+        gotoSignIn,
     } = useSigninContext();
     
     
@@ -187,7 +187,7 @@ export const TabReset  = () => {
                 const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
                 if (isClientError) {
                     // redirect to sign in tab:
-                    backSignIn();
+                    gotoSignIn();
                 } // if
                 // nothing to do with unverified token & server_side_error => keeps the UI disabled
                 // else {
@@ -274,7 +274,7 @@ export const TabReset  = () => {
             
             
             // redirect to sign in tab:
-            backSignIn();
+            gotoSignIn();
         }
         catch (error: any) { // error
             setBusy(busy = false); // unmark as busy
@@ -298,7 +298,7 @@ export const TabReset  = () => {
             const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
             if (isClientError) {
                 // redirect to sign in tab:
-                backSignIn();
+                gotoSignIn();
             }
             else {
                 // focus to password field:
