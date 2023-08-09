@@ -93,10 +93,9 @@ const DialogMessageContext = createContext<DialogMessageApi>({
 
 // react components:
 export interface DialogMessageProviderProps {
-    // children:
-    children ?: React.ReactNode
+    /* empty */
 }
-export const DialogMessageProvider = (props: DialogMessageProviderProps) => {
+export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessageProviderProps>) => {
     // states:
     const [dialogMessage, setDialogMessage]      = useState<DialogMessage|false>(false);
     
