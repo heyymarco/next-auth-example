@@ -30,13 +30,8 @@ export const ResetPasswordContext = createContext<Partial<ResetPasswordApi>>({
 export interface ResetPasswordContextProviderProps {
     // data:
     url : string
-    
-    
-    
-    // children:
-    children : React.ReactNode
 }
-export const ResetPasswordContextProvider = (props: ResetPasswordContextProviderProps): React.ReactNode => {
+export const ResetPasswordContextProvider = (props: React.PropsWithChildren<ResetPasswordContextProviderProps>): React.ReactNode => {
     // jsx:
     return (
         <ResetPasswordContext.Provider value={useMemo<Partial<ResetPasswordApi>>(() => ({ url: props.url }), [props.url])}>
