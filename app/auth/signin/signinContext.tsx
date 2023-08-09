@@ -71,10 +71,9 @@ const SigninContext = createContext<SigninApi>({
     gotoReset          : () => {},
 });
 export interface SigninContextProviderProps {
-    // children:
-    children  : React.ReactNode
+    /* empty */
 }
-export const SigninContextProvider = (props: SigninContextProviderProps) => {
+export const SigninContextProvider = (props: React.PropsWithChildren<SigninContextProviderProps>) => {
     // navigations:
     const router       = useRouter();
     const pathName     = usePathname() ?? '/'
