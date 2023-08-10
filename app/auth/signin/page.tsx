@@ -84,6 +84,7 @@ const SignInInternal = () => {
                 
                 
                 // components:
+                tabHeaderComponent={null}
                 bodyComponent={<Content mild={true} />}
             >
                 <TabPanel label='Sign In'>
