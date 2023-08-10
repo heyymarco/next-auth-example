@@ -1,1 +1,1 @@
-import '@reusable-ui/typos/dist/effects'
+import '@reusable-ui/typos/effects'
