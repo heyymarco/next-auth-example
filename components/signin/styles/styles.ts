@@ -1,8 +1,12 @@
 // cssfn:
 import {
     // writes css in javascript:
+    rule,
+    variants,
+    states,
     children,
     style,
+    vars,
     
     
     
@@ -71,11 +75,11 @@ export const usesSignInLayout = () => {
                 // layouts:
                 display      : 'grid',
                 gridTemplate : [[
-                    '"username               username" auto',
-                    '"password               password" auto',
-                    '"home                      reset" auto',
-                    '"         signIn signIn         " auto',
-                    '"signinSeparator signinSeparator" auto',
+                    '"username                   username" auto',
+                    '"password                   password" auto',
+                    '"home                          reset" auto',
+                    '"signInCredentials signInCredentials" auto',
+                    '"signinSeparator     signinSeparator" auto',
                     '/',
                     '1fr 1fr'
                 ]],
@@ -105,8 +109,10 @@ export const usesSignInLayout = () => {
                         gridArea : 'password',
                     }),
                     ...children(signinButtonElm, {
-                        // positions:
-                        gridArea : 'signIn',
+                        ...rule('.credentials', {
+                            // positions:
+                            gridArea : 'signInCredentials',
+                        }),
                     }),
                     ...children(signinSeparatorElm, {
                         // positions:

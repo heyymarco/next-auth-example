@@ -97,6 +97,11 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     
     // rest props:
     const {
+        // auths:
+        providers,
+        
+        
+        
         // components:
         buttonComponent,
         buttonSignInComponent,
@@ -153,6 +158,11 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
             >
                 <TabPanel className='signIn'>
                     <TabSignIn
+                        // auths:
+                        providers={providers}
+                        
+                        
+                        
                         // components:
                         buttonComponent={buttonComponent}
                         buttonSignInComponent={buttonSignInComponent}

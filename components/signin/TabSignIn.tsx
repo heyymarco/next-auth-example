@@ -67,6 +67,10 @@ import {
     // react components:
     ButtonWithBusy,
 }                           from './ButtonWithBusy'
+import {
+    // react components:
+    ButtonWithSignIn,
+}                           from './ButtonWithSignIn'
 
 // internals:
 import {
@@ -88,16 +92,28 @@ import {
 
 // react components:
 export interface TabSignInProps {
+    // auths:
+    providers                 ?: BuiltInProviderType[]
+    
+    
+    
     // components:
-    buttonComponent       ?: ButtonComponentProps['buttonComponent']
-    buttonSignInComponent ?: ButtonComponentProps['buttonComponent']
+    buttonComponent           ?: Required<ButtonComponentProps>['buttonComponent']
+    buttonSignInComponent     ?: Required<ButtonComponentProps>['buttonComponent']
+    buttonSignInWithComponent ?: Required<ButtonComponentProps>['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
 }
 export const TabSignIn = (props: TabSignInProps) => {
     // rest props:
     const {
+        // auths:
+        providers = [],
+        
+        
+        
         // components:
         buttonComponent,
-        buttonSignInComponent = (<ButtonWithBusy buttonComponent={<ButtonIcon buttonComponent={buttonComponent} icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        buttonSignInComponent     = (<ButtonWithBusy busyType='credentials' buttonComponent={<ButtonIcon buttonComponent={buttonComponent} icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        buttonSignInWithComponent = (((oAuthProvider: BuiltInProviderType) => <ButtonWithBusy busyType={oAuthProvider} buttonComponent={<ButtonIcon buttonComponent={buttonComponent} icon={oAuthProvider} />} />) as Required<TabSignInProps>['buttonSignInWithComponent']),
     } = props;
     
     
@@ -390,7 +406,7 @@ export const TabSignIn = (props: TabSignInProps) => {
                         
                         
                         // classes:
-                        className : buttonSignInComponent.props.className ?? 'signin',
+                        className : buttonSignInComponent.props.className ?? 'signin credentials',
                         
                         
                         
@@ -401,9 +417,59 @@ export const TabSignIn = (props: TabSignInProps) => {
                     
                     
                     // children:
-                    buttonSignInComponent.props.children ?? 'Sign In'
+                    buttonSignInComponent.props.children ?? 'Sign In',
                 )}
                 <hr className='signinSeparator' />
+                {providers.map((providerType) => {
+                    const buttonSignInWithProviderComponent : React.ReactComponentElement<any, ButtonProps> = (
+                        (typeof(buttonSignInWithComponent) === 'function')
+                        ? buttonSignInWithComponent(providerType)
+                        : buttonSignInWithComponent
+                    );
+                    
+                    
+                    
+                    // jsx:
+                    return (
+                        <ButtonWithSignIn
+                            // identifiers:
+                            key={providerType}
+                            
+                            
+                            
+                            // auths:
+                            providerType={providerType}
+                            
+                            
+                            
+                            // components:
+                            buttonComponent={
+                                React.cloneElement<ButtonProps>(buttonSignInWithProviderComponent,
+                                    // props:
+                                    {
+                                        // identifiers:
+                                        key       : providerType,
+                                        
+                                        
+                                        
+                                        // actions:
+                                        type      : buttonSignInWithProviderComponent.props.type      ?? 'submit',
+                                        
+                                        
+                                        
+                                        // classes:
+                                        className : buttonSignInWithProviderComponent.props.className ?? 'signin',
+                                    },
+                                )
+                            }
+                            
+                            
+                            
+                            // handlers:
+                            onSignInUsingOAuth={handleSignInUsingOAuth}
+                        />
+                    );
+                })}
                 <ButtonIcon
                     // appearances:
                     icon={(isBusy === 'google') ? 'busy' : 'login'}

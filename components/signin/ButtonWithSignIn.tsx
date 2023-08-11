@@ -1,0 +1,97 @@
+// react:
+import {
+    // react:
+    default as React,
+}                           from 'react'
+
+// next auth:
+import {
+    // types:
+    type BuiltInProviderType,
+}                           from 'next-auth/providers'
+
+// reusable-ui core:
+import {
+    // react helper hooks:
+    useEvent,
+}                           from '@reusable-ui/core'
+
+// reusable-ui components:
+import {
+    // simple-components:
+    ButtonProps,
+    ButtonComponentProps,
+}                           from '@reusable-ui/components'
+
+
+
+// react components:
+export interface ButtonWithBusyProps
+    extends
+        // bases:
+        ButtonProps,
+        
+        // components:
+        Required<Pick<ButtonComponentProps,
+            'buttonComponent' // a required underlying <Button>
+        >>
+{
+    // auths:
+    providerType       : BuiltInProviderType
+    
+    
+    
+    // handlers:
+    onSignInUsingOAuth : (providerType: BuiltInProviderType) => void
+}
+const ButtonWithSignIn = (props: ButtonWithBusyProps): JSX.Element|null => {
+    // rest props:
+    const {
+        // auths:
+        providerType,
+        
+        
+        
+        // components:
+        buttonComponent,
+        
+        
+        
+        // handlers:
+        onSignInUsingOAuth,
+    ...restButtonProps} = props;
+    
+    
+    
+    // handlers:
+    const handleClick = useEvent(() => {
+        onSignInUsingOAuth(providerType);
+    });
+    
+    
+    
+    // jsx:
+    /* <Button> */
+    return React.cloneElement<ButtonProps>(buttonComponent,
+        // props:
+        {
+            // other props:
+            ...restButtonProps,
+            ...buttonComponent.props, // overwrites restButtonProps (if any conflics)
+            
+            
+            
+            // handlers:
+            onClick : buttonComponent.props.onClick ?? handleClick,
+        },
+        
+        
+        
+        // children:
+        buttonComponent.props.children ?? <>Sign In with {providerType}</>,
+    );
+};
+export {
+    ButtonWithSignIn,
+    ButtonWithSignIn as default,
+};

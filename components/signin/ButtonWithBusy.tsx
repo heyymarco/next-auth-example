@@ -15,6 +15,11 @@ import {
 
 // internals:
 import {
+    // types:
+    BusyState,
+    
+    
+    
     // states:
     useSignInState,
 }                           from './states/signInState'
@@ -34,6 +39,11 @@ export interface ButtonWithBusyProps
 {
     // appearances:
     iconBusy ?: ButtonIconProps['icon']
+    
+    
+    
+    // behaviors:
+    busyType ?: BusyState
 }
 const ButtonWithBusy = (props: ButtonWithBusyProps): JSX.Element|null => {
     // states:
@@ -51,6 +61,11 @@ const ButtonWithBusy = (props: ButtonWithBusyProps): JSX.Element|null => {
         
         
         
+        // behaviors:
+        busyType,
+        
+        
+        
         // components:
         buttonComponent,
     ...restButtonIconProps} = props;
@@ -59,7 +74,8 @@ const ButtonWithBusy = (props: ButtonWithBusyProps): JSX.Element|null => {
     
     
     // fn props:
-    const icon = (buttonComponent?.props as ButtonIconProps|undefined)?.icon
+    const isBusyType = !busyType ? isBusy : (isBusy === busyType);
+    const icon       = (buttonComponent?.props as ButtonIconProps|undefined)?.icon
     
     
     
@@ -75,7 +91,7 @@ const ButtonWithBusy = (props: ButtonWithBusyProps): JSX.Element|null => {
             
             
             // appearances:
-            icon : !icon ? undefined : (isBusy ? iconBusy : icon),
+            icon : !icon ? undefined : (isBusyType ? iconBusy : icon),
         },
     );
 };
