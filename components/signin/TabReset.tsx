@@ -74,8 +74,9 @@ import {
 
 // internals:
 import {
-    useSigninContext,
-}                           from './signinContext'
+    // states:
+    useSignInState,
+}                           from './states/signInState'
 import {
     // utilities:
     invalidSelector,
@@ -98,7 +99,7 @@ import {
 
 // react components:
 export const TabReset  = () => {
-    // contexts:
+    // states:
     const {
         // states:
         resetPasswordToken,
@@ -107,7 +108,7 @@ export const TabReset  = () => {
         
         // navigations:
         gotoSignIn,
-    } = useSigninContext();
+    } = useSignInState();
     
     
     

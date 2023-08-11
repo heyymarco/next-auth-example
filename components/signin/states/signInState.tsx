@@ -39,12 +39,12 @@ import {
 import {
     // utilities:
     getAuthErrorDescription,
-}                           from './utilities'
+}                           from '../utilities'
 
 
 
 // contexts:
-export interface SigninApi {
+export interface SignInStateApi {
     // states:
     expandedTabIndex   : number
     callbackUrl        : string|null
@@ -57,7 +57,7 @@ export interface SigninApi {
     gotoSignIn         : () => void
     gotoReset          : () => void
 }
-const SigninContext = createContext<SigninApi>({
+const SignInStateContext = createContext<SignInStateApi>({
     // states:
     expandedTabIndex   : 0,
     callbackUrl        : null,
@@ -70,10 +70,10 @@ const SigninContext = createContext<SigninApi>({
     gotoSignIn         : () => {},
     gotoReset          : () => {},
 });
-export interface SigninContextProviderProps {
+export interface SignInStateProps {
     /* empty */
 }
-export const SigninContextProvider = (props: React.PropsWithChildren<SigninContextProviderProps>) => {
+export const SignInStateProvider = (props: React.PropsWithChildren<SignInStateProps>) => {
     // navigations:
     const router       = useRouter();
     const pathName     = usePathname() ?? '/'
@@ -159,7 +159,7 @@ export const SigninContextProvider = (props: React.PropsWithChildren<SigninConte
     
     
     // apis:
-    const signinApi = useMemo<SigninApi>(() => ({
+    const signInStateApi = useMemo<SignInStateApi>(() => ({
         // states:
         expandedTabIndex   : expandedTabIndex,
         callbackUrl        : callbackUrlRef.current,        // stable ref
@@ -180,11 +180,11 @@ export const SigninContextProvider = (props: React.PropsWithChildren<SigninConte
     
     // jsx:
     return (
-        <SigninContext.Provider value={signinApi}>
+        <SignInStateContext.Provider value={signInStateApi}>
             {props.children}
-        </SigninContext.Provider>
+        </SignInStateContext.Provider>
     );
 }
-export const useSigninContext = (): SigninApi => {
-    return useContext(SigninContext);
+export const useSignInState = (): SignInStateApi => {
+    return useContext(SignInStateContext);
 };

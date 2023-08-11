@@ -14,18 +14,19 @@ import {
 
 // internals:
 import {
-    useSigninContext,
-}                           from './signinContext'
+    // states:
+    useSignInState,
+}                           from './states/signInState'
 
 
 
 // react components:
-export const ButtonGotoSignIn = () => {
-    // contexts:
+export const ButtonGotoReset = () => {
+    // states:
     const {
         // navigations:
-        gotoSignIn,
-    } = useSigninContext();
+        gotoReset,
+    } = useSignInState();
     
     
     
@@ -33,7 +34,7 @@ export const ButtonGotoSignIn = () => {
     return (
         <ButtonIcon
             // appearances:
-            icon='arrow_back'
+            icon='help_center'
             
             
             
@@ -43,9 +44,9 @@ export const ButtonGotoSignIn = () => {
             
             
             // handlers:
-            onClick={gotoSignIn}
+            onClick={gotoReset}
         >
-            Back to Sign In Page
+            Forgot Password?
         </ButtonIcon>
     );
 };
