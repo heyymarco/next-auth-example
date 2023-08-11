@@ -81,6 +81,7 @@ import {
     // utilities:
     invalidSelector,
     getAuthErrorDescription,
+    resolveProviderName as defaultResolveProviderName,
     
     
     
@@ -94,6 +95,7 @@ import {
 export interface TabSignInProps {
     // auths:
     providers                 ?: BuiltInProviderType[]
+    resolveProviderName       ?: (oAuthProvider: BuiltInProviderType) => string
     
     
     
@@ -107,6 +109,7 @@ export const TabSignIn = (props: TabSignInProps) => {
     const {
         // auths:
         providers = [],
+        resolveProviderName = defaultResolveProviderName,
         
         
         
@@ -285,7 +288,7 @@ export const TabSignIn = (props: TabSignInProps) => {
         else { // success
             // report the success:
             showMessageNotification(
-                <p>You are being redirected to <strong>{providerType} sign in page</strong>. Please wait...</p>
+                <p>You are being redirected to <strong>{resolveProviderName(providerType)} sign in page</strong>. Please wait...</p>
             );
         } // if
     });
@@ -444,6 +447,11 @@ export const TabSignIn = (props: TabSignInProps) => {
                                         // classes:
                                         className : buttonSignInWithProviderComponent.props.className ?? `signin ${providerType}`,
                                     },
+                                    
+                                    
+                                    
+                                    // children:
+                                    buttonSignInWithProviderComponent.props.children ?? <>Sign In with {resolveProviderName(providerType)}</>,
                                 )
                             }
                             

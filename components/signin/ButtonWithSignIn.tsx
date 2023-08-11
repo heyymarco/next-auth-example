@@ -84,11 +84,6 @@ const ButtonWithSignIn = (props: ButtonWithBusyProps): JSX.Element|null => {
             // handlers:
             onClick : buttonComponent.props.onClick ?? handleClick,
         },
-        
-        
-        
-        // children:
-        buttonComponent.props.children ?? <>Sign In with {providerType}</>,
     );
 };
 export {

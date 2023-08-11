@@ -99,12 +99,14 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     const {
         // auths:
         providers,
+        resolveProviderName,
         
         
         
         // components:
         buttonComponent,
         buttonSignInComponent,
+        buttonSignInWithComponent,
     ...restContentProps} = props;
     // type T1 = typeof restContentProps
     // type T2 = Omit<T1, keyof ContentProps>
@@ -160,12 +162,14 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     <TabSignIn
                         // auths:
                         providers={providers}
+                        resolveProviderName={resolveProviderName}
                         
                         
                         
                         // components:
                         buttonComponent={buttonComponent}
                         buttonSignInComponent={buttonSignInComponent}
+                        buttonSignInWithComponent={buttonSignInWithComponent}
                     />
                     <ButtonGotoReset />
                     <ButtonGotoHome />

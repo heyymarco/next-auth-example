@@ -6,6 +6,12 @@ import {
     default as React,
 }                           from 'react'
 
+// next auth:
+import {
+    // types:
+    type BuiltInProviderType,
+}                           from 'next-auth/providers'
+
 
 
 // utilities:
@@ -40,6 +46,10 @@ export const getAuthErrorDescription = (errorCode: string): React.ReactNode => {
         default                  :
             return <p>Oops, an <strong>error occured</strong>.</p>;
     } // switch
+};
+
+export const resolveProviderName = (oAuthProvider: BuiltInProviderType): string => {
+    return oAuthProvider.replace(/((?:^| )[a-z])/g, (found) => found.toUpperCase())
 };
 
 
