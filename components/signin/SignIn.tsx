@@ -137,7 +137,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     
     
     // jsx:
-    const ButtonGotoHome = () => React.cloneElement<ButtonProps>(buttonGotoHome,
+    const ButtonGotoHome   = () => React.cloneElement<ButtonProps>(buttonGotoHome,
         // props:
         {
             // classes:
@@ -171,7 +171,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         // children:
         buttonGotoSignIn.props.children ?? 'Back to Sign In',
     );
-    const ButtonGotoReset = () => React.cloneElement<ButtonProps>(buttonGotoReset,
+    const ButtonGotoReset  = () => React.cloneElement<ButtonProps>(buttonGotoReset,
         // props:
         {
             // classes:
@@ -186,7 +186,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         
         
         // children:
-        buttonGotoReset.props.children ?? 'Back to Reset',
+        buttonGotoReset.props.children ?? 'Forgot Password?',
     );
     return (
         <AccessibilityProvider
