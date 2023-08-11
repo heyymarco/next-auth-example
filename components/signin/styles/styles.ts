@@ -45,15 +45,16 @@ import {
     recoveryTabElm,
     resetTabElm,
     
-    usernameFieldElm,
-    passwordFieldElm,
-    signinButtonElm,
+    usernameElm,
+    passwordElm,
+    signinElm,
+    sendResetLinkElm,
     
     signinSeparatorElm,
     
-    gotoHomeButtonElm,
-    gotoSignInButtonElm,
-    gotoResetButtonElm,
+    gotoHomeElm,
+    gotoSignInElm,
+    gotoResetElm,
 }                           from './elements'
 import {
     // configs:
@@ -72,19 +73,9 @@ export const usesSignInLayout = () => {
         ...usesContentLayout(),
         ...style({
             // children:
-            ...children(signInTabElm, {
+            ...children([signInTabElm, recoveryTabElm, resetTabElm], {
                 // layouts:
                 display      : 'grid',
-                gridTemplate : [[
-                    '"username                   username" auto',
-                    '"password                   password" auto',
-                    '"home                          reset" auto',
-                    '"signInCredentials signInCredentials" auto',
-                    '"signinSeparator     signinSeparator" auto',
-                    '/',
-                    '1fr 1fr'
-                ]],
-                
                 
                 
                 
@@ -101,19 +92,23 @@ export const usesSignInLayout = () => {
                     
                     
                     // children:
-                    ...children(usernameFieldElm, {
+                    ...children(usernameElm, {
                         // positions:
                         gridArea : 'username',
                     }),
-                    ...children(passwordFieldElm, {
+                    ...children(passwordElm, {
                         // positions:
                         gridArea : 'password',
                     }),
-                    ...children(signinButtonElm, {
+                    ...children(signinElm, {
                         ...rule('.credentials', {
                             // positions:
                             gridArea : 'signInCredentials',
                         }),
+                    }),
+                    ...children(sendResetLinkElm, {
+                        // positions:
+                        gridArea : 'sendResetLink',
                     }),
                     ...children(signinSeparatorElm, {
                         // positions:
@@ -131,19 +126,45 @@ export const usesSignInLayout = () => {
                         margin   : 0,
                     }),
                 }),
-                ...children(gotoHomeButtonElm, {
+                ...children(gotoHomeElm, {
                     // positions:
-                    gridArea    : 'home',
+                    gridArea    : 'gotoHome',
                     justifySelf : 'start',
                 }),
-                ...children(gotoResetButtonElm, {
+                ...children(gotoSignInElm, {
                     // positions:
-                    gridArea    : 'reset',
+                    gridArea    : 'gotoSignIn',
+                    justifySelf : 'start',
+                }),
+                ...children(gotoResetElm, {
+                    // positions:
+                    gridArea    : 'gotoReset',
                     justifySelf : 'end',
                 }),
             }),
+            ...children(signInTabElm, {
+                // layouts:
+                gridTemplate : [[
+                    '"username                   username" min-content',
+                    '"password                   password" min-content',
+                    '"gotoHome                  gotoReset" min-content',
+                    '"signInCredentials signInCredentials" min-content',
+                    '"signinSeparator     signinSeparator" min-content',
+                    '"................. ................." auto',
+                    '/',
+                    '1fr 1fr'
+                ]],
+            }),
             ...children(recoveryTabElm, {
-                background: 'yellow',
+                // layouts:
+                gridTemplate : [[
+                    '"username                   username" min-content',
+                    '"sendResetLink         sendResetLink" min-content',
+                    '"gotoSignIn               .........." min-content',
+                    '"................. ................." auto',
+                    '/',
+                    '1fr 1fr'
+                ]],
             }),
             ...children(resetTabElm, {
                 background: 'purpule',

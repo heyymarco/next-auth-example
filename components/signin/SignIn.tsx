@@ -46,6 +46,7 @@ import {
 }                           from './TabSignIn'
 import {
     // reusable-ui components:
+    TabForgotProps,
     TabForgot,
 }                           from './TabForgot'
 import {
@@ -79,7 +80,8 @@ export interface SignInProps<TElement extends Element = HTMLElement>
             // children:
             |'children' // not supported
         >,
-        TabSignInProps
+        TabSignInProps,
+        TabForgotProps
 {
     // components:
     buttonGotoHome   ?: Required<ButtonComponentProps>['buttonComponent']
@@ -114,6 +116,8 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         
         buttonSignInComponent,
         buttonSignInWithComponent,
+        
+        buttonSendResetLinkComponent,
     ...restContentProps} = props;
     // type T1 = typeof restContentProps
     // type T2 = Omit<T1, keyof ContentProps>
@@ -239,9 +243,11 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     <ButtonGotoHome />
                 </TabPanel>
                 <TabPanel className='recovery'>
-                    <TabForgot />
+                    <TabForgot
+                        // components:
+                        buttonSendResetLinkComponent={buttonSendResetLinkComponent}
+                    />
                     <ButtonGotoSignIn />
-                    <ButtonGotoHome />
                 </TabPanel>
                 <TabPanel className='reset'>
                     <TabReset />

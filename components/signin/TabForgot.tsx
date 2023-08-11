@@ -35,6 +35,8 @@ import {
     // simple-components:
     Icon,
     Label,
+    ButtonProps,
+    ButtonComponentProps,
     ButtonIcon,
     TextInput,
     
@@ -49,6 +51,10 @@ import {
     // dialogs:
     useDialogMessage,
 }                           from '@/hooks/dialogMessage'
+import {
+    // react components:
+    ButtonWithBusy,
+}                           from './ButtonWithBusy'
 
 // internals:
 import {
@@ -71,7 +77,19 @@ import axios                from 'axios'
 
 
 // react components:
-export const TabForgot = () => {
+export interface TabForgotProps {
+    // components:
+    buttonSendResetLinkComponent ?: Required<ButtonComponentProps>['buttonComponent']
+}
+export const TabForgot = (props: TabForgotProps) => {
+    // rest props:
+    const {
+        // components:
+        buttonSendResetLinkComponent = (<ButtonWithBusy busyType='sendResetLink' buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
+    } = props;
+    
+    
+    
     // states:
     const {
         // states:
@@ -234,65 +252,67 @@ export const TabForgot = () => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            <AccessibilityProvider
-                // accessibilities:
-                enabled={!busy} // disabled if busy
+            <ValidationProvider
+                // validations:
+                enableValidation={enableValidation}
             >
-                <ValidationProvider
-                    // validations:
-                    enableValidation={enableValidation}
-                >
-                    <Group>
-                        <Label
-                            // classes:
-                            className='solid'
-                        >
-                            <Icon
-                                // appearances:
-                                icon='supervisor_account'
-                            />
-                        </Label>
-                        <TextInput
-                            // refs:
-                            elmRef={usernameRef}
-                            
-                            
-                            
-                            // accessibilities:
-                            placeholder='Username or Email'
-                            autoComplete='username'
-                            
-                            
-                            
-                            // values:
-                            value={username}
-                            onChange={handleUsernameChange}
-                            
-                            
-                            
-                            // validations:
-                            isValid={username.length >= 1}
-                            required={true}
+                <Group className='username'>
+                    <Label
+                        // classes:
+                        className='solid'
+                    >
+                        <Icon
+                            // appearances:
+                            icon='supervisor_account'
                         />
-                    </Group>
-                    <ButtonIcon
+                    </Label>
+                    <TextInput
+                        // refs:
+                        elmRef={usernameRef}
+                        
+                        
+                        
+                        // accessibilities:
+                        placeholder='Username or Email'
+                        autoComplete='username'
+                        
+                        
+                        
+                        // values:
+                        value={username}
+                        onChange={handleUsernameChange}
+                        
+                        
+                        
+                        // validations:
+                        isValid={username.length >= 1}
+                        required={true}
+                    />
+                </Group>
+                {/* <ButtonSendResetLink> */}
+                {React.cloneElement<ButtonProps>(buttonSendResetLinkComponent,
+                    // props:
+                    {
                         // actions:
-                        type='submit'
+                        type      : buttonSendResetLinkComponent.props.type      ?? 'submit',
                         
                         
                         
-                        // appearances:
-                        icon={busy ? 'busy' : 'lock_open'}
+                        // classes:
+                        className : buttonSendResetLinkComponent.props.className ?? 'sendResetLink',
                         
                         
                         
                         // handlers:
-                        onClick={handleRequestPasswordReset}
-                    >
-                        Send Reset Password Link
-                    </ButtonIcon>
-                </ValidationProvider>
-            </AccessibilityProvider>
+                        onClick   : buttonSendResetLinkComponent.props.onClick   ?? handleRequestPasswordReset,
+                    },
+                    
+                    
+                    
+                    // children:
+                    buttonSendResetLinkComponent.props.children ?? 'Send Reset Password Link',
+                )}
+            </ValidationProvider>
         </form>
     );
 };

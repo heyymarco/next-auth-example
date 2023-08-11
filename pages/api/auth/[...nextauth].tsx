@@ -676,11 +676,11 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
 };
 
 const auth = async (req: NextApiRequest, res: NextApiResponse) => {
-    await new Promise<void>((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, 10000);
-    });
+    // await new Promise<void>((resolve) => {
+    //     setTimeout(() => {
+    //         resolve();
+    //     }, 10000);
+    // });
     
     
     
