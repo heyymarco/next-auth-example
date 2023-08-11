@@ -43,6 +43,11 @@ export const ButtonGotoReset = () => {
             
             
             
+            // classes:
+            className='reset'
+            
+            
+            
             // handlers:
             onClick={gotoReset}
         >

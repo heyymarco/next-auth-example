@@ -23,6 +23,12 @@ import {
     useSearchParams,
 }                           from 'next/navigation'
 
+// next auth:
+import {
+    // types:
+    type BuiltInProviderType,
+}                           from 'next-auth/providers'
+
 // reusable-ui core:
 import {
     // react helper hooks:
@@ -44,9 +50,20 @@ import {
 
 
 // contexts:
+export type BusyState =
+    | false
+    | 'sendResetLink'
+    | 'resetPassword'
+    | BuiltInProviderType
 export interface SignInStateApi {
     // states:
     expandedTabIndex   : number
+    isBusy             : BusyState
+    setIsBusy          : (isBusy: BusyState) => void
+    
+    
+    
+    // data:
     callbackUrl        : string|null
     resetPasswordToken : string|null
     
@@ -60,6 +77,12 @@ export interface SignInStateApi {
 const SignInStateContext = createContext<SignInStateApi>({
     // states:
     expandedTabIndex   : 0,
+    isBusy             : false,
+    setIsBusy          : () => {},
+    
+    
+    
+    // data:
     callbackUrl        : null,
     resetPasswordToken : null,
     
@@ -85,6 +108,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     const callbackUrlRef                          = useRef<string|null>(searchParams?.get('callbackUrl'       ) || null);
     const resetPasswordTokenRef                   = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
     const [expandedTabIndex, setExpandedTabIndex] = useState<number>(!!resetPasswordTokenRef.current ? 2 : 0);
+    const [isBusy          , setIsBusyInternal  ] = useState<BusyState>(false);
     
     
     
@@ -146,6 +170,11 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // stable callbacks:
+    const setIsBusy  = useEvent((isBusy: BusyState) => {
+        signInStateApi.isBusy = isBusy; /* instant update without waiting for (slow|delayed) re-render */
+        setIsBusyInternal(isBusy);
+    });
+    
     const gotoHome   = useEvent(() => {
         router.push('/');
     });
@@ -162,6 +191,12 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     const signInStateApi = useMemo<SignInStateApi>(() => ({
         // states:
         expandedTabIndex   : expandedTabIndex,
+        isBusy             : isBusy,
+        setIsBusy          : setIsBusy, // stable ref
+        
+        
+        
+        // data:
         callbackUrl        : callbackUrlRef.current,        // stable ref
         resetPasswordToken : resetPasswordTokenRef.current, // stable ref
         
@@ -174,6 +209,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     }), [
         // states:
         expandedTabIndex,
+        isBusy,
     ]);
     
     

@@ -25,11 +25,6 @@ import {
     type BuiltInProviderType,
 }                           from 'next-auth/providers'
 import {
-    // types:
-    type LiteralUnion,
-    
-    
-    
     // apis:
     signIn,
 }                           from 'next-auth/react'
@@ -91,18 +86,25 @@ import {
 
 
 // react components:
-export const TabSignIn  = () => {
+export const TabSignIn = () => {
     // navigations:
     const router = useRouter();
     
     
     
     // states:
+    const signInState = useSignInState();
     const {
         // states:
         expandedTabIndex,
+        isBusy,
+        setIsBusy,
+        
+        
+        
+        // data:
         callbackUrl,
-    } = useSignInState();
+    } = signInState;
     
     
     
@@ -126,7 +128,6 @@ export const TabSignIn  = () => {
     const [password        , setPassword        ] = useState<string>('');
     
     const isMounted       = useMountedFlag();
-    let   [busy, setBusy] = useState<string>('');
     
     
     
@@ -167,7 +168,7 @@ export const TabSignIn  = () => {
     // handlers:
     const handleSignInUsingCredentials = useEvent(async (): Promise<void> => {
         // conditions:
-        if (busy) return; // ignore when busy
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
         
         
         
@@ -191,7 +192,7 @@ export const TabSignIn  = () => {
         
         
         // attempts sign in using credentials:
-        setBusy(busy = 'credentials'); // mark as busy
+        setIsBusy('credentials'); // mark as busy
         const result = await signIn('credentials', { username, password, redirect: false });
         if (!isMounted.current) return; // unmounted => abort
         
@@ -199,7 +200,7 @@ export const TabSignIn  = () => {
         
         // verify the sign in status:
         if (!result?.ok) { // error
-            setBusy(busy = ''); // unmark as busy
+            setIsBusy(false); // unmark as busy
             
             
             
@@ -229,14 +230,14 @@ export const TabSignIn  = () => {
             router.replace(loggedInRedirectPath);
         } // if
     });
-    const handleSignInUsingOAuth       = useEvent(async (providerType: LiteralUnion<BuiltInProviderType>): Promise<void> => {
+    const handleSignInUsingOAuth       = useEvent(async (providerType: BuiltInProviderType): Promise<void> => {
         // conditions:
-        if (busy) return; // ignore when busy
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
         
         
         
         // attempts sign in using OAuth:
-        setBusy(busy = providerType); // mark as busy
+        setIsBusy(providerType); // mark as busy
         const result = await signIn(providerType, { callbackUrl: loggedInRedirectPath });
         if (!isMounted.current) return; // unmounted => abort
         
@@ -244,7 +245,7 @@ export const TabSignIn  = () => {
         
         // verify the sign in status:
         if ((result !== undefined) && !result?.ok) { // error
-            setBusy(busy = ''); // unmark as busy
+            setIsBusy(false); // unmark as busy
             
             
             
@@ -301,13 +302,13 @@ export const TabSignIn  = () => {
         >
             <AccessibilityProvider
                 // accessibilities:
-                enabled={!busy} // disabled if busy
+                enabled={!isBusy} // disabled if busy
             >
                 <ValidationProvider
                     // validations:
                     enableValidation={enableValidation}
                 >
-                    <Group>
+                    <Group className='username'>
                         <Label
                             // classes:
                             className='solid'
@@ -340,7 +341,7 @@ export const TabSignIn  = () => {
                             required={true}
                         />
                     </Group>
-                    <Group>
+                    <Group className='password'>
                         <Label
                             // classes:
                             className='solid'
@@ -375,7 +376,12 @@ export const TabSignIn  = () => {
                         
                         
                         // appearances:
-                        icon={(busy === 'credentials') ? 'busy' : 'login'}
+                        icon={(isBusy === 'credentials') ? 'busy' : 'login'}
+                        
+                        
+                        
+                        // classes:
+                        className='signin'
                         
                         
                         
@@ -387,7 +393,7 @@ export const TabSignIn  = () => {
                     <hr />
                     <ButtonIcon
                         // appearances:
-                        icon={(busy === 'google') ? 'busy' : 'login'}
+                        icon={(isBusy === 'google') ? 'busy' : 'login'}
                         
                         
                         
@@ -398,7 +404,7 @@ export const TabSignIn  = () => {
                     </ButtonIcon>
                     <ButtonIcon
                         // appearances:
-                        icon={(busy === 'facebook') ? 'busy' : 'facebook'}
+                        icon={(isBusy === 'facebook') ? 'busy' : 'facebook'}
                         
                         
                         
@@ -409,7 +415,7 @@ export const TabSignIn  = () => {
                     </ButtonIcon>
                     <ButtonIcon
                         // appearances:
-                        icon={(busy === 'instagram') ? 'busy' : 'instagram'}
+                        icon={(isBusy === 'instagram') ? 'busy' : 'instagram'}
                         
                         
                         
@@ -420,7 +426,7 @@ export const TabSignIn  = () => {
                     </ButtonIcon>
                     <ButtonIcon
                         // appearances:
-                        icon={(busy === 'twitter') ? 'busy' : 'login'}
+                        icon={(isBusy === 'twitter') ? 'busy' : 'login'}
                         
                         
                         
@@ -431,7 +437,7 @@ export const TabSignIn  = () => {
                     </ButtonIcon>
                     <ButtonIcon
                         // appearances:
-                        icon={(busy === 'github') ? 'busy' : 'login'}
+                        icon={(isBusy === 'github') ? 'busy' : 'login'}
                         
                         
                         

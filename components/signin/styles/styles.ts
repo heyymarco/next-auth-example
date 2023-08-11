@@ -1,8 +1,7 @@
 // cssfn:
 import {
     // writes css in javascript:
-    rule,
-    variants,
+    children,
     style,
     
     
@@ -18,6 +17,11 @@ import {
 
 // reusable-ui core:
 import {
+    // a spacer (gap) management system:
+    spacers,
+    
+    
+    
     // size options of UI:
     usesResizable,
 }                           from '@reusable-ui/core'            // a set of reusable-ui packages which are responsible for building any component
@@ -25,18 +29,24 @@ import {
 // reusable-ui components:
 import {
     // styles:
-    onBasicStylesChange,
-    usesBasicLayout,
-    usesBasicVariants,
-}                           from '@reusable-ui/basic'           // a base component
-import {
-    // styles:
     onContentStylesChange,
-    usesContentBasicLayout,
-    usesContentBasicVariants,
-}                           from '@reusable-ui/content'         // a neighbor component
+    usesContentLayout,
+    usesContentVariants,
+}                           from '@reusable-ui/content'         // a base component
 
 // internals:
+import {
+    // elements:
+    signInTabElm,
+    recoveryTabElm,
+    resetTabElm,
+    
+    usernameFieldElm,
+    passwordFieldElm,
+    signinButtonElm,
+    
+    resetButtonElm,
+}                           from './elements'
 import {
     // configs:
     signIns,
@@ -46,34 +56,70 @@ import {
 
 
 // styles:
-export const onSignInStylesChange = watchChanges(onBasicStylesChange, onContentStylesChange, cssSignInConfig.onChange);
+export const onSignInStylesChange = watchChanges(onContentStylesChange, cssSignInConfig.onChange);
 
 export const usesSignInLayout = () => {
     return style({
         // layouts:
-        ...usesBasicLayout(),
+        ...usesContentLayout(),
         ...style({
-            // layouts:
-            display        : 'inline-flex',  // use inline flexbox, so it takes the width & height as we set
-            flexDirection  : 'row',          // items are stacked horizontally
-            justifyContent : 'center',       // center items (text, icon, etc) horizontally
-            alignItems     : 'center',       // center items (text, icon, etc) vertically
-            flexWrap       : 'wrap',         // allows the items (text, icon, etc) to wrap to the next row if no sufficient width available
-            
-            
-            
-            // positions:
-            verticalAlign  : 'baseline',     // <Label>'s text should be aligned with sibling text, so the <Label> behave like <span> wrapper
-            
-            
-            
-            // typos:
-            textAlign      : 'start',        // flow to the document's writing flow
+            // children:
+            ...children(signInTabElm, {
+                // layouts:
+                display      : 'grid',
+                gridTemplate : [[
+                    '"username" auto',
+                    '"password" auto',
+                    '"   reset" auto',
+                    '" signIn " auto',
+                ]],
+                
+                
+                
+                
+                // spacings:
+                gap: spacers.default,
+                
+                
+                
+                // children:
+                ...children('form', {
+                    // layouts:
+                    display: 'contents',
+                    
+                    
+                    
+                    // children:
+                    ...children(usernameFieldElm, {
+                        // positions:
+                        gridArea : 'username',
+                    }),
+                    ...children(passwordFieldElm, {
+                        // positions:
+                        gridArea : 'password',
+                    }),
+                    ...children(signinButtonElm, {
+                        // positions:
+                        gridArea : 'signIn',
+                    }),
+                }),
+                ...children(resetButtonElm, {
+                    // positions:
+                    gridArea    : 'reset',
+                    justifySelf : 'end',
+                }),
+            }),
+            ...children(recoveryTabElm, {
+                background: 'yellow',
+            }),
+            ...children(resetTabElm, {
+                background: 'purpule',
+            }),
             
             
             
             // customize:
-            ...usesCssProps(signIns),        // apply config's cssProps
+            ...usesCssProps(signIns), // apply config's cssProps
         }),
     });
 };
@@ -88,17 +134,7 @@ export const usesSignInVariants = () => {
     
     return style({
         // variants:
-        /* write specific labelStyle first, so it can be overriden by `.nude`, `.mild`, `.outlined`, etc */
-        ...variants([
-            rule('.content', { // content
-                // layouts:
-                ...usesContentBasicLayout(),
-                
-                // variants:
-                ...usesContentBasicVariants(),
-            }),
-        ]),
-        ...usesBasicVariants(),
+        ...usesContentVariants(),
         ...resizableRule(),
     });
 };

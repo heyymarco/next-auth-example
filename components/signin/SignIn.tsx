@@ -6,9 +6,16 @@ import {
     default as React,
 }                           from 'react'
 
+// cssfn:
+import {
+    // style sheets:
+    dynamicStyleSheet,
+}                           from '@cssfn/cssfn-react'           // writes css in react hook
+
 // reusable-ui components:
 import {
     // base-content-components:
+    ContentProps,
     Content,
     
     
@@ -52,15 +59,34 @@ import {
 
 
 
+// styles:
+export const useSignInStyleSheet = dynamicStyleSheet(
+    () => import(/* webpackPrefetch: true */ './styles/styles')
+, { id: 'mhxnjino7v' }); // a unique salt for SSR support, ensures the server-side & client-side have the same generated class names
+import './styles/styles'
+
+
+
 // react components:
-const SignIn     = () => {
+export interface SignInProps<TElement extends Element = HTMLElement>
+    extends
+        // bases:
+        ContentProps<TElement>
+{
+}
+const SignIn         = <TElement extends Element = HTMLElement>(props: SignInProps<TElement>) => {
     return (
         <SignInStateProvider>
             <SignInInternal />
         </SignInStateProvider>
     );
 };
-const SignInInternal = () => {
+const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInProps<TElement>) => {
+    // styles:
+    const styleSheet = useSignInStyleSheet();
+    
+    
+    
     // states:
     const {
         // states:
@@ -71,39 +97,52 @@ const SignInInternal = () => {
     
     // jsx:
     return (
-        <Content theme='primary'>
-            <Tab
-                // identifiers:
-                id='tabSignIn'
-                
-                
-                
-                // states:
-                expandedTabIndex={expandedTabIndex}
-                
-                
-                
-                // components:
-                tabHeaderComponent={null}
-                bodyComponent={<Content mild={true} />}
-            >
-                <TabPanel label='Sign In'>
-                    <TabSignIn />
-                    <ButtonGotoReset />
-                    <ButtonGotoHome />
-                </TabPanel>
-                <TabPanel label='Recovery'>
-                    <TabForgot />
-                    <ButtonGotoSignIn />
-                    <ButtonGotoHome />
-                </TabPanel>
-                <TabPanel label='Reset'>
-                    <TabReset />
-                    <ButtonGotoSignIn />
-                    <ButtonGotoHome />
-                </TabPanel>
-            </Tab>
-        </Content>
+        <Tab
+            // identifiers:
+            id='tabSignIn'
+            
+            
+            
+            // states:
+            expandedTabIndex={expandedTabIndex}
+            
+            
+            
+            // components:
+            headerComponent={null}
+            bodyComponent={
+                <Content
+                    // other props:
+                    {...props}
+                    
+                    
+                    
+                    // variants:
+                    mild={props.mild ?? true}
+                    
+                    
+                    
+                    // classes:
+                    mainClass={props.mainClass ?? styleSheet.main}
+                />
+            }
+        >
+            <TabPanel className='signIn'>
+                <TabSignIn />
+                <ButtonGotoReset />
+                <ButtonGotoHome />
+            </TabPanel>
+            <TabPanel className='recovery'>
+                <TabForgot />
+                <ButtonGotoSignIn />
+                <ButtonGotoHome />
+            </TabPanel>
+            <TabPanel className='reset'>
+                <TabReset />
+                <ButtonGotoSignIn />
+                <ButtonGotoHome />
+            </TabPanel>
+        </Tab>
     );
 };
 export {

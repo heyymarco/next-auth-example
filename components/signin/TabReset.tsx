@@ -101,7 +101,7 @@ import {
 export const TabReset  = () => {
     // states:
     const {
-        // states:
+        // data:
         resetPasswordToken,
         
         
