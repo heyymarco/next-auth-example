@@ -51,8 +51,9 @@ import {
     
     signinSeparatorElm,
     
-    homeButtonElm,
-    resetButtonElm,
+    gotoHomeButtonElm,
+    gotoSignInButtonElm,
+    gotoResetButtonElm,
 }                           from './elements'
 import {
     // configs:
@@ -130,12 +131,12 @@ export const usesSignInLayout = () => {
                         margin   : 0,
                     }),
                 }),
-                ...children(homeButtonElm, {
+                ...children(gotoHomeButtonElm, {
                     // positions:
                     gridArea    : 'home',
                     justifySelf : 'start',
                 }),
-                ...children(resetButtonElm, {
+                ...children(gotoResetButtonElm, {
                     // positions:
                     gridArea    : 'reset',
                     justifySelf : 'end',

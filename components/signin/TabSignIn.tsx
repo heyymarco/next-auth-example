@@ -100,7 +100,6 @@ export interface TabSignInProps {
     
     
     // components:
-    buttonComponent           ?: Required<ButtonComponentProps>['buttonComponent']
     buttonSignInComponent     ?: Required<ButtonComponentProps>['buttonComponent']
     buttonSignInWithComponent ?: Required<ButtonComponentProps>['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
 }
@@ -114,9 +113,8 @@ export const TabSignIn = (props: TabSignInProps) => {
         
         
         // components:
-        buttonComponent,
-        buttonSignInComponent     = (<ButtonWithBusy busyType='credentials' buttonComponent={<ButtonIcon buttonComponent={buttonComponent} icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
-        buttonSignInWithComponent = (((oAuthProvider: BuiltInProviderType) => <ButtonWithBusy busyType={oAuthProvider} buttonComponent={<ButtonIcon buttonComponent={buttonComponent} icon={oAuthProvider} />} />) as Required<TabSignInProps>['buttonSignInWithComponent']),
+        buttonSignInComponent     = (<ButtonWithBusy busyType='credentials' buttonComponent={<ButtonIcon icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        buttonSignInWithComponent = (((oAuthProvider: BuiltInProviderType) => <ButtonWithBusy busyType={oAuthProvider} buttonComponent={<ButtonIcon icon={oAuthProvider} />} />) as Required<TabSignInProps>['buttonSignInWithComponent']),
     } = props;
     
     

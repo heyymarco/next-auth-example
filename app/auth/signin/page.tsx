@@ -47,7 +47,6 @@ const SignInPage = () => {
             
             
             // components:
-            buttonComponent={<Button theme='danger' outlined={true} />}
         />
     );
 };

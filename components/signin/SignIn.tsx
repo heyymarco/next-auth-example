@@ -26,24 +26,19 @@ import {
     
     
     
+    // simple-components:
+    ButtonProps,
+    ButtonComponentProps,
+    ButtonIcon,
+    
+    
+    
     // composite-components:
     TabPanel,
     Tab,
 }                           from '@reusable-ui/components'
 
 // internal components:
-import {
-    // reusable-ui components:
-    ButtonGotoHome,
-}                           from './ButtonGotoHome'
-import {
-    // reusable-ui components:
-    ButtonGotoSignIn,
-}                           from './ButtonGotoSignIn'
-import {
-    // reusable-ui components:
-    ButtonGotoReset,
-}                           from './ButtonGotoReset'
 import {
     // reusable-ui components:
     TabSignInProps,
@@ -86,6 +81,10 @@ export interface SignInProps<TElement extends Element = HTMLElement>
         >,
         TabSignInProps
 {
+    // components:
+    buttonGotoHome   ?: Required<ButtonComponentProps>['buttonComponent']
+    buttonGotoSignIn ?: Required<ButtonComponentProps>['buttonComponent']
+    buttonGotoReset  ?: Required<ButtonComponentProps>['buttonComponent']
 }
 const SignIn         = <TElement extends Element = HTMLElement>(props: SignInProps<TElement>) => {
     return (
@@ -109,7 +108,10 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         
         
         // components:
-        buttonComponent,
+        buttonGotoHome   = (<ButtonIcon icon='home'        buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
+        buttonGotoSignIn = (<ButtonIcon icon='arrow_back'  buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
+        buttonGotoReset  = (<ButtonIcon icon='help_center' buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
+        
         buttonSignInComponent,
         buttonSignInWithComponent,
     ...restContentProps} = props;
@@ -123,11 +125,69 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         // states:
         expandedTabIndex,
         isBusy,
+        
+        
+        
+        // navigations:
+        gotoHome,
+        gotoSignIn,
+        gotoReset,
     } = useSignInState();
     
     
     
     // jsx:
+    const ButtonGotoHome = () => React.cloneElement<ButtonProps>(buttonGotoHome,
+        // props:
+        {
+            // classes:
+            className : buttonGotoHome.props.className ?? 'gotoHome',
+            
+            
+            
+            // handlers:
+            onClick   : buttonGotoHome.props.onClick   ?? gotoHome,
+        },
+        
+        
+        
+        // children:
+        buttonGotoHome.props.children ?? 'Back to Home',
+    );
+    const ButtonGotoSignIn = () => React.cloneElement<ButtonProps>(buttonGotoSignIn,
+        // props:
+        {
+            // classes:
+            className : buttonGotoSignIn.props.className ?? 'gotoSignIn',
+            
+            
+            
+            // handlers:
+            onClick   : buttonGotoSignIn.props.onClick   ?? gotoSignIn,
+        },
+        
+        
+        
+        // children:
+        buttonGotoSignIn.props.children ?? 'Back to Sign In',
+    );
+    const ButtonGotoReset = () => React.cloneElement<ButtonProps>(buttonGotoReset,
+        // props:
+        {
+            // classes:
+            className : buttonGotoReset.props.className ?? 'gotoReset',
+            
+            
+            
+            // handlers:
+            onClick   : buttonGotoReset.props.onClick   ?? gotoReset,
+        },
+        
+        
+        
+        // children:
+        buttonGotoReset.props.children ?? 'Back to Reset',
+    );
     return (
         <AccessibilityProvider
             // accessibilities:
@@ -172,7 +232,6 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                         
                         
                         // components:
-                        buttonComponent={buttonComponent}
                         buttonSignInComponent={buttonSignInComponent}
                         buttonSignInWithComponent={buttonSignInWithComponent}
                     />

@@ -9,5 +9,6 @@ export const signinButtonElm       = ':where(.signin)'
 
 export const signinSeparatorElm    = ':where(.signinSeparator)'
 
-export const homeButtonElm         = ':where(.home)'
-export const resetButtonElm        = ':where(.reset)'
+export const gotoHomeButtonElm     = ':where(.gotoHome)'
+export const gotoSignInButtonElm   = ':where(.gotoSignIn)'
+export const gotoResetButtonElm    = ':where(.gotoReset)'
