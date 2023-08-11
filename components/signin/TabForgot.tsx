@@ -91,15 +91,17 @@ export const TabForgot = (props: TabForgotProps) => {
     
     
     // states:
+    const signInState = useSignInState();
     const {
         // states:
         expandedTabIndex,
+        setIsBusy,
         
         
         
         // navigations:
         gotoSignIn,
-    } = useSignInState();
+    } = signInState;
     
     
     
@@ -117,7 +119,6 @@ export const TabForgot = (props: TabForgotProps) => {
     const [username        , setUsername        ] = useState<string>('');
     
     const isMounted       = useMountedFlag();
-    let   [busy, setBusy] = useState<boolean>(false);
     
     
     
@@ -157,7 +158,7 @@ export const TabForgot = (props: TabForgotProps) => {
     // handlers:
     const handleRequestPasswordReset = useEvent(async (): Promise<void> => {
         // conditions:
-        if (busy) return; // ignore when busy
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
         
         
         
@@ -181,7 +182,7 @@ export const TabForgot = (props: TabForgotProps) => {
         
         
         // attempts request password reset:
-        setBusy(busy = true); // mark as busy
+        setIsBusy('sendResetLink'); // mark as busy
         try {
             const result = await axios.post('/api/auth/reset', { username });
             if (!isMounted.current) return; // unmounted => abort
@@ -192,7 +193,7 @@ export const TabForgot = (props: TabForgotProps) => {
             
             
             
-            setBusy(busy = false); // unmark as busy
+            setIsBusy(false); // unmark as busy
             
             
             
@@ -210,7 +211,7 @@ export const TabForgot = (props: TabForgotProps) => {
             gotoSignIn();
         }
         catch (error: any) { // error
-            setBusy(busy = false); // unmark as busy
+            setIsBusy(false); // unmark as busy
             
             
             
