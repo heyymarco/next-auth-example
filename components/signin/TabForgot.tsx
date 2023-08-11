@@ -21,11 +21,6 @@ import {
     
     
     
-    // an accessibility management system:
-    AccessibilityProvider,
-    
-    
-    
     // a validation management system:
     ValidationProvider,
 }                           from '@reusable-ui/core'

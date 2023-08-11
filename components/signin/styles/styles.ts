@@ -2,11 +2,8 @@
 import {
     // writes css in javascript:
     rule,
-    variants,
-    states,
     children,
     style,
-    vars,
     
     
     

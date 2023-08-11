@@ -21,11 +21,6 @@ import {
     
     
     
-    // an accessibility management system:
-    AccessibilityProvider,
-    
-    
-    
     // a validation management system:
     ValidationProvider,
 }                           from '@reusable-ui/core'
@@ -118,7 +113,14 @@ export const TabReset = (props: TabResetProps) => {
     
     
     // states:
+    const signInState = useSignInState();
     const {
+        // states:
+        isBusy,
+        setIsBusy,
+        
+        
+        
         // data:
         resetPasswordToken,
         
@@ -126,7 +128,7 @@ export const TabReset = (props: TabResetProps) => {
         
         // navigations:
         gotoSignIn,
-    } = useSignInState();
+    } = signInState;
     
     
     
@@ -150,7 +152,6 @@ export const TabReset = (props: TabResetProps) => {
     const [password2Focused, setPassword2Focused] = useState<boolean>(false);
     
     const isMounted       = useMountedFlag();
-    let   [busy, setBusy] = useState<boolean>(false);
     
     
     
@@ -234,7 +235,7 @@ export const TabReset = (props: TabResetProps) => {
     // handlers:
     const handleDoPasswordReset = useEvent(async (): Promise<void> => {
         // conditions:
-        if (busy) return; // ignore when busy
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
         
         
         
@@ -258,7 +259,7 @@ export const TabReset = (props: TabResetProps) => {
         
         
         // attempts apply password reset:
-        setBusy(busy = true); // mark as busy
+        setIsBusy('resetPassword'); // mark as busy
         try {
             const result = await axios.patch('/api/auth/reset', { resetPasswordToken, password });
             if (!isMounted.current) return; // unmounted => abort
@@ -269,7 +270,7 @@ export const TabReset = (props: TabResetProps) => {
             
             
             
-            setBusy(busy = false); // unmark as busy
+            setIsBusy(false); // unmark as busy
             
             
             
@@ -296,7 +297,7 @@ export const TabReset = (props: TabResetProps) => {
             gotoSignIn();
         }
         catch (error: any) { // error
-            setBusy(busy = false); // unmark as busy
+            setIsBusy(false); // unmark as busy
             
             
             
@@ -537,13 +538,13 @@ export const TabReset = (props: TabResetProps) => {
                     
                     
                     // states:
-                    expanded={passwordFocused && !busy}
+                    expanded={passwordFocused && !isBusy}
                     
                     
                     
                     // floatable:
                     floatingOn={passwordRef}
-                    floatingPlacement='bottom'
+                    floatingPlacement='top'
                 >
                     <List
                         // variants:
@@ -597,13 +598,13 @@ export const TabReset = (props: TabResetProps) => {
                     
                     
                     // states:
-                    expanded={password2Focused && !busy}
+                    expanded={password2Focused && !isBusy}
                     
                     
                     
                     // floatable:
                     floatingOn={password2Ref}
-                    floatingPlacement='bottom'
+                    floatingPlacement='top'
                 >
                     <List
                         // variants:
