@@ -45,6 +45,9 @@ import {
     passwordFieldElm,
     signinButtonElm,
     
+    signinSeparatorElm,
+    
+    homeButtonElm,
     resetButtonElm,
 }                           from './elements'
 import {
@@ -68,10 +71,13 @@ export const usesSignInLayout = () => {
                 // layouts:
                 display      : 'grid',
                 gridTemplate : [[
-                    '"username" auto',
-                    '"password" auto',
-                    '"   reset" auto',
-                    '" signIn " auto',
+                    '"username               username" auto',
+                    '"password               password" auto',
+                    '"home                      reset" auto',
+                    '"         signIn signIn         " auto',
+                    '"signinSeparator signinSeparator" auto',
+                    '/',
+                    '1fr 1fr'
                 ]],
                 
                 
@@ -102,6 +108,20 @@ export const usesSignInLayout = () => {
                         // positions:
                         gridArea : 'signIn',
                     }),
+                    ...children(signinSeparatorElm, {
+                        // positions:
+                        gridArea : 'signinSeparator',
+                        
+                        
+                        
+                        // spacings:
+                        margin   : 0,
+                    }),
+                }),
+                ...children(homeButtonElm, {
+                    // positions:
+                    gridArea    : 'home',
+                    justifySelf : 'start',
                 }),
                 ...children(resetButtonElm, {
                     // positions:

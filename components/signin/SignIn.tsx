@@ -12,6 +12,12 @@ import {
     dynamicStyleSheet,
 }                           from '@cssfn/cssfn-react'           // writes css in react hook
 
+// reusable-ui core:
+import {
+    // an accessibility management system:
+    AccessibilityProvider,
+}                           from '@reusable-ui/core'
+
 // reusable-ui components:
 import {
     // base-content-components:
@@ -40,6 +46,7 @@ import {
 }                           from './ButtonGotoReset'
 import {
     // reusable-ui components:
+    TabSignInProps,
     TabSignIn,
 }                           from './TabSignIn'
 import {
@@ -71,13 +78,14 @@ import './styles/styles'
 export interface SignInProps<TElement extends Element = HTMLElement>
     extends
         // bases:
-        ContentProps<TElement>
+        ContentProps<TElement>,
+        TabSignInProps
 {
 }
 const SignIn         = <TElement extends Element = HTMLElement>(props: SignInProps<TElement>) => {
     return (
         <SignInStateProvider>
-            <SignInInternal />
+            <SignInInternal {...props} />
         </SignInStateProvider>
     );
 };
@@ -87,62 +95,83 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     
     
     
+    // rest props:
+    const {
+        // components:
+        buttonComponent,
+        buttonSignInComponent,
+    ...restContentProps} = props;
+    // type T1 = typeof restContentProps
+    // type T2 = Omit<T1, keyof ContentProps>
+    
+    
+    
     // states:
     const {
         // states:
         expandedTabIndex,
+        isBusy,
     } = useSignInState();
     
     
     
     // jsx:
     return (
-        <Tab
-            // identifiers:
-            id='tabSignIn'
-            
-            
-            
-            // states:
-            expandedTabIndex={expandedTabIndex}
-            
-            
-            
-            // components:
-            headerComponent={null}
-            bodyComponent={
-                <Content
-                    // other props:
-                    {...props}
-                    
-                    
-                    
-                    // variants:
-                    mild={props.mild ?? true}
-                    
-                    
-                    
-                    // classes:
-                    mainClass={props.mainClass ?? styleSheet.main}
-                />
-            }
+        <AccessibilityProvider
+            // accessibilities:
+            enabled={!isBusy} // disabled if busy
         >
-            <TabPanel className='signIn'>
-                <TabSignIn />
-                <ButtonGotoReset />
-                <ButtonGotoHome />
-            </TabPanel>
-            <TabPanel className='recovery'>
-                <TabForgot />
-                <ButtonGotoSignIn />
-                <ButtonGotoHome />
-            </TabPanel>
-            <TabPanel className='reset'>
-                <TabReset />
-                <ButtonGotoSignIn />
-                <ButtonGotoHome />
-            </TabPanel>
-        </Tab>
+            <Tab
+                // identifiers:
+                id='tabSignIn'
+                
+                
+                
+                // states:
+                expandedTabIndex={expandedTabIndex}
+                
+                
+                
+                // components:
+                headerComponent={null}
+                bodyComponent={
+                    <Content
+                        // other props:
+                        {...restContentProps}
+                        
+                        
+                        
+                        // variants:
+                        mild={props.mild ?? true}
+                        
+                        
+                        
+                        // classes:
+                        mainClass={props.mainClass ?? styleSheet.main}
+                    />
+                }
+            >
+                <TabPanel className='signIn'>
+                    <TabSignIn
+                        // components:
+                        buttonComponent={buttonComponent}
+                        buttonSignInComponent={buttonSignInComponent}
+                    />
+                    <ButtonGotoReset />
+                    <ButtonGotoHome />
+                </TabPanel>
+                <TabPanel className='recovery'>
+                    <TabForgot />
+                    <ButtonGotoSignIn />
+                    <ButtonGotoHome />
+                </TabPanel>
+                <TabPanel className='reset'>
+                    <TabReset />
+                    <ButtonGotoSignIn />
+                    <ButtonGotoHome />
+                </TabPanel>
+            </Tab>
+        </AccessibilityProvider>
     );
 };
 export {

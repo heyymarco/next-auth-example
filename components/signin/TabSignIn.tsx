@@ -37,11 +37,6 @@ import {
     
     
     
-    // an accessibility management system:
-    AccessibilityProvider,
-    
-    
-    
     // a validation management system:
     ValidationProvider,
 }                           from '@reusable-ui/core'
@@ -51,6 +46,8 @@ import {
     // simple-components:
     Icon,
     Label,
+    ButtonProps,
+    ButtonComponentProps,
     ButtonIcon,
     TextInput,
     PasswordInput,
@@ -66,6 +63,10 @@ import {
     // dialogs:
     useDialogMessage,
 }                           from '@/hooks/dialogMessage'
+import {
+    // react components:
+    ButtonWithBusy,
+}                           from './ButtonWithBusy'
 
 // internals:
 import {
@@ -86,7 +87,21 @@ import {
 
 
 // react components:
-export const TabSignIn = () => {
+export interface TabSignInProps {
+    // components:
+    buttonComponent       ?: ButtonComponentProps['buttonComponent']
+    buttonSignInComponent ?: ButtonComponentProps['buttonComponent']
+}
+export const TabSignIn = (props: TabSignInProps) => {
+    // rest props:
+    const {
+        // components:
+        buttonComponent,
+        buttonSignInComponent = (<ButtonWithBusy buttonComponent={<ButtonIcon buttonComponent={buttonComponent} icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
+    } = props;
+    
+    
+    
     // navigations:
     const router = useRouter();
     
@@ -300,154 +315,151 @@ export const TabSignIn = () => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            <AccessibilityProvider
-                // accessibilities:
-                enabled={!isBusy} // disabled if busy
+            <ValidationProvider
+                // validations:
+                enableValidation={enableValidation}
             >
-                <ValidationProvider
-                    // validations:
-                    enableValidation={enableValidation}
-                >
-                    <Group className='username'>
-                        <Label
-                            // classes:
-                            className='solid'
-                        >
-                            <Icon
-                                // appearances:
-                                icon='supervisor_account'
-                            />
-                        </Label>
-                        <TextInput
-                            // refs:
-                            elmRef={usernameRef}
-                            
-                            
-                            
-                            // accessibilities:
-                            placeholder='Username or Email'
-                            autoComplete='username'
-                            
-                            
-                            
-                            // values:
-                            value={username}
-                            onChange={handleUsernameChange}
-                            
-                            
-                            
-                            // validations:
-                            isValid={username.length >= 1}
-                            required={true}
+                <Group className='username'>
+                    <Label
+                        // classes:
+                        className='solid'
+                    >
+                        <Icon
+                            // appearances:
+                            icon='supervisor_account'
                         />
-                    </Group>
-                    <Group className='password'>
-                        <Label
-                            // classes:
-                            className='solid'
-                        >
-                            <Icon
-                                // appearances:
-                                icon='lock'
-                            />
-                        </Label>
-                        <PasswordInput
-                            // accessibilities:
-                            placeholder='Password'
-                            autoComplete='current-password'
-                            
-                            
-                            
-                            // values:
-                            value={password}
-                            onChange={handlePasswordChange}
-                            
-                            
-                            
-                            // validations:
-                            isValid={password.length >= 1}
-                            required={true}
+                    </Label>
+                    <TextInput
+                        // refs:
+                        elmRef={usernameRef}
+                        
+                        
+                        
+                        // accessibilities:
+                        placeholder='Username or Email'
+                        autoComplete='username'
+                        
+                        
+                        
+                        // values:
+                        value={username}
+                        onChange={handleUsernameChange}
+                        
+                        
+                        
+                        // validations:
+                        isValid={username.length >= 1}
+                        required={true}
+                    />
+                </Group>
+                <Group className='password'>
+                    <Label
+                        // classes:
+                        className='solid'
+                    >
+                        <Icon
+                            // appearances:
+                            icon='lock'
                         />
-                    </Group>
-                    <ButtonIcon
+                    </Label>
+                    <PasswordInput
+                        // accessibilities:
+                        placeholder='Password'
+                        autoComplete='current-password'
+                        
+                        
+                        
+                        // values:
+                        value={password}
+                        onChange={handlePasswordChange}
+                        
+                        
+                        
+                        // validations:
+                        isValid={password.length >= 1}
+                        required={true}
+                    />
+                </Group>
+                {/* <ButtonSignIn> */}
+                {React.cloneElement<ButtonProps>(buttonSignInComponent,
+                    // props:
+                    {
                         // actions:
-                        type='submit'
-                        
-                        
-                        
-                        // appearances:
-                        icon={(isBusy === 'credentials') ? 'busy' : 'login'}
+                        type      : buttonSignInComponent.props.type      ?? 'submit',
                         
                         
                         
                         // classes:
-                        className='signin'
+                        className : buttonSignInComponent.props.className ?? 'signin',
                         
                         
                         
                         // handlers:
-                        onClick={handleSignInUsingCredentials}
-                    >
-                        Sign In
-                    </ButtonIcon>
-                    <hr />
-                    <ButtonIcon
-                        // appearances:
-                        icon={(isBusy === 'google') ? 'busy' : 'login'}
-                        
-                        
-                        
-                        // handlers:
-                        onClick={handleSignInUsingGoogle}
-                    >
-                        Sign In using Google
-                    </ButtonIcon>
-                    <ButtonIcon
-                        // appearances:
-                        icon={(isBusy === 'facebook') ? 'busy' : 'facebook'}
-                        
-                        
-                        
-                        // handlers:
-                        onClick={handleSignInUsingFacebook}
-                    >
-                        Sign In using Facebook
-                    </ButtonIcon>
-                    <ButtonIcon
-                        // appearances:
-                        icon={(isBusy === 'instagram') ? 'busy' : 'instagram'}
-                        
-                        
-                        
-                        // handlers:
-                        onClick={handleSignInUsingInstagram}
-                    >
-                        Sign In using Instagram
-                    </ButtonIcon>
-                    <ButtonIcon
-                        // appearances:
-                        icon={(isBusy === 'twitter') ? 'busy' : 'login'}
-                        
-                        
-                        
-                        // handlers:
-                        onClick={handleSignInUsingTwitter}
-                    >
-                        Sign In using Twitter
-                    </ButtonIcon>
-                    <ButtonIcon
-                        // appearances:
-                        icon={(isBusy === 'github') ? 'busy' : 'login'}
-                        
-                        
-                        
-                        // handlers:
-                        onClick={handleSignInUsingGithub}
-                    >
-                        Sign In using Github
-                    </ButtonIcon>
-                </ValidationProvider>
-            </AccessibilityProvider>
+                        onClick   : buttonSignInComponent.props.onClick   ?? handleSignInUsingCredentials,
+                    },
+                    
+                    
+                    
+                    // children:
+                    buttonSignInComponent.props.children ?? 'Sign In'
+                )}
+                <hr className='signinSeparator' />
+                <ButtonIcon
+                    // appearances:
+                    icon={(isBusy === 'google') ? 'busy' : 'login'}
+                    
+                    
+                    
+                    // handlers:
+                    onClick={handleSignInUsingGoogle}
+                >
+                    Sign In using Google
+                </ButtonIcon>
+                <ButtonIcon
+                    // appearances:
+                    icon={(isBusy === 'facebook') ? 'busy' : 'facebook'}
+                    
+                    
+                    
+                    // handlers:
+                    onClick={handleSignInUsingFacebook}
+                >
+                    Sign In using Facebook
+                </ButtonIcon>
+                <ButtonIcon
+                    // appearances:
+                    icon={(isBusy === 'instagram') ? 'busy' : 'instagram'}
+                    
+                    
+                    
+                    // handlers:
+                    onClick={handleSignInUsingInstagram}
+                >
+                    Sign In using Instagram
+                </ButtonIcon>
+                <ButtonIcon
+                    // appearances:
+                    icon={(isBusy === 'twitter') ? 'busy' : 'login'}
+                    
+                    
+                    
+                    // handlers:
+                    onClick={handleSignInUsingTwitter}
+                >
+                    Sign In using Twitter
+                </ButtonIcon>
+                <ButtonIcon
+                    // appearances:
+                    icon={(isBusy === 'github') ? 'busy' : 'login'}
+                    
+                    
+                    
+                    // handlers:
+                    onClick={handleSignInUsingGithub}
+                >
+                    Sign In using Github
+                </ButtonIcon>
+            </ValidationProvider>
         </form>
     );
 };

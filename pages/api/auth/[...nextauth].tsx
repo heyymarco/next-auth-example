@@ -676,6 +676,14 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
 };
 
 const auth = async (req: NextApiRequest, res: NextApiResponse) => {
+    await new Promise<void>((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, 10000);
+    });
+    
+    
+    
     // responses HEAD request as success:
     if(req.method === 'HEAD') return res.status(200);
     

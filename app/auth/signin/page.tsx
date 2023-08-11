@@ -11,12 +11,14 @@ import {
     // reusable-ui components:
     SignIn,
 }                           from '@/components/signin'
+import { Button } from '@reusable-ui/components'
+
 
 
 // react components:
 const SignInPage = () => {
     return (
-        <SignIn />
+        <SignIn buttonComponent={<Button theme='danger' outlined={true} />} />
     );
 };
 export default SignInPage;
