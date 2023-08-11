@@ -55,7 +55,7 @@ export type BusyState =
     | 'sendResetLink'
     | 'resetPassword'
     | BuiltInProviderType
-export interface SignInStateApi {
+export interface SignInState {
     // states:
     expandedTabIndex   : number
     isBusy             : BusyState
@@ -74,7 +74,7 @@ export interface SignInStateApi {
     gotoSignIn         : () => void
     gotoReset          : () => void
 }
-const SignInStateContext = createContext<SignInStateApi>({
+const SignInStateContext = createContext<SignInState>({
     // states:
     expandedTabIndex   : 0,
     isBusy             : false,
@@ -171,7 +171,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     // stable callbacks:
     const setIsBusy  = useEvent((isBusy: BusyState) => {
-        signInStateApi.isBusy = isBusy; /* instant update without waiting for (slow|delayed) re-render */
+        signInState.isBusy = isBusy; /* instant update without waiting for (slow|delayed) re-render */
         setIsBusyInternal(isBusy);
     });
     
@@ -188,7 +188,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // apis:
-    const signInStateApi = useMemo<SignInStateApi>(() => ({
+    const signInState = useMemo<SignInState>(() => ({
         // states:
         expandedTabIndex   : expandedTabIndex,
         isBusy             : isBusy,
@@ -216,11 +216,11 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     // jsx:
     return (
-        <SignInStateContext.Provider value={signInStateApi}>
+        <SignInStateContext.Provider value={signInState}>
             {props.children}
         </SignInStateContext.Provider>
     );
 }
-export const useSignInState = (): SignInStateApi => {
+export const useSignInState = (): SignInState => {
     return useContext(SignInStateContext);
 };

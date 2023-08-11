@@ -60,6 +60,7 @@ import {
 
 // internals:
 import {
+    SignInState,
     SignInStateProvider,
     useSignInState,
 }                           from './states/signInState'
@@ -75,10 +76,14 @@ import './styles/styles'
 
 
 // react components:
+export type SignInChildrenWithState = (signInState: SignInState) => React.ReactNode
 export interface SignInProps<TElement extends Element = HTMLElement>
     extends
         // bases:
-        ContentProps<TElement>,
+        Omit<ContentProps<TElement>,
+            // children:
+            |'children' // not supported
+        >,
         TabSignInProps
 {
 }

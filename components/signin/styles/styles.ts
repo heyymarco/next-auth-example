@@ -116,7 +116,13 @@ export const usesSignInLayout = () => {
                     }),
                     ...children(signinSeparatorElm, {
                         // positions:
-                        gridArea : 'signinSeparator',
+                        gridArea  : 'signinSeparator',
+                        alignSelf : 'center',
+                        
+                        
+                        
+                        // layouts:
+                        display: 'flex',
                         
                         
                         
