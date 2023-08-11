@@ -11,6 +11,10 @@ import {
 
 
 export default {
+    PAGE_SIGNIN_PATH    : '/auth/signin',
+    
+    
+    
     USER_SIGNUP_ENABLE  : true,
     
     

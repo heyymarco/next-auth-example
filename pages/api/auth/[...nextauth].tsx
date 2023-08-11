@@ -286,11 +286,11 @@ export const authOptions: NextAuthOptions = {
         },
     },
     pages     : {
-        signIn        : '/auth/signin',
+        signIn        : authConfig.PAGE_SIGNIN_PATH,
      // signOut       : '/auth/signout',
-        // error         : '/auth/signin',         // Error code passed in query string as ?error=
-     // verifyRequest : '/auth/verify-request', // (used for check email message)
-     // newUser       : '/auth/new-user',       // New users will be directed here on first sign in (leave the property out if not of interest)
+        error         : authConfig.PAGE_SIGNIN_PATH, // Error code passed in query string as ?error=
+     // verifyRequest : '/auth/verify-request',      // (used for check email message)
+     // newUser       : '/auth/new-user',            // New users will be directed here on first sign in (leave the property out if not of interest)
     },
 };
 
@@ -422,7 +422,7 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
     // send a link of resetPasswordToken to the user's email:
     try {
         // generate a link to a page for resetting password:
-        const resetLinkUrl = `${process.env.WEBSITE_URL}/auth/signin?resetPasswordToken=${encodeURIComponent(resetToken)}`
+        const resetLinkUrl = `${process.env.WEBSITE_URL}${authConfig.PAGE_SIGNIN_PATH}?resetPasswordToken=${encodeURIComponent(resetToken)}`
         
         // sending an email:
         await transporter.sendMail({
