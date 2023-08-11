@@ -239,8 +239,8 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                         buttonSignInComponent={buttonSignInComponent}
                         buttonSignInWithComponent={buttonSignInWithComponent}
                     />
-                    <ButtonGotoReset />
                     <ButtonGotoHome />
+                    <ButtonGotoReset />
                 </TabPanel>
                 <TabPanel className='recovery'>
                     <TabForgot
@@ -252,7 +252,6 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                 <TabPanel className='reset'>
                     <TabReset />
                     <ButtonGotoSignIn />
-                    <ButtonGotoHome />
                 </TabPanel>
             </Tab>
         </AccessibilityProvider>

@@ -47,8 +47,10 @@ import {
     
     usernameElm,
     passwordElm,
+    password2Elm,
     signinElm,
     sendResetLinkElm,
+    resetPasswordElm,
     
     signinSeparatorElm,
     
@@ -100,6 +102,10 @@ export const usesSignInLayout = () => {
                         // positions:
                         gridArea : 'password',
                     }),
+                    ...children(password2Elm, {
+                        // positions:
+                        gridArea : 'password2',
+                    }),
                     ...children(signinElm, {
                         ...rule('.credentials', {
                             // positions:
@@ -109,6 +115,10 @@ export const usesSignInLayout = () => {
                     ...children(sendResetLinkElm, {
                         // positions:
                         gridArea : 'sendResetLink',
+                    }),
+                    ...children(resetPasswordElm, {
+                        // positions:
+                        gridArea : 'resetPassword',
                     }),
                     ...children(signinSeparatorElm, {
                         // positions:
@@ -147,8 +157,8 @@ export const usesSignInLayout = () => {
                 gridTemplate : [[
                     '"username                   username" min-content',
                     '"password                   password" min-content',
-                    '"gotoHome                  gotoReset" min-content',
                     '"signInCredentials signInCredentials" min-content',
+                    '"gotoHome                  gotoReset" min-content',
                     '"signinSeparator     signinSeparator" min-content',
                     '"................. ................." auto',
                     '/',
@@ -167,7 +177,17 @@ export const usesSignInLayout = () => {
                 ]],
             }),
             ...children(resetTabElm, {
-                background: 'purpule',
+                // layouts:
+                gridTemplate : [[
+                    '"username                   username" min-content',
+                    '"password                   password" min-content',
+                    '"password2                 password2" min-content',
+                    '"resetPassword         resetPassword" min-content',
+                    '"gotoSignIn               .........." min-content',
+                    '"................. ................." auto',
+                    '/',
+                    '1fr 1fr'
+                ]],
             }),
             
             
