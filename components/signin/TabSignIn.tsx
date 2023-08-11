@@ -128,7 +128,6 @@ export const TabSignIn = (props: TabSignInProps) => {
     const {
         // states:
         expandedTabIndex,
-        isBusy,
         setIsBusy,
         
         
@@ -290,21 +289,6 @@ export const TabSignIn = (props: TabSignInProps) => {
             );
         } // if
     });
-    const handleSignInUsingGoogle      = useEvent(async (): Promise<void> => {
-        await handleSignInUsingOAuth('google');
-    });
-    const handleSignInUsingFacebook    = useEvent(async (): Promise<void> => {
-        await handleSignInUsingOAuth('facebook');
-    });
-    const handleSignInUsingInstagram   = useEvent(async (): Promise<void> => {
-        await handleSignInUsingOAuth('instagram');
-    });
-    const handleSignInUsingTwitter     = useEvent(async (): Promise<void> => {
-        await handleSignInUsingOAuth('twitter');
-    });
-    const handleSignInUsingGithub      = useEvent(async (): Promise<void> => {
-        await handleSignInUsingOAuth('github');
-    });
     
     const handleUsernameChange         = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
         setUsername(value);
@@ -458,7 +442,7 @@ export const TabSignIn = (props: TabSignInProps) => {
                                         
                                         
                                         // classes:
-                                        className : buttonSignInWithProviderComponent.props.className ?? 'signin',
+                                        className : buttonSignInWithProviderComponent.props.className ?? `signin ${providerType}`,
                                     },
                                 )
                             }
@@ -470,61 +454,6 @@ export const TabSignIn = (props: TabSignInProps) => {
                         />
                     );
                 })}
-                <ButtonIcon
-                    // appearances:
-                    icon={(isBusy === 'google') ? 'busy' : 'login'}
-                    
-                    
-                    
-                    // handlers:
-                    onClick={handleSignInUsingGoogle}
-                >
-                    Sign In using Google
-                </ButtonIcon>
-                <ButtonIcon
-                    // appearances:
-                    icon={(isBusy === 'facebook') ? 'busy' : 'facebook'}
-                    
-                    
-                    
-                    // handlers:
-                    onClick={handleSignInUsingFacebook}
-                >
-                    Sign In using Facebook
-                </ButtonIcon>
-                <ButtonIcon
-                    // appearances:
-                    icon={(isBusy === 'instagram') ? 'busy' : 'instagram'}
-                    
-                    
-                    
-                    // handlers:
-                    onClick={handleSignInUsingInstagram}
-                >
-                    Sign In using Instagram
-                </ButtonIcon>
-                <ButtonIcon
-                    // appearances:
-                    icon={(isBusy === 'twitter') ? 'busy' : 'login'}
-                    
-                    
-                    
-                    // handlers:
-                    onClick={handleSignInUsingTwitter}
-                >
-                    Sign In using Twitter
-                </ButtonIcon>
-                <ButtonIcon
-                    // appearances:
-                    icon={(isBusy === 'github') ? 'busy' : 'login'}
-                    
-                    
-                    
-                    // handlers:
-                    onClick={handleSignInUsingGithub}
-                >
-                    Sign In using Github
-                </ButtonIcon>
             </ValidationProvider>
         </form>
     );

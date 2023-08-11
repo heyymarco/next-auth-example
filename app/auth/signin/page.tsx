@@ -30,6 +30,10 @@ import {
 const SignInPage = () => {
     const providers = useMemo<BuiltInProviderType[]>(() => [
         'google',
+        'facebook',
+        'instagram',
+        'twitter',
+        'github',
     ], []);
     
     
