@@ -108,6 +108,8 @@ export interface SignInState {
     // fields & validations:
     formRef                 : React.MutableRefObject<HTMLFormElement|null>
     
+    email                   : string|null
+    
     usernameRef             : React.MutableRefObject<HTMLInputElement|null>
     username                : string
     usernameChange          : React.ChangeEventHandler<HTMLInputElement>
@@ -174,6 +176,8 @@ const SignInStateContext = createContext<SignInState>({
     
     // fields & validations:
     formRef                 : { current: null },
+    
+    email                   : null,
     
     usernameRef             : { current: null },
     username                : '',
@@ -251,8 +255,9 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // states:
-    const [section, setSection       ] = useState<SignInSection>(!!resetPasswordTokenRef.current ? 'reset' : 'signIn');
-    const [isBusy , setIsBusyInternal] = useState<BusyState>(false);
+    const [section      , setSection       ] = useState<SignInSection>(!!resetPasswordTokenRef.current ? 'reset' : 'signIn');
+    const [tokenVerified, setTokenVerified ] = useState<undefined|{ email: string, username: string|null }|false>(!resetPasswordToken ? false : undefined);
+    const [isBusy       , setIsBusyInternal] = useState<BusyState>(false);
     const isMounted                    = useMountedFlag();
     
     
@@ -354,6 +359,61 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         } // if
     }, []);
     
+    // validate password reset token at startup:
+    const hasInitialized = useRef(false); // make sure the validation is never performed twice
+    useEffect(() => {
+        // conditions:
+        if (!resetPasswordToken)         return; // no token => nothing to reset => ignore
+        if (tokenVerified !== undefined) return; // already verified with success/failed result => ignore
+        if (hasInitialized.current)      return; // already performed => ignore
+        hasInitialized.current = true; // mark as performed
+        
+        
+        
+        // actions:
+        (async () => {
+            // attempts validate password reset:
+            try {
+                const result = await axios.get(`/api/auth/reset?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
+                if (!isMounted.current) return; // unmounted => abort
+                
+                
+                
+                // success
+                
+                
+                
+                // save the success:
+                setTokenVerified(result.data);
+            }
+            catch (error: any) { // error
+                // save the failure:
+                setTokenVerified(false);
+                
+                
+                
+                // report the failure:
+                await showMessageFetchError(error);
+                if (!isMounted.current) return; // unmounted => abort
+                
+                
+                
+                const errorCode     = error?.response?.status;
+                const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
+                if (isClientError) {
+                    // redirect to sign in tab:
+                    gotoSignIn();
+                } // if
+                // nothing to do with unverified token & server_side_error => keeps the UI disabled
+                // else {
+                //     // focus to password field:
+                //     passwordRef.current?.setSelectionRange(0, password.length);
+                //     passwordRef.current?.focus();
+                // } // if
+            } // try
+        })();
+    }, [resetPasswordToken, tokenVerified]);
+    
     // focus on username field when the section is 'signIn' or 'recover':
     useEffect(() => {
         // conditions:
@@ -364,6 +424,17 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // actions:
         usernameRef.current?.focus();
     }, [section]);
+    
+    // focus on password field after successfully verified the password reset token:
+    useEffect(() => {
+        // conditions:
+        if (!tokenVerified) return; // NOT verified with success result => ignore
+        
+        
+        
+        // actions:
+        passwordRef.current?.focus();
+    }, [tokenVerified]);
     
     // resets input states when the `section` changes:
     const prevSection = useRef<SignInSection>(section);
@@ -685,6 +756,8 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // fields & validations:
         formRef,             // stable ref
         
+        email : (tokenVerified === false) ? '' : (tokenVerified?.email ?? null),
+        
         usernameRef,         // stable ref
         username,
         usernameChange,      // stable ref
@@ -734,6 +807,8 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         
         // fields & validations:
+        tokenVerified,
+        
         username,
         usernameValid,
         

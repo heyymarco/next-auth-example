@@ -8,8 +8,6 @@ import {
     
     
     // hooks:
-    useEffect,
-    useRef,
     useState,
 }                           from 'react'
 
@@ -17,7 +15,6 @@ import {
 import {
     // react helper hooks:
     useEvent,
-    useMountedFlag,
 }                           from '@reusable-ui/core'
 
 // reusable-ui components:
@@ -60,10 +57,6 @@ import {
     ModalStatus,
 }                           from '@/components/ModalStatus'
 import {
-    // dialogs:
-    useDialogMessage,
-}                           from '@/hooks/dialogMessage'
-import {
     // react components:
     ButtonWithBusy,
 }                           from './ButtonWithBusy'
@@ -77,9 +70,6 @@ import {
     // handlers:
     handlePreventSubmit,
 }                           from './utilities'
-
-// other libs:
-import axios                from 'axios'
 
 
 
@@ -108,11 +98,6 @@ export const TabReset = (props: TabResetProps) => {
         
         
         
-        // data:
-        resetPasswordToken,
-        
-        
-        
         // states:
         section,
         isBusy,
@@ -122,7 +107,7 @@ export const TabReset = (props: TabResetProps) => {
         // fields & validations:
         formRef,
         
-        username,
+        email,
         
         passwordRef,
         password,
@@ -143,106 +128,20 @@ export const TabReset = (props: TabResetProps) => {
         
         
         
-        // navigations:
-        gotoSignIn,
-        
-        
-        
         // actions:
         doReset,
     } = signInState;
     
     
     
-    // dialogs:
-    const {
-        showMessageFetchError,
-    } = useDialogMessage();
-    
-    
-    
     // states:
-    const [verified, setVerified] = useState<undefined|{ email: string, username: string|null }|false>(!resetPasswordToken ? false : undefined);
-    
     const [passwordFocused , setPasswordFocused ] = useState<boolean>(false);
     const [password2Focused, setPassword2Focused] = useState<boolean>(false);
-    
-    const isMounted = useMountedFlag();
-    
-    
-    
-    // dom effects:
-    
-    // validate password reset token at startup:
-    const hasInitialized = useRef(false); // make sure the validation is never performed twice
-    useEffect(() => {
-        // conditions:
-        if (!resetPasswordToken   ) return; // no token => nothing to reset => ignore
-        if (verified !== undefined) return; // already verified with success/failed result => ignore
-        if (hasInitialized.current) return; // already performed => ignore
-        hasInitialized.current = true;      // mark as performed
-        
-        
-        
-        // actions:
-        (async () => {
-            // attempts validate password reset:
-            try {
-                const result = await axios.get(`/api/auth/reset?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
-                if (!isMounted.current) return; // unmounted => abort
-                
-                
-                
-                // success
-                
-                
-                
-                // save the success:
-                setVerified(result.data);
-            }
-            catch (error: any) { // error
-                // save the failure:
-                setVerified(false);
-                
-                
-                
-                // report the failure:
-                await showMessageFetchError(error);
-                if (!isMounted.current) return; // unmounted => abort
-                
-                
-                
-                const errorCode     = error?.response?.status;
-                const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
-                if (isClientError) {
-                    // redirect to sign in tab:
-                    gotoSignIn();
-                } // if
-                // nothing to do with unverified token & server_side_error => keeps the UI disabled
-                // else {
-                //     // focus to password field:
-                //     passwordRef.current?.setSelectionRange(0, password.length);
-                //     passwordRef.current?.focus();
-                // } // if
-            } // try
-        })();
-    }, [resetPasswordToken, verified]);
-    
-    // focus on password field after successfully verified the password reset token:
-    useEffect(() => {
-        // conditions:
-        if (!verified) return; // NOT verified with success result => ignore
-        
-        
-        
-        // actions:
-        passwordRef.current?.focus();
-    }, [verified]);
     
     
     
     // handlers:
-    const doResetEx = useEvent(async (): Promise<void> => {
+    const doResetEx             = useEvent(async (): Promise<void> => {
         setPasswordFocused(false);  // important to hide the <Tooltip>
         setPassword2Focused(false); // important to hide the <Tooltip>
         
@@ -301,7 +200,7 @@ export const TabReset = (props: TabResetProps) => {
                     
                     
                     // values:
-                    value={(!!verified && verified?.email) || ''}
+                    value={email ?? ''}
                 />
             </Group>
             <Group className='password'>
@@ -551,7 +450,7 @@ export const TabReset = (props: TabResetProps) => {
                 // global stackable:
                 viewport={formRef}
             >
-                {(verified === undefined) && <CardBody>
+                {(email === null) && <CardBody>
                     <p>
                         <Busy />
                         &nbsp;
