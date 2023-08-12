@@ -68,6 +68,9 @@ import {
     default as credentialsConfig,
 }                           from '@/credentials.config'
 
+// other libs:
+import axios                from 'axios'
+
 
 
 // contexts:
@@ -129,6 +132,7 @@ export interface SignInState {
     // actions:
     doSignIn                : () => Promise<void>
     doSignInWith            : (providerType: BuiltInProviderType) => Promise<void>
+    doRecover               : () => Promise<void>
     
     
     
@@ -184,6 +188,7 @@ const SignInStateContext = createContext<SignInState>({
     // actions:
     doSignIn                : async () => {},
     doSignInWith            : async () => {},
+    doRecover               : async () => {},
     
     
     
@@ -267,6 +272,8 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     const {
         showMessageError,
         showMessageFieldError,
+        showMessageFetchError,
+        showMessageSuccess,
         showMessageNotification,
     } = useDialogMessage();
     
@@ -458,6 +465,80 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             );
         } // if
     });
+    const doRecover    = useEvent(async(): Promise<void> => {
+        // conditions:
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
+        
+        
+        
+        // validate:
+        // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
+        setEnableValidation(true);
+        await new Promise<void>((resolve) => { // wait for a validation state applied
+            setTimeout(() => {
+                setTimeout(() => {
+                    resolve();
+                }, 0);
+            }, 0);
+        });
+        if (!isMounted.current) return; // unmounted => abort
+        const invalidFields = formRef?.current?.querySelectorAll?.(invalidSelector);
+        if (invalidFields?.length) { // there is an/some invalid field
+            showMessageFieldError(invalidFields);
+            return;
+        } // if
+        
+        
+        
+        // attempts request recover password:
+        setIsBusy('recover'); // mark as busy
+        try {
+            const result = await axios.post('/api/auth/reset', { username });
+            if (!isMounted.current) return; // unmounted => abort
+            
+            
+            
+            // success
+            
+            
+            
+            setIsBusy(false); // unmark as busy
+            
+            
+            
+            // report the success:
+            await showMessageSuccess(
+                <p>
+                    {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
+                </p>
+            );
+            if (!isMounted.current) return; // unmounted => abort
+            
+            
+            
+            // redirect to sign in tab:
+            gotoSignIn();
+        }
+        catch (error: any) { // error
+            setIsBusy(false); // unmark as busy
+            
+            
+            
+            // resets:
+            setEnableValidation(false);
+            
+            
+            
+            // report the failure:
+            await showMessageFetchError(error);
+            
+            
+            
+            // focus to username field:
+            usernameRef.current?.setSelectionRange(0, username.length);
+            usernameRef.current?.focus();
+        } // try
+    });
     
     
     
@@ -511,6 +592,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // actions:
         doSignIn,            // stable ref
         doSignInWith,        // stable ref
+        doRecover,           // stable ref
         
         
         
