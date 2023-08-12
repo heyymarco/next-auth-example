@@ -306,18 +306,18 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         // fields & validations:
         username,
-        usernameChange,
+        usernameChange,  // stable ref
         usernameValid,
         
         password,
-        passwordChange,
+        passwordChange,  // stable ref
         passwordValid,
         passwordValidLength,
         passwordValidUppercase,
         passwordValidLowercase,
         
         password2,
-        password2Change,
+        password2Change, // stable ref
         password2Valid,
         password2ValidLength,
         password2ValidUppercase,
@@ -340,6 +340,25 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // states:
         section,
         isBusy,
+        
+        
+        
+        // fields & validations:
+        username,
+        usernameValid,
+        
+        password,
+        passwordValid,
+        passwordValidLength,
+        passwordValidUppercase,
+        passwordValidLowercase,
+        
+        password2,
+        password2Valid,
+        password2ValidLength,
+        password2ValidUppercase,
+        password2ValidLowercase,
+        password2ValidMatch,
     ]);
     
     
