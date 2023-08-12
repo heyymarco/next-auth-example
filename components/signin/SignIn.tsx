@@ -107,7 +107,6 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     const {
         // auths:
         providers,
-        resolveProviderName,
         
         
         
@@ -241,7 +240,6 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     <TabSignIn
                         // auths:
                         providers={providers}
-                        resolveProviderName={resolveProviderName}
                         
                         
                         
