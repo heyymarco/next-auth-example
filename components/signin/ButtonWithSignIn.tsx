@@ -37,12 +37,12 @@ export interface ButtonWithBusyProps
         >>
 {
     // auths:
-    providerType       : BuiltInProviderType
+    providerType : BuiltInProviderType
     
     
     
     // handlers:
-    onSignInUsingOAuth : (providerType: BuiltInProviderType) => void
+    onSignInWith : (providerType: BuiltInProviderType) => void
 }
 const ButtonWithSignIn = (props: ButtonWithBusyProps): JSX.Element|null => {
     // rest props:
@@ -58,14 +58,14 @@ const ButtonWithSignIn = (props: ButtonWithBusyProps): JSX.Element|null => {
         
         
         // handlers:
-        onSignInUsingOAuth,
+        onSignInWith,
     ...restButtonProps} = props;
     
     
     
     // handlers:
     const handleClick = useEvent(() => {
-        onSignInUsingOAuth(providerType);
+        onSignInWith(providerType);
     });
     
     

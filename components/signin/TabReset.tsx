@@ -115,14 +115,14 @@ export const TabReset = (props: TabResetProps) => {
     // states:
     const signInState = useSignInState();
     const {
+        // data:
+        resetPasswordToken,
+        
+        
+        
         // states:
         isBusy,
         setIsBusy,
-        
-        
-        
-        // data:
-        resetPasswordToken,
         
         
         

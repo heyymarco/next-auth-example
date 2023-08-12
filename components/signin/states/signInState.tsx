@@ -28,11 +28,16 @@ import {
     // types:
     type BuiltInProviderType,
 }                           from 'next-auth/providers'
+import {
+    // apis:
+    signIn,
+}                           from 'next-auth/react'
 
 // reusable-ui core:
 import {
     // react helper hooks:
     useEvent,
+    useMountedFlag,
     
     
     
@@ -49,7 +54,9 @@ import {
 // internals:
 import {
     // utilities:
+    invalidSelector,
     getAuthErrorDescription,
+    resolveProviderName as defaultResolveProviderName,
 }                           from '../utilities'
 import {
     // hooks:
@@ -74,6 +81,12 @@ export type BusyState =
     | 'recover'           // busy: recover
     | 'reset'             // busy: reset
 export interface SignInState {
+    // data:
+    callbackUrl             : string|null
+    resetPasswordToken      : string|null
+    
+    
+    
     // states:
     section                 : SignInSection
     isBusy                  : BusyState
@@ -82,6 +95,9 @@ export interface SignInState {
     
     
     // fields & validations:
+    formRef                 : React.MutableRefObject<HTMLFormElement|null>
+    
+    usernameRef             : React.MutableRefObject<HTMLInputElement|null>
     username                : string
     usernameChange          : React.ChangeEventHandler<HTMLInputElement>
     usernameValid           : boolean
@@ -103,18 +119,29 @@ export interface SignInState {
     
     
     
-    // data:
-    callbackUrl             : string|null
-    resetPasswordToken      : string|null
-    
-    
-    
     // navigations:
     gotoHome                : () => void
     gotoSignIn              : () => void
     gotoRecover             : () => void
+    
+    
+    
+    // actions:
+    doSignIn                : () => Promise<void>
+    doSignInWith            : (providerType: BuiltInProviderType) => Promise<void>
+    
+    
+    
+    // utilities:
+    resolveProviderName     : (oAuthProvider: BuiltInProviderType) => string
 }
 const SignInStateContext = createContext<SignInState>({
+    // data:
+    callbackUrl             : null,
+    resetPasswordToken      : null,
+    
+    
+    
     // states:
     section                 : 'signIn',
     isBusy                  : false,
@@ -123,6 +150,9 @@ const SignInStateContext = createContext<SignInState>({
     
     
     // fields & validations:
+    formRef                 : { current: null },
+    
+    usernameRef             : { current: null },
     username                : '',
     usernameChange          : () => {},
     usernameValid           : false,
@@ -144,21 +174,40 @@ const SignInStateContext = createContext<SignInState>({
     
     
     
-    // data:
-    callbackUrl             : null,
-    resetPasswordToken      : null,
-    
-    
-    
     // navigations:
     gotoHome                : () => {},
     gotoSignIn              : () => {},
     gotoRecover             : () => {},
+    
+    
+    
+    // actions:
+    doSignIn                : async () => {},
+    doSignInWith            : async () => {},
+    
+    
+    
+    // utilities:
+    resolveProviderName     : () => '',
 });
 export interface SignInStateProps {
-    /* empty */
+    // auths:
+    resolveProviderName ?: (oAuthProvider: BuiltInProviderType) => string
 }
 export const SignInStateProvider = (props: React.PropsWithChildren<SignInStateProps>) => {
+    // rest props:
+    const {
+        // auths:
+        resolveProviderName = defaultResolveProviderName,
+        
+        
+        
+        // children:
+        children,
+    } = props;
+    
+    
+    
     // navigations:
     const router       = useRouter();
     const pathName     = usePathname() ?? '/'
@@ -166,15 +215,25 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     
-    // states:
+    // data:
     const callbackUrlRef               = useRef<string|null>(searchParams?.get('callbackUrl'       ) || null);
+    const callbackUrl                  = callbackUrlRef.current;
     const resetPasswordTokenRef        = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
+    const resetPasswordToken           = resetPasswordTokenRef.current;
+    
+    
+    
+    // states:
     const [section, setSection       ] = useState<SignInSection>(!!resetPasswordTokenRef.current ? 'reset' : 'signIn');
     const [isBusy , setIsBusyInternal] = useState<BusyState>(false);
+    const isMounted                    = useMountedFlag();
     
     
     
     // fields:
+    const formRef     = useRef<HTMLFormElement|null>(null);
+    const usernameRef = useRef<HTMLInputElement|null>(null);
+    
     const [enableValidation, setEnableValidation          ] = useState<boolean>(false);
     const [username        , setUsername , usernameChange ] = useFieldState();
     const [password        , setPassword , passwordChange ] = useFieldState();
@@ -196,17 +255,19 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     const passwordValidLowercase  = !isUpdating ? true                     : (!passwordHasLowercase || !!password.match(/[a-z]/));
     const passwordValid           = passwordValidLength && passwordValidUppercase && passwordValidLowercase;
     
-    const password2ValidLength     = !isUpdating ? (password2.length >= 1) : ((password2.length >= passwordMinLength) && (password2.length <= passwordMaxLength));
-    const password2ValidUppercase  = !isUpdating ? true                    : (!passwordHasUppercase || !!password2.match(/[A-Z]/));
-    const password2ValidLowercase  = !isUpdating ? true                    : (!passwordHasLowercase || !!password2.match(/[a-z]/));
-    const password2ValidMatch      = !isUpdating ? true                    : (!!password && (password2 === password));
-    const password2Valid           = password2ValidLength && password2ValidUppercase && password2ValidLowercase;
+    const password2ValidLength    = !isUpdating ? (password2.length >= 1) : ((password2.length >= passwordMinLength) && (password2.length <= passwordMaxLength));
+    const password2ValidUppercase = !isUpdating ? true                    : (!passwordHasUppercase || !!password2.match(/[A-Z]/));
+    const password2ValidLowercase = !isUpdating ? true                    : (!passwordHasLowercase || !!password2.match(/[a-z]/));
+    const password2ValidMatch     = !isUpdating ? true                    : (!!password && (password2 === password));
+    const password2Valid          = password2ValidLength && password2ValidUppercase && password2ValidLowercase;
     
     
     
     // dialogs:
     const {
         showMessageError,
+        showMessageFieldError,
+        showMessageNotification,
     } = useDialogMessage();
     
     
@@ -259,6 +320,17 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         } // if
     }, []);
     
+    // focus on username field when the section is 'signIn' or 'recover':
+    useEffect(() => {
+        // conditions:
+        if (section === 'reset') return; // other than 'signIn' or 'recover' => ignore
+        
+        
+        
+        // actions:
+        usernameRef.current?.focus();
+    }, [section]);
+    
     // resets input states when the `section` changes:
     const prevSection = useRef<SignInSection>(section);
     useEffect(() => {
@@ -278,46 +350,149 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // stable callbacks:
-    const setIsBusy  = useEvent((isBusy: BusyState) => {
+    const setIsBusy    = useEvent((isBusy: BusyState) => {
         signInState.isBusy = isBusy; /* instant update without waiting for (slow|delayed) re-render */
         setIsBusyInternal(isBusy);
     });
     
-    const gotoHome    = useEvent(() => {
+    const gotoHome     = useEvent(() => {
         router.push('/');
     });
-    const gotoSignIn  = useEvent(() => {
+    const gotoSignIn   = useEvent(() => {
         setSection('signIn');
     });
-    const gotoRecover = useEvent(() => {
+    const gotoRecover  = useEvent(() => {
         setSection('recover');
+    });
+    
+    const doSignIn     = useEvent(async (): Promise<void> => {
+        // conditions:
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
+        
+        
+        
+        // validate:
+        // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
+        setEnableValidation(true);
+        await new Promise<void>((resolve) => { // wait for a validation state applied
+            setTimeout(() => {
+                setTimeout(() => {
+                    resolve();
+                }, 0);
+            }, 0);
+        });
+        if (!isMounted.current) return; // unmounted => abort
+        const invalidFields = formRef?.current?.querySelectorAll?.(invalidSelector);
+        if (invalidFields?.length) { // there is an/some invalid field
+            showMessageFieldError(invalidFields);
+            return;
+        } // if
+        
+        
+        
+        // attempts sign in using credentials:
+        setIsBusy('credentials'); // mark as busy
+        const result = await signIn('credentials', { username, password, redirect: false });
+        if (!isMounted.current) return; // unmounted => abort
+        
+        
+        
+        // verify the sign in status:
+        if (!result?.ok) { // error
+            setIsBusy(false); // unmark as busy
+            
+            
+            
+            // resets:
+            setEnableValidation(false);
+            setPassword('');
+            
+            
+            
+            // report the failure:
+            await showMessageError(getAuthErrorDescription(result?.error ?? 'CredentialsSignin'));
+            
+            
+            
+            // focus to username field:
+            usernameRef.current?.setSelectionRange(0, username.length);
+            usernameRef.current?.focus();
+        }
+        else { // success
+            // resets:
+            setUsername('');
+            setPassword('');
+            
+            
+            
+            // redirect to origin page:
+            if (callbackUrl) router.replace(callbackUrl);
+        } // if
+    });
+    const doSignInWith = useEvent(async (providerType: BuiltInProviderType): Promise<void> => {
+        // conditions:
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
+        
+        
+        
+        // attempts sign in using OAuth:
+        setIsBusy(providerType); // mark as busy
+        const result = await signIn(providerType, { callbackUrl: callbackUrl ?? undefined });
+        if (!isMounted.current) return; // unmounted => abort
+        
+        
+        
+        // verify the sign in status:
+        if ((result !== undefined) && !result?.ok) { // error
+            setIsBusy(false); // unmark as busy
+            
+            
+            
+            // report the failure:
+            showMessageError(getAuthErrorDescription(result?.error ?? 'OAuthSignin'));
+        }
+        else { // success
+            // report the success:
+            showMessageNotification(
+                <p>You are being redirected to <strong>{resolveProviderName(providerType)} sign in page</strong>. Please wait...</p>
+            );
+        } // if
     });
     
     
     
     // apis:
     const signInState = useMemo<SignInState>(() => ({
+        // data:
+        callbackUrl,
+        resetPasswordToken,
+        
+        
+        
         // states:
-        section            : section,
-        isBusy             : isBusy,
-        setIsBusy          : setIsBusy, // stable ref
+        section,
+        isBusy,
+        setIsBusy,           // stable ref
         
         
         
         // fields & validations:
+        formRef,             // stable ref
+        
+        usernameRef,         // stable ref
         username,
-        usernameChange,  // stable ref
+        usernameChange,      // stable ref
         usernameValid,
         
         password,
-        passwordChange,  // stable ref
+        passwordChange,      // stable ref
         passwordValid,
         passwordValidLength,
         passwordValidUppercase,
         passwordValidLowercase,
         
         password2,
-        password2Change, // stable ref
+        password2Change,     // stable ref
         password2Valid,
         password2ValidLength,
         password2ValidUppercase,
@@ -326,16 +501,21 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         
         
-        // data:
-        callbackUrl        : callbackUrlRef.current,        // stable ref
-        resetPasswordToken : resetPasswordTokenRef.current, // stable ref
-        
-        
-        
         // navigations:
-        gotoHome,    // stable ref
-        gotoSignIn,  // stable ref
-        gotoRecover, // stable ref
+        gotoHome,            // stable ref
+        gotoSignIn,          // stable ref
+        gotoRecover,         // stable ref
+        
+        
+        
+        // actions:
+        doSignIn,            // stable ref
+        doSignInWith,        // stable ref
+        
+        
+        
+        // utilities:
+        resolveProviderName, // stable ref
     }), [
         // states:
         section,
@@ -359,6 +539,12 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         password2ValidUppercase,
         password2ValidLowercase,
         password2ValidMatch,
+        
+        
+        
+        // data:
+        callbackUrl,
+        resetPasswordToken,
     ]);
     
     
@@ -370,7 +556,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
                 // validations:
                 enableValidation={enableValidation}
             >
-                {props.children}
+                {children}
             </ValidationProvider>
         </SignInStateContext.Provider>
     );

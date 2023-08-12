@@ -125,17 +125,6 @@ export const TabRecover = (props: TabRecoverProps) => {
     
     // dom effects:
     
-    // focus on username field when the <TabRecover> is active:
-    useEffect(() => {
-        // conditions:
-        if (section !== 'recover') return; // <TabRecover> is NOT active => ignore
-        
-        
-        
-        // actions:
-        usernameRef.current?.focus();
-    }, [section]);
-    
     // resets input states when the <TabRecover> is NOT active:
     useEffect(() => {
         // conditions:
