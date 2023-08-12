@@ -84,6 +84,14 @@ export type BusyState =
     | 'recover'           // busy: recover
     | 'reset'             // busy: reset
 export interface SignInState {
+    // constraints:
+    passwordMinLength       : number
+    passwordMaxLength       : number
+    passwordHasUppercase    : boolean
+    passwordHasLowercase    : boolean
+    
+    
+    
     // data:
     callbackUrl             : string|null
     resetPasswordToken      : string|null
@@ -105,6 +113,7 @@ export interface SignInState {
     usernameChange          : React.ChangeEventHandler<HTMLInputElement>
     usernameValid           : boolean
     
+    passwordRef             : React.MutableRefObject<HTMLInputElement|null>
     password                : string
     passwordChange          : React.ChangeEventHandler<HTMLInputElement>
     passwordValid           : boolean
@@ -112,6 +121,7 @@ export interface SignInState {
     passwordValidUppercase  : boolean
     passwordValidLowercase  : boolean
     
+    password2Ref            : React.MutableRefObject<HTMLInputElement|null>
     password2               : string
     password2Change         : React.ChangeEventHandler<HTMLInputElement>
     password2Valid          : boolean
@@ -133,6 +143,7 @@ export interface SignInState {
     doSignIn                : () => Promise<void>
     doSignInWith            : (providerType: BuiltInProviderType) => Promise<void>
     doRecover               : () => Promise<void>
+    doReset                 : () => Promise<void>
     
     
     
@@ -140,6 +151,14 @@ export interface SignInState {
     resolveProviderName     : (oAuthProvider: BuiltInProviderType) => string
 }
 const SignInStateContext = createContext<SignInState>({
+    // constraints:
+    passwordMinLength       : 0,
+    passwordMaxLength       : 0,
+    passwordHasUppercase    : false,
+    passwordHasLowercase    : false,
+    
+    
+    
     // data:
     callbackUrl             : null,
     resetPasswordToken      : null,
@@ -161,6 +180,7 @@ const SignInStateContext = createContext<SignInState>({
     usernameChange          : () => {},
     usernameValid           : false,
     
+    passwordRef             : { current: null },
     password                : '',
     passwordChange          : () => {},
     passwordValid           : false,
@@ -168,6 +188,7 @@ const SignInStateContext = createContext<SignInState>({
     passwordValidUppercase  : false,
     passwordValidLowercase  : false,
     
+    password2Ref            : { current: null },
     password2               : '',
     password2Change         : () => {},
     password2Valid          : false,
@@ -189,6 +210,7 @@ const SignInStateContext = createContext<SignInState>({
     doSignIn                : async () => {},
     doSignInWith            : async () => {},
     doRecover               : async () => {},
+    doReset                 : async () => {},
     
     
     
@@ -236,8 +258,10 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // fields:
-    const formRef     = useRef<HTMLFormElement|null>(null);
-    const usernameRef = useRef<HTMLInputElement|null>(null);
+    const formRef      = useRef<HTMLFormElement|null>(null);
+    const usernameRef  = useRef<HTMLInputElement|null>(null);
+    const passwordRef  = useRef<HTMLInputElement|null>(null);
+    const password2Ref = useRef<HTMLInputElement|null>(null);
     
     const [enableValidation, setEnableValidation          ] = useState<boolean>(false);
     const [username        , setUsername , usernameChange ] = useFieldState();
@@ -246,25 +270,28 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     
-    // validations:
+    // constraints:
     const passwordMinLength       = credentialsConfig.PASSWORD_MIN_LENGTH;
     const passwordMaxLength       = credentialsConfig.PASSWORD_MAX_LENGTH;
     const passwordHasUppercase    = credentialsConfig.PASSWORD_HAS_UPPERCASE;
     const passwordHasLowercase    = credentialsConfig.PASSWORD_HAS_LOWERCASE;
-    const isUpdating              = (section === 'reset');
     
+    
+    
+    // validations:
+    const isUpdating              = (section === 'reset');
     const usernameValid           = (username.length >= 1);
     
-    const passwordValidLength     = !isUpdating ? (password.length >= 1)   : ((password.length >= passwordMinLength) && (password.length <= passwordMaxLength));
-    const passwordValidUppercase  = !isUpdating ? true                     : (!passwordHasUppercase || !!password.match(/[A-Z]/));
-    const passwordValidLowercase  = !isUpdating ? true                     : (!passwordHasLowercase || !!password.match(/[a-z]/));
+    const passwordValidLength     = !isUpdating ? (password.length >= 1)  : ((password.length >= passwordMinLength) && (password.length <= passwordMaxLength));
+    const passwordValidUppercase  = !isUpdating ? true                    : (!passwordHasUppercase || !!password.match(/[A-Z]/));
+    const passwordValidLowercase  = !isUpdating ? true                    : (!passwordHasLowercase || !!password.match(/[a-z]/));
     const passwordValid           = passwordValidLength && passwordValidUppercase && passwordValidLowercase;
     
     const password2ValidLength    = !isUpdating ? (password2.length >= 1) : ((password2.length >= passwordMinLength) && (password2.length <= passwordMaxLength));
     const password2ValidUppercase = !isUpdating ? true                    : (!passwordHasUppercase || !!password2.match(/[A-Z]/));
     const password2ValidLowercase = !isUpdating ? true                    : (!passwordHasLowercase || !!password2.match(/[a-z]/));
     const password2ValidMatch     = !isUpdating ? true                    : (!!password && (password2 === password));
-    const password2Valid          = password2ValidLength && password2ValidUppercase && password2ValidLowercase;
+    const password2Valid          = password2ValidLength && password2ValidUppercase && password2ValidLowercase && password2ValidMatch;
     
     
     
@@ -539,11 +566,109 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             usernameRef.current?.focus();
         } // try
     });
+    const doReset      = useEvent(async (): Promise<void> => {
+        // conditions:
+        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
+        
+        
+        
+        // validate:
+        // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
+        setEnableValidation(true);
+        await new Promise<void>((resolve) => { // wait for a validation state applied
+            setTimeout(() => {
+                setTimeout(() => {
+                    resolve();
+                }, 0);
+            }, 0);
+        });
+        if (!isMounted.current) return; // unmounted => abort
+        const invalidFields = formRef?.current?.querySelectorAll?.(invalidSelector);
+        if (invalidFields?.length) { // there is an/some invalid field
+            showMessageFieldError(invalidFields);
+            return;
+        } // if
+        
+        
+        
+        // attempts apply password reset:
+        setIsBusy('reset'); // mark as busy
+        try {
+            const result = await axios.patch('/api/auth/reset', { resetPasswordToken, password });
+            if (!isMounted.current) return; // unmounted => abort
+            
+            
+            
+            // success
+            
+            
+            
+            setIsBusy(false); // unmark as busy
+            
+            
+            
+            // resets:
+            setEnableValidation(false);
+            setPassword('');
+            setPassword2('');
+            
+            
+            
+            // report the success:
+            await showMessageSuccess(
+                <p>
+                    {result.data.message ?? 'The password has been successfully changed. Now you can sign in with the new password.'}
+                </p>
+            );
+            if (!isMounted.current) return; // unmounted => abort
+            
+            
+            
+            // redirect to sign in tab:
+            gotoSignIn();
+        }
+        catch (error: any) { // error
+            setIsBusy(false); // unmark as busy
+            
+            
+            
+            // resets:
+            setEnableValidation(false);
+            
+            
+            
+            // report the failure:
+            await showMessageFetchError(error);
+            if (!isMounted.current) return; // unmounted => abort
+            
+            
+            
+            const errorCode     = error?.response?.status;
+            const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
+            if (isClientError) {
+                // redirect to sign in tab:
+                gotoSignIn();
+            }
+            else {
+                // focus to password field:
+                passwordRef.current?.setSelectionRange(0, password.length);
+                passwordRef.current?.focus();
+            } // if
+        } // try
+    });
     
     
     
     // apis:
     const signInState = useMemo<SignInState>(() => ({
+        // constraints:
+        passwordMinLength,
+        passwordMaxLength,
+        passwordHasUppercase,
+        passwordHasLowercase,
+        
+        
+        
         // data:
         callbackUrl,
         resetPasswordToken,
@@ -565,6 +690,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         usernameChange,      // stable ref
         usernameValid,
         
+        passwordRef,         // stable ref
         password,
         passwordChange,      // stable ref
         passwordValid,
@@ -572,6 +698,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         passwordValidUppercase,
         passwordValidLowercase,
         
+        password2Ref,        // stable ref
         password2,
         password2Change,     // stable ref
         password2Valid,
@@ -593,6 +720,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         doSignIn,            // stable ref
         doSignInWith,        // stable ref
         doRecover,           // stable ref
+        doReset,             // stable ref
         
         
         

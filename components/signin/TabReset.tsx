@@ -18,11 +18,6 @@ import {
     // react helper hooks:
     useEvent,
     useMountedFlag,
-    
-    
-    
-    // a validation management system:
-    ValidationProvider,
 }                           from '@reusable-ui/core'
 
 // reusable-ui components:
@@ -79,22 +74,12 @@ import {
     useSignInState,
 }                           from './states/signInState'
 import {
-    // utilities:
-    invalidSelector,
-    
-    
-    
     // handlers:
     handlePreventSubmit,
 }                           from './utilities'
 
 // other libs:
 import axios                from 'axios'
-
-// configs:
-import {
-    default as credentialsConfig,
-}                           from '@/credentials.config'
 
 
 
@@ -115,50 +100,74 @@ export const TabReset = (props: TabResetProps) => {
     // states:
     const signInState = useSignInState();
     const {
+        // constraints:
+        passwordMinLength,
+        passwordMaxLength,
+        passwordHasUppercase,
+        passwordHasLowercase,
+        
+        
+        
         // data:
         resetPasswordToken,
         
         
         
         // states:
+        section,
         isBusy,
-        setIsBusy,
+        
+        
+        
+        // fields & validations:
+        formRef,
+        
+        username,
+        
+        passwordRef,
+        password,
+        passwordChange,
+        passwordValid,
+        passwordValidLength,
+        passwordValidUppercase,
+        passwordValidLowercase,
+        
+        password2Ref,
+        password2,
+        password2Change,
+        password2Valid,
+        password2ValidLength,
+        password2ValidUppercase,
+        password2ValidLowercase,
+        password2ValidMatch,
         
         
         
         // navigations:
         gotoSignIn,
+        
+        
+        
+        // actions:
+        doReset,
     } = signInState;
     
     
     
     // dialogs:
     const {
-        showMessageFieldError,
         showMessageFetchError,
-        showMessageSuccess,
     } = useDialogMessage();
     
     
     
     // states:
-    const [enableValidation, setEnableValidation] = useState<boolean>(false);
-    const [password        , setPassword        ] = useState<string>('');
-    const [password2       , setPassword2       ] = useState<string>('');
-    
     const [verified, setVerified] = useState<undefined|{ email: string, username: string|null }|false>(!resetPasswordToken ? false : undefined);
     
     const [passwordFocused , setPasswordFocused ] = useState<boolean>(false);
     const [password2Focused, setPassword2Focused] = useState<boolean>(false);
     
     const isMounted = useMountedFlag();
-    
-    
-    
-    // refs:
-    const formResetRef = useRef<HTMLFormElement|null>(null);
-    const passwordRef  = useRef<HTMLInputElement|null>(null);
-    const password2Ref = useRef<HTMLInputElement|null>(null);
     
     
     
@@ -233,104 +242,15 @@ export const TabReset = (props: TabResetProps) => {
     
     
     // handlers:
-    const handleDoPasswordReset = useEvent(async (): Promise<void> => {
-        // conditions:
-        if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
+    const doResetEx = useEvent(async (): Promise<void> => {
+        setPasswordFocused(false);  // important to hide the <Tooltip>
+        setPassword2Focused(false); // important to hide the <Tooltip>
         
         
         
-        // validate:
-        // enable validation and *wait* until the next re-render of validation_enabled before we're going to `querySelectorAll()`:
-        setEnableValidation(true);
-        await new Promise<void>((resolve) => { // wait for a validation state applied
-            setTimeout(() => {
-                setTimeout(() => {
-                    resolve();
-                }, 0);
-            }, 0);
-        });
-        if (!isMounted.current) return; // unmounted => abort
-        const invalidFields = formResetRef?.current?.querySelectorAll?.(invalidSelector);
-        if (invalidFields?.length) { // there is an/some invalid field
-            showMessageFieldError(invalidFields);
-            return;
-        } // if
-        
-        
-        
-        // attempts apply password reset:
-        setIsBusy('reset'); // mark as busy
-        try {
-            const result = await axios.patch('/api/auth/reset', { resetPasswordToken, password });
-            if (!isMounted.current) return; // unmounted => abort
-            
-            
-            
-            // success
-            
-            
-            
-            setIsBusy(false); // unmark as busy
-            
-            
-            
-            // resets:
-            setEnableValidation(false);
-            setPassword('');
-            setPassword2('');
-            setPasswordFocused(false);  // important to hide the <Tooltip>
-            setPassword2Focused(false); // important to hide the <Tooltip>
-            
-            
-            
-            // report the success:
-            await showMessageSuccess(
-                <p>
-                    {result.data.message ?? 'The password has been successfully changed. Now you can sign in with the new password.'}
-                </p>
-            );
-            if (!isMounted.current) return; // unmounted => abort
-            
-            
-            
-            // redirect to sign in tab:
-            gotoSignIn();
-        }
-        catch (error: any) { // error
-            setIsBusy(false); // unmark as busy
-            
-            
-            
-            // resets:
-            setEnableValidation(false);
-            setPasswordFocused(false);  // important to hide the <Tooltip>
-            setPassword2Focused(false); // important to hide the <Tooltip>
-            
-            
-            
-            // report the failure:
-            await showMessageFetchError(error);
-            if (!isMounted.current) return; // unmounted => abort
-            
-            
-            
-            const errorCode     = error?.response?.status;
-            const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
-            if (isClientError) {
-                // redirect to sign in tab:
-                gotoSignIn();
-            }
-            else {
-                // focus to password field:
-                passwordRef.current?.setSelectionRange(0, password.length);
-                passwordRef.current?.focus();
-            } // if
-        } // try
+        await doReset();
     });
     
-    const handlePasswordChange  = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
-        setPassword(value);
-    });
     const handlePasswordFocus   = useEvent((): void => {
         setPasswordFocused(true);
     });
@@ -338,9 +258,6 @@ export const TabReset = (props: TabResetProps) => {
         setPasswordFocused(false);
     });
     
-    const handlePassword2Change = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
-        setPassword2(value);
-    });
     const handlePassword2Focus  = useEvent((): void => {
         setPassword2Focused(true);
     });
@@ -350,56 +267,12 @@ export const TabReset = (props: TabResetProps) => {
     
     
     
-    // fn props:
-    const passwordMinLength            = credentialsConfig.PASSWORD_MIN_LENGTH;
-    const passwordMaxLength            = credentialsConfig.PASSWORD_MAX_LENGTH;
-    const passwordHasUppercase         = credentialsConfig.PASSWORD_HAS_UPPERCASE;
-    const passwordHasLowercase         = credentialsConfig.PASSWORD_HAS_LOWERCASE;
-    
-    const passwordValidationLength     = (
-        (password.length >= passwordMinLength)
-        &&
-        (password.length <= passwordMaxLength)
-    );                                         // min-max characters
-    const passwordValidationUppercase  = (
-        !passwordHasUppercase
-        ||
-        !!password.match(/[A-Z]/)
-    );                                         // At least one capital letter
-    const passwordValidationLowercase  = (
-        !passwordHasLowercase
-        ||
-        !!password.match(/[a-z]/)
-    );                                         // At least one non-capital letter
-    
-    const password2ValidationLength    = (
-        (password2.length >= passwordMinLength)
-        &&
-        (password2.length <= passwordMaxLength)
-    );                                         // min-max characters
-    const password2ValidationUppercase = (
-        !passwordHasUppercase
-        ||
-        !!password2.match(/[A-Z]/)
-    );                                         // At least one capital letter
-    const password2ValidationLowercase = (
-        !passwordHasLowercase
-        ||
-        !!password2.match(/[a-z]/)
-    );                                         // At least one non-capital letter
-    const password2ValidationMatch     = (
-        !!password
-        &&
-        (password2 === password)
-    );                                         // Exact match to previous password
-    
-    
-    
     // jsx:
+    const isResetSection = (section === 'reset');
     return (
         <form
             // refs:
-            ref={formResetRef}
+            ref={isResetSection ? formRef : undefined}
             
             
             
@@ -411,283 +284,264 @@ export const TabReset = (props: TabResetProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            <ValidationProvider
-                // validations:
-                enableValidation={enableValidation}
+            <Group className='username'>
+                <Label
+                    // classes:
+                    className='solid'
+                >
+                    <Icon
+                        // appearances:
+                        icon='supervisor_account'
+                    />
+                </Label>
+                <EmailInput
+                    // accessibilities:
+                    readOnly={true}
+                    
+                    
+                    
+                    // values:
+                    value={(!!verified && verified?.email) || ''}
+                />
+            </Group>
+            <Group className='password'>
+                <Label
+                    // classes:
+                    className='solid'
+                >
+                    <Icon
+                        // appearances:
+                        icon='lock'
+                    />
+                </Label>
+                <PasswordInput
+                    // refs:
+                    elmRef={isResetSection ? passwordRef : undefined}
+                    
+                    
+                    
+                    // accessibilities:
+                    placeholder='New Password'
+                    autoComplete='new-password'
+                    
+                    
+                    
+                    // values:
+                    value={password}
+                    onChange={passwordChange}
+                    
+                    
+                    
+                    // validations:
+                    isValid={passwordValid}
+                    required={true}
+                    // minLength={passwordMinLength} // validate on JS level
+                    // maxLength={passwordMaxLength} // validate on JS level
+                    
+                    
+                    
+                    // handlers:
+                    onFocus={handlePasswordFocus}
+                    onBlur={handlePasswordBlur}
+                />
+            </Group>
+            <Group className='password2'>
+                <Label
+                    // classes:
+                    className='solid'
+                >
+                    <Icon
+                        // appearances:
+                        icon='lock'
+                    />
+                </Label>
+                <PasswordInput
+                    // refs:
+                    elmRef={isResetSection ? password2Ref : undefined}
+                    
+                    
+                    
+                    // accessibilities:
+                    placeholder='Confirm New Password'
+                    autoComplete='new-password'
+                    
+                    
+                    
+                    // values:
+                    value={password2}
+                    onChange={password2Change}
+                    
+                    
+                    
+                    // validations:
+                    isValid={password2Valid}
+                    required={true}
+                    // minLength={passwordMinLength} // validate on JS level
+                    // maxLength={passwordMaxLength} // validate on JS level
+                    
+                    
+                    
+                    // handlers:
+                    onFocus={handlePassword2Focus}
+                    onBlur={handlePassword2Blur}
+                />
+            </Group>
+            <Tooltip
+                // variants:
+                theme='warning'
+                
+                
+                
+                // states:
+                expanded={passwordFocused && !isBusy}
+                
+                
+                
+                // floatable:
+                floatingOn={passwordRef}
+                floatingPlacement='top'
             >
-                <Group className='username'>
-                    <Label
-                        // classes:
-                        className='solid'
-                    >
-                        <Icon
-                            // appearances:
-                            icon='supervisor_account'
-                        />
-                    </Label>
-                    <EmailInput
-                        // accessibilities:
-                        readOnly={true}
-                        
-                        
-                        
-                        // values:
-                        value={(!!verified && verified?.email) || ''}
-                    />
-                </Group>
-                <Group className='password'>
-                    <Label
-                        // classes:
-                        className='solid'
-                    >
-                        <Icon
-                            // appearances:
-                            icon='lock'
-                        />
-                    </Label>
-                    <PasswordInput
-                        // refs:
-                        elmRef={passwordRef}
-                        
-                        
-                        
-                        // accessibilities:
-                        placeholder='New Password'
-                        autoComplete='new-password'
-                        
-                        
-                        
-                        // values:
-                        value={password}
-                        onChange={handlePasswordChange}
-                        
-                        
-                        
-                        // validations:
-                        isValid={
-                            passwordValidationLength
-                            &&
-                            passwordValidationUppercase
-                            &&
-                            passwordValidationLowercase
-                        }
-                        required={true}
-                        // minLength={passwordMinLength} // validate on JS level
-                        // maxLength={passwordMaxLength} // validate on JS level
-                        
-                        
-                        
-                        // handlers:
-                        onFocus={handlePasswordFocus}
-                        onBlur={handlePasswordBlur}
-                    />
-                </Group>
-                <Group className='password2'>
-                    <Label
-                        // classes:
-                        className='solid'
-                    >
-                        <Icon
-                            // appearances:
-                            icon='lock'
-                        />
-                    </Label>
-                    <PasswordInput
-                        // refs:
-                        elmRef={password2Ref}
-                        
-                        
-                        
-                        // accessibilities:
-                        placeholder='Confirm New Password'
-                        autoComplete='new-password'
-                        
-                        
-                        
-                        // values:
-                        value={password2}
-                        onChange={handlePassword2Change}
-                        
-                        
-                        
-                        // validations:
-                        isValid={
-                            password2ValidationLength
-                            &&
-                            password2ValidationUppercase
-                            &&
-                            password2ValidationLowercase
-                            &&
-                            password2ValidationMatch
-                        }
-                        required={true}
-                        // minLength={passwordMinLength} // validate on JS level
-                        // maxLength={passwordMaxLength} // validate on JS level
-                        
-                        
-                        
-                        // handlers:
-                        onFocus={handlePassword2Focus}
-                        onBlur={handlePassword2Blur}
-                    />
-                </Group>
-                <Tooltip
+                <List
                     // variants:
-                    theme='warning'
-                    
-                    
-                    
-                    // states:
-                    expanded={passwordFocused && !isBusy}
-                    
-                    
-                    
-                    // floatable:
-                    floatingOn={passwordRef}
-                    floatingPlacement='top'
+                    listStyle='flat'
                 >
-                    <List
+                    <ListItem
                         // variants:
-                        listStyle='flat'
+                        size='sm'
+                        theme={passwordValidLength ? 'success' : 'danger'}
+                        outlined={true}
                     >
-                        <ListItem
-                            // variants:
-                            size='sm'
-                            theme={passwordValidationLength ? 'success' : 'danger'}
-                            outlined={true}
-                        >
-                            <Icon
-                                // appearances:
-                                icon={passwordValidationLength ? 'check' : 'error_outline'}
-                            />
-                            &nbsp;
-                            {passwordMinLength}-{passwordMaxLength} characters
-                        </ListItem>
-                        {!!passwordHasUppercase && <ListItem
-                            // variants:
-                            size='sm'
-                            theme={passwordValidationUppercase ? 'success' : 'danger'}
-                            outlined={true}
-                        >
-                            <Icon
-                                // appearances:
-                                icon={passwordValidationUppercase ? 'check' : 'error_outline'}
-                            />
-                            &nbsp;
-                            At least one capital letter
-                        </ListItem>}
-                        {!!passwordHasLowercase && <ListItem
-                            // variants:
-                            size='sm'
-                            theme={passwordValidationLowercase ? 'success' : 'danger'}
-                            outlined={true}
-                        >
-                            <Icon
-                                // appearances:
-                                icon={passwordValidationLowercase ? 'check' : 'error_outline'}
-                            />
-                            &nbsp;
-                            At least one non-capital letter
-                        </ListItem>}
-                    </List>
-                </Tooltip>
-                <Tooltip
+                        <Icon
+                            // appearances:
+                            icon={passwordValidLength ? 'check' : 'error_outline'}
+                        />
+                        &nbsp;
+                        {passwordMinLength}-{passwordMaxLength} characters
+                    </ListItem>
+                    {passwordHasUppercase && <ListItem
+                        // variants:
+                        size='sm'
+                        theme={passwordValidUppercase ? 'success' : 'danger'}
+                        outlined={true}
+                    >
+                        <Icon
+                            // appearances:
+                            icon={passwordValidUppercase ? 'check' : 'error_outline'}
+                        />
+                        &nbsp;
+                        At least one capital letter
+                    </ListItem>}
+                    {passwordHasLowercase && <ListItem
+                        // variants:
+                        size='sm'
+                        theme={passwordValidLowercase ? 'success' : 'danger'}
+                        outlined={true}
+                    >
+                        <Icon
+                            // appearances:
+                            icon={passwordValidLowercase ? 'check' : 'error_outline'}
+                        />
+                        &nbsp;
+                        At least one non-capital letter
+                    </ListItem>}
+                </List>
+            </Tooltip>
+            <Tooltip
+                // variants:
+                theme='warning'
+                
+                
+                
+                // states:
+                expanded={password2Focused && !isBusy}
+                
+                
+                
+                // floatable:
+                floatingOn={password2Ref}
+                floatingPlacement='top'
+            >
+                <List
                     // variants:
-                    theme='warning'
-                    
-                    
-                    
-                    // states:
-                    expanded={password2Focused && !isBusy}
-                    
-                    
-                    
-                    // floatable:
-                    floatingOn={password2Ref}
-                    floatingPlacement='top'
+                    listStyle='flat'
                 >
-                    <List
+                    <ListItem
                         // variants:
-                        listStyle='flat'
+                        size='sm'
+                        theme={password2ValidLength ? 'success' : 'danger'}
+                        outlined={true}
                     >
-                        <ListItem
-                            // variants:
-                            size='sm'
-                            theme={password2ValidationLength ? 'success' : 'danger'}
-                            outlined={true}
-                        >
-                            <Icon
-                                // appearances:
-                                icon={password2ValidationLength ? 'check' : 'error_outline'}
-                            />
-                            &nbsp;
-                            {passwordMinLength}-{passwordMaxLength} characters
-                        </ListItem>
-                        {!!passwordHasUppercase && <ListItem
-                            // variants:
-                            size='sm'
-                            theme={password2ValidationUppercase ? 'success' : 'danger'}
-                            outlined={true}
-                        >
-                            <Icon
-                                // appearances:
-                                icon={password2ValidationUppercase ? 'check' : 'error_outline'}
-                            />
-                            &nbsp;
-                            At least one capital letter
-                        </ListItem>}
-                        {!!passwordHasLowercase && <ListItem
-                            // variants:
-                            size='sm'
-                            theme={password2ValidationLowercase ? 'success' : 'danger'}
-                            outlined={true}
-                        >
-                            <Icon
-                                // appearances:
-                                icon={password2ValidationLowercase ? 'check' : 'error_outline'}
-                            />
-                            &nbsp;
-                            At least one non-capital letter
-                        </ListItem>}
-                        <ListItem
-                            // variants:
-                            size='sm'
-                            theme={password2ValidationMatch ? 'success' : 'danger'}
-                            outlined={true}
-                        >
-                            <Icon
-                                // appearances:
-                                icon={password2ValidationMatch ? 'check' : 'error_outline'}
-                            />
-                            &nbsp;
-                            Exact match to previous password
-                        </ListItem>
-                    </List>
-                </Tooltip>
-                {/* <ButtonResetPassword> */}
-                {React.cloneElement<ButtonProps>(buttonResetPasswordComponent,
-                    // props:
-                    {
-                        // actions:
-                        type      : buttonResetPasswordComponent.props.type      ?? 'submit',
-                        
-                        
-                        
-                        // classes:
-                        className : buttonResetPasswordComponent.props.className ?? 'resetPassword',
-                        
-                        
-                        
-                        // handlers:
-                        onClick   : buttonResetPasswordComponent.props.onClick   ?? handleDoPasswordReset,
-                    },
+                        <Icon
+                            // appearances:
+                            icon={password2ValidLength ? 'check' : 'error_outline'}
+                        />
+                        &nbsp;
+                        {passwordMinLength}-{passwordMaxLength} characters
+                    </ListItem>
+                    {passwordHasUppercase && <ListItem
+                        // variants:
+                        size='sm'
+                        theme={password2ValidUppercase ? 'success' : 'danger'}
+                        outlined={true}
+                    >
+                        <Icon
+                            // appearances:
+                            icon={password2ValidUppercase ? 'check' : 'error_outline'}
+                        />
+                        &nbsp;
+                        At least one capital letter
+                    </ListItem>}
+                    {passwordHasLowercase && <ListItem
+                        // variants:
+                        size='sm'
+                        theme={password2ValidLowercase ? 'success' : 'danger'}
+                        outlined={true}
+                    >
+                        <Icon
+                            // appearances:
+                            icon={password2ValidLowercase ? 'check' : 'error_outline'}
+                        />
+                        &nbsp;
+                        At least one non-capital letter
+                    </ListItem>}
+                    <ListItem
+                        // variants:
+                        size='sm'
+                        theme={password2ValidMatch ? 'success' : 'danger'}
+                        outlined={true}
+                    >
+                        <Icon
+                            // appearances:
+                            icon={password2ValidMatch ? 'check' : 'error_outline'}
+                        />
+                        &nbsp;
+                        Exact match to previous password
+                    </ListItem>
+                </List>
+            </Tooltip>
+            {/* <ButtonResetPassword> */}
+            {React.cloneElement<ButtonProps>(buttonResetPasswordComponent,
+                // props:
+                {
+                    // actions:
+                    type      : buttonResetPasswordComponent.props.type      ?? 'submit',
                     
                     
                     
-                    // children:
-                    buttonResetPasswordComponent.props.children ?? 'Reset Password',
-                )}
-            </ValidationProvider>
+                    // classes:
+                    className : buttonResetPasswordComponent.props.className ?? 'resetPassword',
+                    
+                    
+                    
+                    // handlers:
+                    onClick   : buttonResetPasswordComponent.props.onClick   ?? doResetEx,
+                },
+                
+                
+                
+                // children:
+                buttonResetPasswordComponent.props.children ?? 'Reset Password',
+            )}
             <ModalStatus
                 // variants:
                 theme='primary'
@@ -695,7 +549,7 @@ export const TabReset = (props: TabResetProps) => {
                 
                 
                 // global stackable:
-                viewport={formResetRef}
+                viewport={formRef}
             >
                 {(verified === undefined) && <CardBody>
                     <p>

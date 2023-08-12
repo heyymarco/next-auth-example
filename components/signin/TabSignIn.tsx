@@ -93,6 +93,7 @@ export const TabSignIn = (props: TabSignInProps) => {
         usernameChange,
         usernameValid,
         
+        passwordRef,
         password,
         passwordChange,
         passwordValid,
@@ -172,6 +173,11 @@ export const TabSignIn = (props: TabSignInProps) => {
                     />
                 </Label>
                 <PasswordInput
+                    // refs:
+                    elmRef={isSignInSection ? passwordRef : undefined}
+                    
+                    
+                    
                     // accessibilities:
                     placeholder='Password'
                     autoComplete='current-password'
