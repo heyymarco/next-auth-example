@@ -50,14 +50,18 @@ import {
 
 
 // contexts:
-export type BusyState =
-    | false
+export type SignInSection =
+    | 'signIn'
     | 'recover'
     | 'reset'
-    | BuiltInProviderType
+export type BusyState =
+    | false               // idle
+    | BuiltInProviderType // busy: login with ...
+    | 'recover'           // busy: recover
+    | 'reset'             // busy: reset
 export interface SignInState {
     // states:
-    expandedTabIndex   : number
+    section            : SignInSection
     isBusy             : BusyState
     setIsBusy          : (isBusy: BusyState) => void
     
@@ -76,7 +80,7 @@ export interface SignInState {
 }
 const SignInStateContext = createContext<SignInState>({
     // states:
-    expandedTabIndex   : 0,
+    section            : 'signIn',
     isBusy             : false,
     setIsBusy          : () => {},
     
@@ -105,10 +109,10 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // states:
-    const callbackUrlRef                          = useRef<string|null>(searchParams?.get('callbackUrl'       ) || null);
-    const resetPasswordTokenRef                   = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
-    const [expandedTabIndex, setExpandedTabIndex] = useState<number>(!!resetPasswordTokenRef.current ? 2 : 0);
-    const [isBusy          , setIsBusyInternal  ] = useState<BusyState>(false);
+    const callbackUrlRef               = useRef<string|null>(searchParams?.get('callbackUrl'       ) || null);
+    const resetPasswordTokenRef        = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
+    const [section, setSection       ] = useState<SignInSection>(!!resetPasswordTokenRef.current ? 'reset' : 'signIn');
+    const [isBusy , setIsBusyInternal] = useState<BusyState>(false);
     
     
     
@@ -179,10 +183,10 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         router.push('/');
     });
     const gotoSignIn  = useEvent(() => {
-        setExpandedTabIndex(0);
+        setSection('signIn');
     });
     const gotoRecover = useEvent(() => {
-        setExpandedTabIndex(1);
+        setSection('recover');
     });
     
     
@@ -190,7 +194,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     // apis:
     const signInState = useMemo<SignInState>(() => ({
         // states:
-        expandedTabIndex   : expandedTabIndex,
+        section            : section,
         isBusy             : isBusy,
         setIsBusy          : setIsBusy, // stable ref
         
@@ -208,7 +212,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         gotoRecover, // stable ref
     }), [
         // states:
-        expandedTabIndex,
+        section,
         isBusy,
     ]);
     

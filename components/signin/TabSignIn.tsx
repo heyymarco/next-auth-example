@@ -128,7 +128,7 @@ export const TabSignIn = (props: TabSignInProps) => {
     const signInState = useSignInState();
     const {
         // states:
-        expandedTabIndex,
+        section,
         setIsBusy,
         
         
@@ -158,7 +158,7 @@ export const TabSignIn = (props: TabSignInProps) => {
     const [username        , setUsername        ] = useState<string>('');
     const [password        , setPassword        ] = useState<string>('');
     
-    const isMounted       = useMountedFlag();
+    const isMounted = useMountedFlag();
     
     
     
@@ -173,18 +173,18 @@ export const TabSignIn = (props: TabSignInProps) => {
     // focus on username field when the <TabSignIn> is active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex !== 0) return; // <TabSignIn> is NOT active => ignore
+        if (section !== 'signIn') return; // <TabSignIn> is NOT active => ignore
         
         
         
         // actions:
         usernameRef.current?.focus();
-    }, [expandedTabIndex]);
+    }, [section]);
     
     // resets input states when the <TabSignIn> is NOT active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex === 0) return; // <TabSignIn> is active => ignore
+        if (section === 'signIn') return; // <TabSignIn> is active => ignore
         
         
         
@@ -192,7 +192,7 @@ export const TabSignIn = (props: TabSignInProps) => {
         setEnableValidation(false);
         setUsername('');
         setPassword('');
-    }, [expandedTabIndex]);
+    }, [section]);
     
     
     

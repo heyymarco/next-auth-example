@@ -89,7 +89,7 @@ export const TabRecover = (props: TabRecoverProps) => {
     const signInState = useSignInState();
     const {
         // states:
-        expandedTabIndex,
+        section,
         setIsBusy,
         
         
@@ -113,7 +113,7 @@ export const TabRecover = (props: TabRecoverProps) => {
     const [enableValidation, setEnableValidation] = useState<boolean>(false);
     const [username        , setUsername        ] = useState<string>('');
     
-    const isMounted       = useMountedFlag();
+    const isMounted = useMountedFlag();
     
     
     
@@ -128,25 +128,25 @@ export const TabRecover = (props: TabRecoverProps) => {
     // focus on username field when the <TabRecover> is active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex !== 1) return; // <TabRecover> is NOT active => ignore
+        if (section !== 'recover') return; // <TabRecover> is NOT active => ignore
         
         
         
         // actions:
         usernameRef.current?.focus();
-    }, [expandedTabIndex]);
+    }, [section]);
     
     // resets input states when the <TabRecover> is NOT active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex === 1) return; // <TabRecover> is active => ignore
+        if (section === 'recover') return; // <TabRecover> is active => ignore
         
         
         
         // resets:
         setEnableValidation(false);
         setUsername('');
-    }, [expandedTabIndex]);
+    }, [section]);
     
     
     

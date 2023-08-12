@@ -131,7 +131,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     // states:
     const {
         // states:
-        expandedTabIndex,
+        section,
         isBusy,
         
         
@@ -208,7 +208,13 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                 
                 
                 // states:
-                expandedTabIndex={expandedTabIndex}
+                expandedTabIndex={
+                    (section === 'recover')
+                    ? 1
+                    :   (section === 'reset')
+                        ? 2
+                        : 0
+                }
                 
                 
                 
