@@ -106,20 +106,20 @@ export const usesSignInLayout = () => {
                     ...children(signinElm, {
                         ...rule('.credentials', {
                             // positions:
-                            gridArea : 'signInCredentials',
+                            gridArea : 'actionBtn',
                         }),
                     }),
                     ...children(sendResetLinkElm, {
                         // positions:
-                        gridArea : 'sendResetLink',
+                        gridArea : 'actionBtn',
                     }),
                     ...children(resetPasswordElm, {
                         // positions:
-                        gridArea : 'resetPassword',
+                        gridArea : 'actionBtn',
                     }),
                     ...children(signinSeparatorElm, {
                         // positions:
-                        gridArea  : 'signinSeparator',
+                        gridArea  : 'separator',
                         alignSelf : 'center',
                         
                         
@@ -152,12 +152,12 @@ export const usesSignInLayout = () => {
             ...children(signInTabElm, {
                 // layouts:
                 gridTemplate : [[
-                    '"username                   username" min-content',
-                    '"password                   password" min-content',
-                    '"signInCredentials signInCredentials" min-content',
-                    '"gotoHome                  gotoReset" min-content',
-                    '"signinSeparator     signinSeparator" min-content',
-                    '"................. ................." auto',
+                    '"username     username" min-content',
+                    '"password     password" min-content',
+                    '"actionBtn   actionBtn" min-content',
+                    '"gotoHome    gotoReset" min-content',
+                    '"separator   separator" min-content',
+                    '".......... .........." auto',
                     '/',
                     '1fr 1fr'
                 ]],
@@ -165,10 +165,10 @@ export const usesSignInLayout = () => {
             ...children(recoveryTabElm, {
                 // layouts:
                 gridTemplate : [[
-                    '"username                   username" min-content',
-                    '"sendResetLink         sendResetLink" min-content',
-                    '"gotoSignIn               .........." min-content',
-                    '"................. ................." auto',
+                    '"username     username" min-content',
+                    '"actionBtn   actionBtn" min-content',
+                    '"gotoSignIn .........." min-content',
+                    '".......... .........." auto',
                     '/',
                     '1fr 1fr'
                 ]],
@@ -176,12 +176,12 @@ export const usesSignInLayout = () => {
             ...children(resetTabElm, {
                 // layouts:
                 gridTemplate : [[
-                    '"username                   username" min-content',
-                    '"password                   password" min-content',
-                    '"password2                 password2" min-content',
-                    '"resetPassword         resetPassword" min-content',
-                    '"gotoSignIn               .........." min-content',
-                    '"................. ................." auto',
+                    '"username     username" min-content',
+                    '"password     password" min-content',
+                    '"password2   password2" min-content',
+                    '"actionBtn   actionBtn" min-content',
+                    '"gotoSignIn .........." min-content',
+                    '".......... .........." auto',
                     '/',
                     '1fr 1fr'
                 ]],
