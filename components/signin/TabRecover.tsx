@@ -107,7 +107,7 @@ export const TabRecover = (props: TabRecoverProps) => {
                 </Label>
                 <TextInput
                     // refs:
-                    elmRef={usernameRef}
+                    elmRef={isRecoverSection ? usernameRef : undefined}
                     
                     
                     
