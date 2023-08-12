@@ -107,7 +107,7 @@ export const TabReset = (props: TabResetProps) => {
     // rest props:
     const {
         // components:
-        buttonResetPasswordComponent = (<ButtonWithBusy busyType='sendResetLink' buttonComponent={<ButtonIcon icon='save' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        buttonResetPasswordComponent = (<ButtonWithBusy busyType='recover' buttonComponent={<ButtonIcon icon='save' />} /> as React.ReactComponentElement<any, ButtonProps>),
     } = props;
     
     
@@ -259,7 +259,7 @@ export const TabReset = (props: TabResetProps) => {
         
         
         // attempts apply password reset:
-        setIsBusy('resetPassword'); // mark as busy
+        setIsBusy('reset'); // mark as busy
         try {
             const result = await axios.patch('/api/auth/reset', { resetPasswordToken, password });
             if (!isMounted.current) return; // unmounted => abort

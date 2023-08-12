@@ -39,21 +39,21 @@ import {
 import {
     // elements:
     signInTabElm,
-    recoveryTabElm,
+    recoverTabElm,
     resetTabElm,
     
     usernameElm,
     passwordElm,
     password2Elm,
     signinElm,
-    sendResetLinkElm,
+    sendRecoverLinkElm,
     resetPasswordElm,
     
     signinSeparatorElm,
     
     gotoHomeElm,
     gotoSignInElm,
-    gotoResetElm,
+    gotoRecoverElm,
 }                           from './elements'
 import {
     // configs:
@@ -72,7 +72,7 @@ export const usesSignInLayout = () => {
         ...usesContentLayout(),
         ...style({
             // children:
-            ...children([signInTabElm, recoveryTabElm, resetTabElm], {
+            ...children([signInTabElm, recoverTabElm, resetTabElm], {
                 // layouts:
                 display      : 'grid',
                 
@@ -109,7 +109,7 @@ export const usesSignInLayout = () => {
                             gridArea : 'actionBtn',
                         }),
                     }),
-                    ...children(sendResetLinkElm, {
+                    ...children(sendRecoverLinkElm, {
                         // positions:
                         gridArea : 'actionBtn',
                     }),
@@ -143,32 +143,32 @@ export const usesSignInLayout = () => {
                     gridArea    : 'gotoSignIn',
                     justifySelf : 'start',
                 }),
-                ...children(gotoResetElm, {
+                ...children(gotoRecoverElm, {
                     // positions:
-                    gridArea    : 'gotoReset',
+                    gridArea    : 'gotoRecover',
                     justifySelf : 'end',
                 }),
             }),
             ...children(signInTabElm, {
                 // layouts:
                 gridTemplate : [[
-                    '"username     username" min-content',
-                    '"password     password" min-content',
-                    '"actionBtn   actionBtn" min-content',
-                    '"gotoHome    gotoReset" min-content',
-                    '"separator   separator" min-content',
-                    '".......... .........." auto',
+                    '"username       username" min-content',
+                    '"password       password" min-content',
+                    '"actionBtn     actionBtn" min-content',
+                    '"gotoHome    gotoRecover" min-content',
+                    '"separator     separator" min-content',
+                    '"........... ..........." auto',
                     '/',
                     '1fr 1fr'
                 ]],
             }),
-            ...children(recoveryTabElm, {
+            ...children(recoverTabElm, {
                 // layouts:
                 gridTemplate : [[
-                    '"username     username" min-content',
-                    '"actionBtn   actionBtn" min-content',
-                    '"gotoSignIn .........." min-content',
-                    '".......... .........." auto',
+                    '"username       username" min-content',
+                    '"actionBtn     actionBtn" min-content',
+                    '"gotoSignIn  ..........." min-content',
+                    '"........... ..........." auto',
                     '/',
                     '1fr 1fr'
                 ]],
@@ -176,12 +176,12 @@ export const usesSignInLayout = () => {
             ...children(resetTabElm, {
                 // layouts:
                 gridTemplate : [[
-                    '"username     username" min-content',
-                    '"password     password" min-content',
-                    '"password2   password2" min-content',
-                    '"actionBtn   actionBtn" min-content',
-                    '"gotoSignIn .........." min-content',
-                    '".......... .........." auto',
+                    '"username       username" min-content',
+                    '"password       password" min-content',
+                    '"password2     password2" min-content',
+                    '"actionBtn     actionBtn" min-content',
+                    '"gotoSignIn  ..........." min-content',
+                    '"........... ..........." auto',
                     '/',
                     '1fr 1fr'
                 ]],

@@ -72,15 +72,15 @@ import axios                from 'axios'
 
 
 // react components:
-export interface TabForgotProps {
+export interface TabRecoverProps {
     // components:
-    buttonSendResetLinkComponent ?: Required<ButtonComponentProps>['buttonComponent']
+    buttonSendRecoverLinkComponent ?: Required<ButtonComponentProps>['buttonComponent']
 }
-export const TabForgot = (props: TabForgotProps) => {
+export const TabRecover = (props: TabRecoverProps) => {
     // rest props:
     const {
         // components:
-        buttonSendResetLinkComponent = (<ButtonWithBusy busyType='sendResetLink' buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        buttonSendRecoverLinkComponent = (<ButtonWithBusy busyType='recover' buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
     } = props;
     
     
@@ -118,17 +118,17 @@ export const TabForgot = (props: TabForgotProps) => {
     
     
     // refs:
-    const formForgotRef = useRef<HTMLFormElement|null>(null);
-    const usernameRef   = useRef<HTMLInputElement|null>(null);
+    const formRecoverRef = useRef<HTMLFormElement|null>(null);
+    const usernameRef    = useRef<HTMLInputElement|null>(null);
     
     
     
     // dom effects:
     
-    // focus on username field when the <TabForgot> is active:
+    // focus on username field when the <TabRecover> is active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex !== 1) return; // <TabForgot> is NOT active => ignore
+        if (expandedTabIndex !== 1) return; // <TabRecover> is NOT active => ignore
         
         
         
@@ -136,10 +136,10 @@ export const TabForgot = (props: TabForgotProps) => {
         usernameRef.current?.focus();
     }, [expandedTabIndex]);
     
-    // resets input states when the <TabForgot> is NOT active:
+    // resets input states when the <TabRecover> is NOT active:
     useEffect(() => {
         // conditions:
-        if (expandedTabIndex === 1) return; // <TabForgot> is active => ignore
+        if (expandedTabIndex === 1) return; // <TabRecover> is active => ignore
         
         
         
@@ -151,7 +151,7 @@ export const TabForgot = (props: TabForgotProps) => {
     
     
     // handlers:
-    const handleRequestPasswordReset = useEvent(async (): Promise<void> => {
+    const handleRequestRecoverLink = useEvent(async (): Promise<void> => {
         // conditions:
         if (signInState.isBusy) return; // ignore when busy /* instant update without waiting for (slow|delayed) re-render */
         
@@ -168,7 +168,7 @@ export const TabForgot = (props: TabForgotProps) => {
             }, 0);
         });
         if (!isMounted.current) return; // unmounted => abort
-        const invalidFields = formForgotRef?.current?.querySelectorAll?.(invalidSelector);
+        const invalidFields = formRecoverRef?.current?.querySelectorAll?.(invalidSelector);
         if (invalidFields?.length) { // there is an/some invalid field
             showMessageFieldError(invalidFields);
             return;
@@ -176,8 +176,8 @@ export const TabForgot = (props: TabForgotProps) => {
         
         
         
-        // attempts request password reset:
-        setIsBusy('sendResetLink'); // mark as busy
+        // attempts request recover password:
+        setIsBusy('recover'); // mark as busy
         try {
             const result = await axios.post('/api/auth/reset', { username });
             if (!isMounted.current) return; // unmounted => abort
@@ -236,7 +236,7 @@ export const TabForgot = (props: TabForgotProps) => {
     return (
         <form
             // refs:
-            ref={formForgotRef}
+            ref={formRecoverRef}
             
             
             
@@ -285,28 +285,28 @@ export const TabForgot = (props: TabForgotProps) => {
                         required={true}
                     />
                 </Group>
-                {/* <ButtonSendResetLink> */}
-                {React.cloneElement<ButtonProps>(buttonSendResetLinkComponent,
+                {/* <ButtonSendRecoverLink> */}
+                {React.cloneElement<ButtonProps>(buttonSendRecoverLinkComponent,
                     // props:
                     {
                         // actions:
-                        type      : buttonSendResetLinkComponent.props.type      ?? 'submit',
+                        type      : buttonSendRecoverLinkComponent.props.type      ?? 'submit',
                         
                         
                         
                         // classes:
-                        className : buttonSendResetLinkComponent.props.className ?? 'sendResetLink',
+                        className : buttonSendRecoverLinkComponent.props.className ?? 'sendRecoverLink',
                         
                         
                         
                         // handlers:
-                        onClick   : buttonSendResetLinkComponent.props.onClick   ?? handleRequestPasswordReset,
+                        onClick   : buttonSendRecoverLinkComponent.props.onClick   ?? handleRequestRecoverLink,
                     },
                     
                     
                     
                     // children:
-                    buttonSendResetLinkComponent.props.children ?? 'Send Reset Password Link',
+                    buttonSendRecoverLinkComponent.props.children ?? 'Send Reset Password Link',
                 )}
             </ValidationProvider>
         </form>

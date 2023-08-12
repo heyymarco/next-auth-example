@@ -52,8 +52,8 @@ import {
 // contexts:
 export type BusyState =
     | false
-    | 'sendResetLink'
-    | 'resetPassword'
+    | 'recover'
+    | 'reset'
     | BuiltInProviderType
 export interface SignInState {
     // states:
@@ -72,7 +72,7 @@ export interface SignInState {
     // navigations:
     gotoHome           : () => void
     gotoSignIn         : () => void
-    gotoReset          : () => void
+    gotoRecover        : () => void
 }
 const SignInStateContext = createContext<SignInState>({
     // states:
@@ -91,7 +91,7 @@ const SignInStateContext = createContext<SignInState>({
     // navigations:
     gotoHome           : () => {},
     gotoSignIn         : () => {},
-    gotoReset          : () => {},
+    gotoRecover        : () => {},
 });
 export interface SignInStateProps {
     /* empty */
@@ -175,13 +175,13 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         setIsBusyInternal(isBusy);
     });
     
-    const gotoHome   = useEvent(() => {
+    const gotoHome    = useEvent(() => {
         router.push('/');
     });
-    const gotoSignIn = useEvent(() => {
+    const gotoSignIn  = useEvent(() => {
         setExpandedTabIndex(0);
     });
-    const gotoReset  = useEvent(() => {
+    const gotoRecover = useEvent(() => {
         setExpandedTabIndex(1);
     });
     
@@ -203,9 +203,9 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         
         // navigations:
-        gotoHome,   // stable ref
-        gotoSignIn, // stable ref
-        gotoReset,  // stable ref
+        gotoHome,    // stable ref
+        gotoSignIn,  // stable ref
+        gotoRecover, // stable ref
     }), [
         // states:
         expandedTabIndex,
