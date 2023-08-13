@@ -422,9 +422,7 @@ export const TabReset = (props: TabResetProps) => {
             >
                 {(email === null) && <CardBody>
                     <p>
-                        <Busy />
-                        &nbsp;
-                        validating...
+                        <Busy />&nbsp;Validating reset password token...
                     </p>
                 </CardBody>}
             </ModalStatus>

@@ -50,6 +50,12 @@ import {
     ValidationProvider,
 }                           from '@reusable-ui/core'
 
+// reusable-ui components:
+import {
+    // status-components:
+    Busy,
+}                           from '@reusable-ui/components'
+
 // internal components:
 import {
     // dialogs:
@@ -585,7 +591,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         else { // success
             // report the success:
             showMessageNotification(
-                <p>You are being redirected to <strong>{resolveProviderName(providerType)} sign in page</strong>. Please wait...</p>
+                <p><Busy />&nbsp;You are being redirected to <strong>{resolveProviderName(providerType)} sign in page</strong>. Please wait...</p>
             );
         } // if
     });
@@ -883,9 +889,9 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
                     (
                         isSignInSection // always enabled on 'signIn' section
                         ||
-                        (isRecoverSection && !isRecoverSent) // on 'recover' section => enabled if recoverRequest was NOT sent
+                        (isRecoverSection && !isRecoverSent)                     // on 'recover' section => enabled if recoverRequest was NOT sent
                         ||
-                        (isResetSection   && !isResetApplied  && !!tokenVerified) // on 'reset' section => enabled if resetPassword was NOT applied and token verified
+                        (isResetSection   && !isResetApplied && !!tokenVerified) // on 'reset'   section => enabled if resetPassword  was NOT applied and token verified
                     )
                 }
             >
