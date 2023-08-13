@@ -92,7 +92,7 @@ const ModalStatus = <TElement extends Element = HTMLElement, TModalExpandedChang
         
         
         // children:
-        lastExistingChildren,
+        (modalCardComponent.props.children ?? lastExistingChildren),
     );
 }
 export {
