@@ -427,11 +427,11 @@ export const TabReset = (props: TabResetProps) => {
                 
                 
                 // children:
-                ((email === null) && <CardBody>
+                (validatingModalStatusComponent.props.children ?? ((email === null) && <CardBody>
                     <p>
                         <Busy />&nbsp;Validating reset password token...
                     </p>
-                </CardBody>),
+                </CardBody>)),
             )}
         </form>
     );
