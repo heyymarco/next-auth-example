@@ -119,6 +119,8 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         emailInputComponent,
         password2InputComponent,
         resetPasswordButtonComponent,
+        tooltipComponent,
+        tooltipComponent2,
     ...restContentProps} = props;
     // type T1 = typeof restContentProps
     // type T2 = Omit<T1, keyof ContentProps>
@@ -260,6 +262,8 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     passwordInputComponent={passwordInputComponent}
                     password2InputComponent={password2InputComponent}
                     resetPasswordButtonComponent={resetPasswordButtonComponent}
+                    tooltipComponent={tooltipComponent}
+                    tooltipComponent2={tooltipComponent2}
                 />
                 <GotoSignInButton />
             </TabPanel>

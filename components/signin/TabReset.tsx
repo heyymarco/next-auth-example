@@ -32,6 +32,7 @@ import {
     
     
     // notification-components:
+    TooltipProps,
     Tooltip,
 }                           from '@reusable-ui/components'
 
@@ -72,6 +73,8 @@ export interface TabResetProps {
     passwordInputComponent       ?: React.ReactComponentElement<any, InputProps<Element>>
     password2InputComponent      ?: React.ReactComponentElement<any, InputProps<Element>>
     resetPasswordButtonComponent ?: ButtonComponentProps['buttonComponent']
+    tooltipComponent             ?: React.ReactComponentElement<any, TooltipProps<Element>>
+    tooltipComponent2            ?: React.ReactComponentElement<any, TooltipProps<Element>>
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:
@@ -80,7 +83,9 @@ export const TabReset = (props: TabResetProps) => {
         emailInputComponent          = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
         passwordInputComponent       = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
         password2InputComponent      = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        resetPasswordButtonComponent = (<ButtonWithBusy busyType='recover' buttonComponent={<ButtonIcon icon='save' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        resetPasswordButtonComponent = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='save' />} />  as React.ReactComponentElement<any, ButtonProps>),
+        tooltipComponent             = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
+        tooltipComponent2            = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
     } = props;
     
     
@@ -245,21 +250,22 @@ export const TabReset = (props: TabResetProps) => {
                     ...password2FocusHandlers,
                 },
             )}
-            <Tooltip
-                // variants:
-                theme='warning'
+            {/* <Tooltip> */}
+            {React.cloneElement<TooltipProps<Element>>(tooltipComponent,
+                // props:
+                {
+                    // states:
+                    expanded   : tooltipComponent.props.expanded   ?? (passwordFocused && !isBusy && isResetSection && !isResetApplied),
+                    
+                    
+                    
+                    // floatable:
+                    floatingOn : tooltipComponent.props.floatingOn ?? passwordRef,
+                },
                 
                 
                 
-                // states:
-                expanded={passwordFocused && !isBusy && isResetSection && !isResetApplied}
-                
-                
-                
-                // floatable:
-                floatingOn={passwordRef}
-                floatingPlacement='top'
-            >
+                // children:
                 <List
                     // variants:
                     listStyle='flat'
@@ -303,23 +309,24 @@ export const TabReset = (props: TabResetProps) => {
                         &nbsp;
                         At least one non-capital letter
                     </ListItem>}
-                </List>
-            </Tooltip>
-            <Tooltip
-                // variants:
-                theme='warning'
+                </List>,
+            )}
+            {/* <Tooltip> */}
+            {React.cloneElement<TooltipProps<Element>>(tooltipComponent2,
+                // props:
+                {
+                    // states:
+                    expanded   : tooltipComponent2.props.expanded   ?? (password2Focused && !isBusy && isResetSection && !isResetApplied),
+                    
+                    
+                    
+                    // floatable:
+                    floatingOn : tooltipComponent2.props.floatingOn ?? password2Ref,
+                },
                 
                 
                 
-                // states:
-                expanded={password2Focused && !isBusy && isResetSection && !isResetApplied}
-                
-                
-                
-                // floatable:
-                floatingOn={password2Ref}
-                floatingPlacement='top'
-            >
+                // children:
                 <List
                     // variants:
                     listStyle='flat'
@@ -376,8 +383,8 @@ export const TabReset = (props: TabResetProps) => {
                         &nbsp;
                         Exact match to previous password
                     </ListItem>
-                </List>
-            </Tooltip>
+                </List>,
+            )}
             {/* <ResetPasswordButton> */}
             {React.cloneElement<ButtonProps>(resetPasswordButtonComponent,
                 // props:
