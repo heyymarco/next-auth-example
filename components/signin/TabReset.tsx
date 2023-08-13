@@ -105,7 +105,7 @@ export const TabReset = (props: TabResetProps) => {
         
         passwordRef,
         password,
-        passwordChange,
+        passwordHandlers,
         passwordValid,
         passwordValidLength,
         passwordValidUppercase,
@@ -113,7 +113,7 @@ export const TabReset = (props: TabResetProps) => {
         
         password2Ref,
         password2,
-        password2Change,
+        password2Handlers,
         password2Valid,
         password2ValidLength,
         password2ValidUppercase,
@@ -129,8 +129,8 @@ export const TabReset = (props: TabResetProps) => {
     
     
     // states:
-    const [passwordFocused , passwordHandlers ] = useFocusState<HTMLSpanElement>();
-    const [password2Focused, password2Handlers] = useFocusState<HTMLSpanElement>();
+    const [passwordFocused , passwordFocusHandlers ] = useFocusState<HTMLSpanElement>();
+    const [password2Focused, password2FocusHandlers] = useFocusState<HTMLSpanElement>();
     
     
     
@@ -194,7 +194,6 @@ export const TabReset = (props: TabResetProps) => {
                     
                     // values:
                     value={password}
-                    onChange={passwordChange}
                     
                     
                     
@@ -208,6 +207,7 @@ export const TabReset = (props: TabResetProps) => {
                     
                     // handlers:
                     {...passwordHandlers}
+                    {...passwordFocusHandlers}
                 />
             </Group>
             <Group className='password2'>
@@ -234,7 +234,6 @@ export const TabReset = (props: TabResetProps) => {
                     
                     // values:
                     value={password2}
-                    onChange={password2Change}
                     
                     
                     
@@ -248,6 +247,7 @@ export const TabReset = (props: TabResetProps) => {
                     
                     // handlers:
                     {...password2Handlers}
+                    {...password2FocusHandlers}
                 />
             </Group>
             <Tooltip

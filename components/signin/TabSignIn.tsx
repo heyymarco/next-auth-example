@@ -90,12 +90,12 @@ export const TabSignIn = (props: TabSignInProps) => {
         
         usernameRef,
         username,
-        usernameChange,
+        usernameHandlers,
         usernameValid,
         
         passwordRef,
         password,
-        passwordChange,
+        passwordHandlers,
         passwordValid,
         
         
@@ -152,13 +152,17 @@ export const TabSignIn = (props: TabSignInProps) => {
                     
                     // values:
                     value={username}
-                    onChange={usernameChange}
                     
                     
                     
                     // validations:
                     isValid={usernameValid}
                     required={true}
+                    
+                    
+                    
+                    // handlers:
+                    {...usernameHandlers}
                 />
             </Group>
             <Group className='password'>
@@ -185,13 +189,17 @@ export const TabSignIn = (props: TabSignInProps) => {
                     
                     // values:
                     value={password}
-                    onChange={passwordChange}
                     
                     
                     
                     // validations:
                     isValid={passwordValid}
                     required={true}
+                    
+                    
+                    
+                    // handlers:
+                    {...passwordHandlers}
                 />
             </Group>
             {/* <ButtonSignIn> */}

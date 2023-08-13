@@ -71,6 +71,7 @@ import {
 }                           from '../utilities'
 import {
     // hooks:
+    FieldHandlers,
     useFieldState,
 }                           from '../hooks'
 
@@ -128,12 +129,12 @@ export interface SignInState {
     
     usernameRef             : React.MutableRefObject<HTMLInputElement|null>
     username                : string
-    usernameChange          : React.ChangeEventHandler<HTMLInputElement>
+    usernameHandlers        : FieldHandlers<HTMLInputElement>
     usernameValid           : boolean
     
     passwordRef             : React.MutableRefObject<HTMLInputElement|null>
     password                : string
-    passwordChange          : React.ChangeEventHandler<HTMLInputElement>
+    passwordHandlers        : FieldHandlers<HTMLInputElement>
     passwordValid           : boolean
     passwordValidLength     : boolean
     passwordValidUppercase  : boolean
@@ -141,7 +142,7 @@ export interface SignInState {
     
     password2Ref            : React.MutableRefObject<HTMLInputElement|null>
     password2               : string
-    password2Change         : React.ChangeEventHandler<HTMLInputElement>
+    password2Handlers       : FieldHandlers<HTMLInputElement>
     password2Valid          : boolean
     password2ValidLength    : boolean
     password2ValidUppercase : boolean
@@ -202,12 +203,12 @@ const SignInStateContext = createContext<SignInState>({
     
     usernameRef             : { current: null },
     username                : '',
-    usernameChange          : () => {},
+    usernameHandlers        : { onChange: () => {} },
     usernameValid           : false,
     
     passwordRef             : { current: null },
     password                : '',
-    passwordChange          : () => {},
+    passwordHandlers        : { onChange: () => {} },
     passwordValid           : false,
     passwordValidLength     : false,
     passwordValidUppercase  : false,
@@ -215,7 +216,7 @@ const SignInStateContext = createContext<SignInState>({
     
     password2Ref            : { current: null },
     password2               : '',
-    password2Change         : () => {},
+    password2Handlers       : { onChange: () => {} },
     password2Valid          : false,
     password2ValidLength    : false,
     password2ValidUppercase : false,
@@ -294,10 +295,10 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     const passwordRef  = useRef<HTMLInputElement|null>(null);
     const password2Ref = useRef<HTMLInputElement|null>(null);
     
-    const [enableValidation, setEnableValidation          ] = useState<boolean>(false);
-    const [username        , setUsername , usernameChange ] = useFieldState();
-    const [password        , setPassword , passwordChange ] = useFieldState();
-    const [password2       , setPassword2, password2Change] = useFieldState();
+    const [enableValidation, setEnableValidation            ] = useState<boolean>(false);
+    const [username        , setUsername , usernameHandlers ] = useFieldState();
+    const [password        , setPassword , passwordHandlers ] = useFieldState();
+    const [password2       , setPassword2, password2Handlers] = useFieldState();
     
     
     
@@ -799,12 +800,12 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         usernameRef,         // stable ref
         username,
-        usernameChange,      // stable ref
+        usernameHandlers,    // stable ref
         usernameValid,
         
         passwordRef,         // stable ref
         password,
-        passwordChange,      // stable ref
+        passwordHandlers,    // stable ref
         passwordValid,
         passwordValidLength,
         passwordValidUppercase,
@@ -812,7 +813,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         password2Ref,        // stable ref
         password2,
-        password2Change,     // stable ref
+        password2Handlers,   // stable ref
         password2Valid,
         password2ValidLength,
         password2ValidUppercase,

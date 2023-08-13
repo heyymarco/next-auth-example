@@ -4,6 +4,7 @@
 import {
     // hooks:
     useState,
+    useMemo,
 }                           from 'react'
 
 // reusable-ui core:
@@ -14,14 +15,15 @@ import {
 
 
 
-export const useFieldState = (): readonly [string, React.Dispatch<React.SetStateAction<string>>, React.ChangeEventHandler<HTMLInputElement>] => {
+export type FieldHandlers<TElement extends HTMLInputElement = HTMLInputElement> = Required<Pick<React.InputHTMLAttributes<TElement>, 'onChange'>>
+export const useFieldState = <TElement extends HTMLInputElement = HTMLInputElement>(): readonly [string, React.Dispatch<React.SetStateAction<string>>, FieldHandlers<TElement>] => {
     // states:
     const [field, setField] = useState<string>('');
     
     
     
     // handlers:
-    const handleFieldChange = useEvent<React.ChangeEventHandler<HTMLInputElement>>(({target: {value}}) => {
+    const handleFieldChange = useEvent<React.ChangeEventHandler<TElement>>(({target: {value}}) => {
         setField(value);
     });
     
@@ -31,11 +33,16 @@ export const useFieldState = (): readonly [string, React.Dispatch<React.SetState
     return [
         field,
         setField,
-        handleFieldChange,
+        useMemo(() => ({ // make a stable ref object
+            onChange : handleFieldChange,
+        }), []),
     ];
 };
 
-export const useFocusState = <TElement extends Element = HTMLElement>() : readonly [boolean, { onFocus: React.FocusEventHandler<TElement>, onBlur: React.FocusEventHandler<TElement> }] => {
+
+
+export type FocusHandlers<TElement extends Element = HTMLElement> = Required<Pick<React.InputHTMLAttributes<TElement>, 'onFocus'|'onBlur'>>
+export const useFocusState = <TElement extends Element = HTMLElement>() : readonly [boolean, FocusHandlers<TElement>] => {
     // states:
     const [isFocus, setIsFocus] = useState<boolean>(false);
     
@@ -54,9 +61,9 @@ export const useFocusState = <TElement extends Element = HTMLElement>() : readon
     // api:
     return [
         isFocus,
-        {
+        useMemo(() => ({ // make a stable ref object
             onFocus : handleFocus,
             onBlur  : handleBlur,
-        },
+        }), []),
     ];
 };

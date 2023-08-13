@@ -67,7 +67,7 @@ export const TabRecover = (props: TabRecoverProps) => {
         
         usernameRef,
         username,
-        usernameChange,
+        usernameHandlers,
         usernameValid,
         
         
@@ -118,13 +118,17 @@ export const TabRecover = (props: TabRecoverProps) => {
                     
                     // values:
                     value={username}
-                    onChange={usernameChange}
                     
                     
                     
                     // validations:
                     isValid={usernameValid}
                     required={true}
+                    
+                    
+                    
+                    // handlers:
+                    {...usernameHandlers}
                 />
             </Group>
             {/* <ButtonSendRecoverLink> */}
