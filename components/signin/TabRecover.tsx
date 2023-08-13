@@ -58,7 +58,7 @@ export const TabRecover = (props: TabRecoverProps) => {
     const signInState = useSignInState();
     const {
         // states:
-        section,
+        isRecoverSection,
         
         
         
@@ -79,7 +79,6 @@ export const TabRecover = (props: TabRecoverProps) => {
     
     
     // jsx:
-    const isRecoverSection = (section === 'recover');
     return (
         <form
             // refs:

@@ -99,7 +99,7 @@ export const TabReset = (props: TabResetProps) => {
         
         
         // states:
-        section,
+        isResetSection,
         isBusy,
         
         
@@ -167,7 +167,6 @@ export const TabReset = (props: TabResetProps) => {
     
     
     // jsx:
-    const isResetSection = (section === 'reset');
     return (
         <form
             // refs:

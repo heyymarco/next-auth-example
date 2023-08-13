@@ -81,7 +81,7 @@ export const TabSignIn = (props: TabSignInProps) => {
     const signInState = useSignInState();
     const {
         // states:
-        section,
+        isSignInSection,
         
         
         
@@ -113,7 +113,6 @@ export const TabSignIn = (props: TabSignInProps) => {
     
     
     // jsx:
-    const isSignInSection = (section === 'signIn');
     return (
         <form
             // refs:

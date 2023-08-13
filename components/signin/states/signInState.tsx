@@ -100,6 +100,9 @@ export interface SignInState {
     
     // states:
     section                 : SignInSection
+    isSignInSection         : boolean
+    isRecoverSection        : boolean
+    isResetSection          : boolean
     isBusy                  : BusyState
     setIsBusy               : (isBusy: BusyState) => void
     
@@ -169,6 +172,9 @@ const SignInStateContext = createContext<SignInState>({
     
     // states:
     section                 : 'signIn',
+    isSignInSection         : false,
+    isRecoverSection        : false,
+    isResetSection          : false,
     isBusy                  : false,
     setIsBusy               : () => {},
     
@@ -256,6 +262,9 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     // states:
     const [section      , setSection       ] = useState<SignInSection>(!!resetPasswordTokenRef.current ? 'reset' : 'signIn');
+    const isSignInSection                    = (section === 'signIn');
+    const isRecoverSection                   = (section === 'recover');
+    const isResetSection                     = (section === 'reset');
     const [tokenVerified, setTokenVerified ] = useState<undefined|{ email: string, username: string|null }|false>(!resetPasswordToken ? false : undefined);
     const [isBusy       , setIsBusyInternal] = useState<BusyState>(false);
     const isMounted                    = useMountedFlag();
@@ -748,6 +757,9 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         // states:
         section,
+        isSignInSection,
+        isRecoverSection,
+        isResetSection,
         isBusy,
         setIsBusy,           // stable ref
         
