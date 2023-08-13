@@ -83,7 +83,7 @@ export type BusyState =
     | BuiltInProviderType // busy: login with ...
     | 'recover'           // busy: recover
     | 'reset'             // busy: reset
-export interface SignInStateApi {
+export interface SignInState {
     // constraints:
     passwordMinLength       : number
     passwordMaxLength       : number
@@ -152,7 +152,7 @@ export interface SignInStateApi {
     // utilities:
     resolveProviderName     : (oAuthProvider: BuiltInProviderType) => string
 }
-const SignInStateContext = createContext<SignInStateApi>({
+const SignInStateContext = createContext<SignInState>({
     // constraints:
     passwordMinLength       : 0,
     passwordMaxLength       : 0,
@@ -731,7 +731,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // apis:
-    const signInState = useMemo<SignInStateApi>(() => ({
+    const signInState = useMemo<SignInState>(() => ({
         // constraints:
         passwordMinLength,
         passwordMaxLength,
@@ -846,6 +846,6 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         </SignInStateContext.Provider>
     );
 }
-export const useSignInState = (): SignInStateApi => {
+export const useSignInState = (): SignInState => {
     return useContext(SignInStateContext);
 };
