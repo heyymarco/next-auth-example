@@ -9,20 +9,18 @@ import {
 // reusable-ui components:
 import {
     // simple-components:
-    Icon,
-    Label,
     ButtonProps,
     ButtonComponentProps,
     ButtonIcon,
+    InputProps,
     TextInput,
-    
-    
-    
-    // composite-components:
-    Group,
 }                           from '@reusable-ui/components'
 
 // internal components:
+import {
+    // react components:
+    InputWithLabel,
+}                           from './InputWithLabel'
 import {
     // react components:
     ButtonWithBusy,
@@ -43,13 +41,15 @@ import {
 // react components:
 export interface TabRecoverProps {
     // components:
+    inputUsernameComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
     buttonSendRecoverLinkComponent ?: Required<ButtonComponentProps>['buttonComponent']
 }
 export const TabRecover = (props: TabRecoverProps) => {
     // rest props:
     const {
         // components:
-        buttonSendRecoverLinkComponent = (<ButtonWithBusy busyType='recover' buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        inputUsernameComponent         = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />                as React.ReactComponentElement<any, InputProps<Element>>),
+        buttonSendRecoverLinkComponent = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
     } = props;
     
     
@@ -94,43 +94,40 @@ export const TabRecover = (props: TabRecoverProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            <Group className='username'>
-                <Label
-                    // classes:
-                    className='solid'
-                >
-                    <Icon
-                        // appearances:
-                        icon='supervisor_account'
-                    />
-                </Label>
-                <TextInput
+            {React.cloneElement<InputProps<Element>>(inputUsernameComponent,
+                // props:
+                {
                     // refs:
-                    elmRef={isRecoverSection ? usernameRef : undefined}
+                    elmRef       : inputUsernameComponent.props.elmRef       ?? (isRecoverSection ? usernameRef : undefined),
+                    
+                    
+                    
+                    // classes:
+                    className    : inputUsernameComponent.props.className    ?? 'username',
                     
                     
                     
                     // accessibilities:
-                    placeholder='Username or Email'
-                    autoComplete='username'
+                    placeholder  : inputUsernameComponent.props.placeholder  ?? 'Username or Email',
+                    autoComplete : inputUsernameComponent.props.autoComplete ?? 'username',
                     
                     
                     
                     // values:
-                    value={username}
+                    value        : inputUsernameComponent.props.value        ?? username,
                     
                     
                     
                     // validations:
-                    isValid={usernameValid}
-                    required={true}
+                    isValid      : inputUsernameComponent.props.isValid      ?? usernameValid,
+                    required     : inputUsernameComponent.props.required     ?? true,
                     
                     
                     
                     // handlers:
-                    {...usernameHandlers}
-                />
-            </Group>
+                    ...usernameHandlers,
+                },
+            )}
             {/* <ButtonSendRecoverLink> */}
             {React.cloneElement<ButtonProps>(buttonSendRecoverLinkComponent,
                 // props:
