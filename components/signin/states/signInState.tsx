@@ -552,9 +552,9 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             
             
             
-            // focus to username field:
-            usernameRef.current?.setSelectionRange(0, username.length);
-            usernameRef.current?.focus();
+            // focus to password field:
+            passwordRef.current?.setSelectionRange(0, username.length);
+            passwordRef.current?.focus();
         }
         else { // success
             // resets:
