@@ -34,3 +34,29 @@ export const useFieldState = (): readonly [string, React.Dispatch<React.SetState
         handleFieldChange,
     ];
 };
+
+export const useFocusState = <TElement extends Element = HTMLElement>() : readonly [boolean, { onFocus: React.FocusEventHandler<TElement>, onBlur: React.FocusEventHandler<TElement> }] => {
+    // states:
+    const [isFocus, setIsFocus] = useState<boolean>(false);
+    
+    
+    
+    // handlers:
+    const handleFocus = useEvent<React.FocusEventHandler<TElement>>(() => {
+        setIsFocus(true);
+    });
+    const handleBlur  = useEvent<React.FocusEventHandler<TElement>>(() => {
+        setIsFocus(false);
+    });
+    
+    
+    
+    // api:
+    return [
+        isFocus,
+        {
+            onFocus : handleFocus,
+            onBlur  : handleBlur,
+        },
+    ];
+};

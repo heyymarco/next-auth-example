@@ -4,18 +4,7 @@
 import {
     // react:
     default as React,
-    
-    
-    
-    // hooks:
-    useState,
 }                           from 'react'
-
-// reusable-ui core:
-import {
-    // react helper hooks:
-    useEvent,
-}                           from '@reusable-ui/core'
 
 // reusable-ui components:
 import {
@@ -70,6 +59,10 @@ import {
     // handlers:
     handlePreventSubmit,
 }                           from './utilities'
+import {
+    // hooks:
+    useFocusState,
+}                           from './hooks'
 
 
 
@@ -135,34 +128,8 @@ export const TabReset = (props: TabResetProps) => {
     
     
     // states:
-    const [passwordFocused , setPasswordFocused ] = useState<boolean>(false);
-    const [password2Focused, setPassword2Focused] = useState<boolean>(false);
-    
-    
-    
-    // handlers:
-    const doResetEx             = useEvent(async (): Promise<void> => {
-        setPasswordFocused(false);  // important to hide the <Tooltip>
-        setPassword2Focused(false); // important to hide the <Tooltip>
-        
-        
-        
-        await doReset();
-    });
-    
-    const handlePasswordFocus   = useEvent((): void => {
-        setPasswordFocused(true);
-    });
-    const handlePasswordBlur    = useEvent((): void => {
-        setPasswordFocused(false);
-    });
-    
-    const handlePassword2Focus  = useEvent((): void => {
-        setPassword2Focused(true);
-    });
-    const handlePassword2Blur   = useEvent((): void => {
-        setPassword2Focused(false);
-    });
+    const [passwordFocused , passwordHandlers ] = useFocusState<HTMLSpanElement>();
+    const [password2Focused, password2Handlers] = useFocusState<HTMLSpanElement>();
     
     
     
@@ -239,8 +206,7 @@ export const TabReset = (props: TabResetProps) => {
                     
                     
                     // handlers:
-                    onFocus={handlePasswordFocus}
-                    onBlur={handlePasswordBlur}
+                    {...passwordHandlers}
                 />
             </Group>
             <Group className='password2'>
@@ -280,8 +246,7 @@ export const TabReset = (props: TabResetProps) => {
                     
                     
                     // handlers:
-                    onFocus={handlePassword2Focus}
-                    onBlur={handlePassword2Blur}
+                    {...password2Handlers}
                 />
             </Group>
             <Tooltip
@@ -432,7 +397,7 @@ export const TabReset = (props: TabResetProps) => {
                     
                     
                     // handlers:
-                    onClick   : buttonResetPasswordComponent.props.onClick   ?? doResetEx,
+                    onClick   : buttonResetPasswordComponent.props.onClick   ?? doReset,
                 },
                 
                 
