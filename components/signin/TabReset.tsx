@@ -74,9 +74,9 @@ export interface TabResetProps {
     passwordInputComponent         ?: React.ReactComponentElement<any, InputProps<Element>>
     password2InputComponent        ?: React.ReactComponentElement<any, InputProps<Element>>
     resetPasswordButtonComponent   ?: ButtonComponentProps['buttonComponent']
-    tooltipComponent               ?: React.ReactComponentElement<any, TooltipProps<Element>>
-    tooltipComponent2              ?: React.ReactComponentElement<any, TooltipProps<Element>>
-    validatingModalStatusComponent ?: React.ReactComponentElement<any, ModalStatusProps<Element>>
+    tooltipComponent               ?: React.ReactComponentElement<any, TooltipProps<Element>>|null
+    tooltipComponent2              ?: React.ReactComponentElement<any, TooltipProps<Element>>|null
+    validatingModalStatusComponent ?: React.ReactComponentElement<any, ModalStatusProps<Element>>|null
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:
@@ -254,7 +254,7 @@ export const TabReset = (props: TabResetProps) => {
                 },
             )}
             {/* <Tooltip> */}
-            {React.cloneElement<TooltipProps<Element>>(tooltipComponent,
+            {!!tooltipComponent && React.cloneElement<TooltipProps<Element>>(tooltipComponent,
                 // props:
                 {
                     // states:
@@ -315,7 +315,7 @@ export const TabReset = (props: TabResetProps) => {
                 </List>,
             )}
             {/* <Tooltip> */}
-            {React.cloneElement<TooltipProps<Element>>(tooltipComponent2,
+            {!!tooltipComponent2 && React.cloneElement<TooltipProps<Element>>(tooltipComponent2,
                 // props:
                 {
                     // states:
@@ -412,7 +412,7 @@ export const TabReset = (props: TabResetProps) => {
                 resetPasswordButtonComponent.props.children ?? 'Reset Password',
             )}
             {/* <ModalStatus> */}
-            {React.cloneElement<ModalStatusProps<Element>>(validatingModalStatusComponent,
+            {!!validatingModalStatusComponent && React.cloneElement<ModalStatusProps<Element>>(validatingModalStatusComponent,
                 // props:
                 {
                     // accessibilities:
