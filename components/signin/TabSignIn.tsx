@@ -15,19 +15,12 @@ import {
 // reusable-ui components:
 import {
     // simple-components:
-    Icon,
-    Label,
     ButtonProps,
     ButtonComponentProps,
     ButtonIcon,
     InputProps,
     TextInput,
     PasswordInput,
-    
-    
-    
-    // composite-components:
-    Group,
 }                           from '@reusable-ui/components'
 
 // internal components:
@@ -65,6 +58,7 @@ export interface TabSignInProps {
     
     // components:
     inputUsernameComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
+    inputPasswordComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
     buttonSignInComponent     ?: Required<ButtonComponentProps>['buttonComponent']
     buttonSignInWithComponent ?: Required<ButtonComponentProps>['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
 }
@@ -77,8 +71,9 @@ export const TabSignIn = (props: TabSignInProps) => {
         
         
         // components:
-        inputUsernameComponent    = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput />} /> as React.ReactComponentElement<any, InputProps<Element>>),
-        buttonSignInComponent     = (<ButtonWithBusy busyType='credentials' buttonComponent={<ButtonIcon icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        inputUsernameComponent    = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        inputPasswordComponent    = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        buttonSignInComponent     = (<ButtonWithBusy busyType='credentials'    buttonComponent={<ButtonIcon icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
         buttonSignInWithComponent = (((oAuthProvider: BuiltInProviderType) => <ButtonWithBusy busyType={oAuthProvider} buttonComponent={<ButtonIcon icon={oAuthProvider} />} />) as Required<TabSignInProps>['buttonSignInWithComponent']),
     } = props;
     
@@ -169,43 +164,40 @@ export const TabSignIn = (props: TabSignInProps) => {
                     ...usernameHandlers,
                 },
             )}
-            <Group className='password'>
-                <Label
-                    // classes:
-                    className='solid'
-                >
-                    <Icon
-                        // appearances:
-                        icon='lock'
-                    />
-                </Label>
-                <PasswordInput
+            {React.cloneElement<InputProps<Element>>(inputPasswordComponent,
+                // props:
+                {
                     // refs:
-                    elmRef={isSignInSection ? passwordRef : undefined}
+                    elmRef       : inputPasswordComponent.props.elmRef       ?? (isSignInSection ? passwordRef : undefined),
+                    
+                    
+                    
+                    // classes:
+                    className    : inputPasswordComponent.props.className    ?? 'password',
                     
                     
                     
                     // accessibilities:
-                    placeholder='Password'
-                    autoComplete='current-password'
+                    placeholder  : inputPasswordComponent.props.placeholder  ?? 'Password',
+                    autoComplete : inputPasswordComponent.props.autoComplete ?? 'current-password',
                     
                     
                     
                     // values:
-                    value={password}
+                    value        : inputPasswordComponent.props.value        ?? password,
                     
                     
                     
                     // validations:
-                    isValid={passwordValid}
-                    required={true}
+                    isValid      : inputPasswordComponent.props.isValid      ?? passwordValid,
+                    required     : inputPasswordComponent.props.required     ?? true,
                     
                     
                     
                     // handlers:
-                    {...passwordHandlers}
-                />
-            </Group>
+                    ...passwordHandlers,
+                },
+            )}
             {/* <ButtonSignIn> */}
             {React.cloneElement<ButtonProps>(buttonSignInComponent,
                 // props:
