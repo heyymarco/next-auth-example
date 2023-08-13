@@ -285,7 +285,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     const [isRecoverSent , setIsRecoverSent ] = useState<boolean>(false);
     const [isResetApplied, setIsResetApplied] = useState<boolean>(false);
     const [isBusy        , setIsBusyInternal] = useState<BusyState>(false);
-    const isMounted                    = useMountedFlag();
+    const isMounted                           = useMountedFlag();
     
     
     
@@ -564,7 +564,23 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             
             
             // redirect to origin page:
-            if (callbackUrl) router.replace(callbackUrl);
+            if (callbackUrl) {
+                // redirect to `callbackUrl` (if supplied)
+                
+                
+                
+                router.replace(callbackUrl);
+            }
+            else {
+                // stays on login page
+                
+                
+                
+                // resets:
+                setEnableValidation(false);
+                setUsername('');
+                setPassword('');
+            } // if
         } // if
     });
     const doSignInWith = useEvent(async (providerType: BuiltInProviderType): Promise<void> => {
@@ -575,7 +591,12 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         // attempts sign in using OAuth:
         setIsBusy(providerType); // mark as busy
-        const result = await signIn(providerType, { callbackUrl: callbackUrl ?? undefined });
+        const result = await signIn(providerType, {
+            callbackUrl:
+                callbackUrl // redirect to `callbackUrl` (if supplied)
+                ||          // -or-
+                undefined   // stays on login page
+        });
         if (!isMounted.current) return; // unmounted => abort
         
         
