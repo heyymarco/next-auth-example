@@ -57,10 +57,10 @@ export interface TabSignInProps {
     
     
     // components:
-    inputUsernameComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
-    inputPasswordComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
-    buttonSignInComponent     ?: Required<ButtonComponentProps>['buttonComponent']
-    buttonSignInWithComponent ?: Required<ButtonComponentProps>['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
+    usernameInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
+    passwordInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
+    signInButtonComponent     ?: Required<ButtonComponentProps>['buttonComponent']
+    signInWithButtonComponent ?: Required<ButtonComponentProps>['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
 }
 export const TabSignIn = (props: TabSignInProps) => {
     // rest props:
@@ -71,10 +71,10 @@ export const TabSignIn = (props: TabSignInProps) => {
         
         
         // components:
-        inputUsernameComponent    = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        inputPasswordComponent    = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        buttonSignInComponent     = (<ButtonWithBusy busyType='credentials'    buttonComponent={<ButtonIcon icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
-        buttonSignInWithComponent = (((oAuthProvider: BuiltInProviderType) => <ButtonWithBusy busyType={oAuthProvider} buttonComponent={<ButtonIcon icon={oAuthProvider} />} />) as Required<TabSignInProps>['buttonSignInWithComponent']),
+        usernameInputComponent    = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        passwordInputComponent    = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        signInButtonComponent     = (<ButtonWithBusy busyType='credentials'    buttonComponent={<ButtonIcon icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        signInWithButtonComponent = (((oAuthProvider: BuiltInProviderType) => <ButtonWithBusy busyType={oAuthProvider} buttonComponent={<ButtonIcon icon={oAuthProvider} />} />) as Required<TabSignInProps>['signInWithButtonComponent']),
     } = props;
     
     
@@ -130,33 +130,34 @@ export const TabSignIn = (props: TabSignInProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            {React.cloneElement<InputProps<Element>>(inputUsernameComponent,
+            {/* <UsernameInput> */}
+            {React.cloneElement<InputProps<Element>>(usernameInputComponent,
                 // props:
                 {
                     // refs:
-                    elmRef       : inputUsernameComponent.props.elmRef       ?? (isSignInSection ? usernameRef : undefined),
+                    elmRef       : usernameInputComponent.props.elmRef       ?? (isSignInSection ? usernameRef : undefined),
                     
                     
                     
                     // classes:
-                    className    : inputUsernameComponent.props.className    ?? 'username',
+                    className    : usernameInputComponent.props.className    ?? 'username',
                     
                     
                     
                     // accessibilities:
-                    placeholder  : inputUsernameComponent.props.placeholder  ?? 'Username or Email',
-                    autoComplete : inputUsernameComponent.props.autoComplete ?? 'username',
+                    placeholder  : usernameInputComponent.props.placeholder  ?? 'Username or Email',
+                    autoComplete : usernameInputComponent.props.autoComplete ?? 'username',
                     
                     
                     
                     // values:
-                    value        : inputUsernameComponent.props.value        ?? username,
+                    value        : usernameInputComponent.props.value        ?? username,
                     
                     
                     
                     // validations:
-                    isValid      : inputUsernameComponent.props.isValid      ?? usernameValid,
-                    required     : inputUsernameComponent.props.required     ?? true,
+                    isValid      : usernameInputComponent.props.isValid      ?? usernameValid,
+                    required     : usernameInputComponent.props.required     ?? true,
                     
                     
                     
@@ -164,33 +165,34 @@ export const TabSignIn = (props: TabSignInProps) => {
                     ...usernameHandlers,
                 },
             )}
-            {React.cloneElement<InputProps<Element>>(inputPasswordComponent,
+            {/* <PasswordInput> */}
+            {React.cloneElement<InputProps<Element>>(passwordInputComponent,
                 // props:
                 {
                     // refs:
-                    elmRef       : inputPasswordComponent.props.elmRef       ?? (isSignInSection ? passwordRef : undefined),
+                    elmRef       : passwordInputComponent.props.elmRef       ?? (isSignInSection ? passwordRef : undefined),
                     
                     
                     
                     // classes:
-                    className    : inputPasswordComponent.props.className    ?? 'password',
+                    className    : passwordInputComponent.props.className    ?? 'password',
                     
                     
                     
                     // accessibilities:
-                    placeholder  : inputPasswordComponent.props.placeholder  ?? 'Password',
-                    autoComplete : inputPasswordComponent.props.autoComplete ?? 'current-password',
+                    placeholder  : passwordInputComponent.props.placeholder  ?? 'Password',
+                    autoComplete : passwordInputComponent.props.autoComplete ?? 'current-password',
                     
                     
                     
                     // values:
-                    value        : inputPasswordComponent.props.value        ?? password,
+                    value        : passwordInputComponent.props.value        ?? password,
                     
                     
                     
                     // validations:
-                    isValid      : inputPasswordComponent.props.isValid      ?? passwordValid,
-                    required     : inputPasswordComponent.props.required     ?? true,
+                    isValid      : passwordInputComponent.props.isValid      ?? passwordValid,
+                    required     : passwordInputComponent.props.required     ?? true,
                     
                     
                     
@@ -198,35 +200,35 @@ export const TabSignIn = (props: TabSignInProps) => {
                     ...passwordHandlers,
                 },
             )}
-            {/* <ButtonSignIn> */}
-            {React.cloneElement<ButtonProps>(buttonSignInComponent,
+            {/* <SignInButton> */}
+            {React.cloneElement<ButtonProps>(signInButtonComponent,
                 // props:
                 {
                     // actions:
-                    type      : buttonSignInComponent.props.type      ?? 'submit',
+                    type      : signInButtonComponent.props.type      ?? 'submit',
                     
                     
                     
                     // classes:
-                    className : buttonSignInComponent.props.className ?? 'signin credentials',
+                    className : signInButtonComponent.props.className ?? 'signin credentials',
                     
                     
                     
                     // handlers:
-                    onClick   : buttonSignInComponent.props.onClick   ?? doSignIn,
+                    onClick   : signInButtonComponent.props.onClick   ?? doSignIn,
                 },
                 
                 
                 
                 // children:
-                buttonSignInComponent.props.children ?? 'Sign In',
+                signInButtonComponent.props.children ?? 'Sign In',
             )}
             <hr className='signinSeparator' />
             {providers.map((providerType) => {
-                const buttonSignInWithProviderComponent : React.ReactComponentElement<any, ButtonProps> = (
-                    (typeof(buttonSignInWithComponent) === 'function')
-                    ? buttonSignInWithComponent(providerType)
-                    : buttonSignInWithComponent
+                const signInWithProviderButtonComponent : React.ReactComponentElement<any, ButtonProps> = (
+                    (typeof(signInWithButtonComponent) === 'function')
+                    ? signInWithButtonComponent(providerType)
+                    : signInWithButtonComponent
                 );
                 
                 
@@ -246,7 +248,8 @@ export const TabSignIn = (props: TabSignInProps) => {
                         
                         // components:
                         buttonComponent={
-                            React.cloneElement<ButtonProps>(buttonSignInWithProviderComponent,
+                            /* <SignInWithProviderButton> */
+                            React.cloneElement<ButtonProps>(signInWithProviderButtonComponent,
                                 // props:
                                 {
                                     // identifiers:
@@ -255,18 +258,18 @@ export const TabSignIn = (props: TabSignInProps) => {
                                     
                                     
                                     // actions:
-                                    type      : buttonSignInWithProviderComponent.props.type      ?? 'submit',
+                                    type      : signInWithProviderButtonComponent.props.type      ?? 'submit',
                                     
                                     
                                     
                                     // classes:
-                                    className : buttonSignInWithProviderComponent.props.className ?? `signin ${providerType}`,
+                                    className : signInWithProviderButtonComponent.props.className ?? `signin ${providerType}`,
                                 },
                                 
                                 
                                 
                                 // children:
-                                buttonSignInWithProviderComponent.props.children ?? <>Sign In with {resolveProviderName(providerType)}</>,
+                                signInWithProviderButtonComponent.props.children ?? <>Sign In with {resolveProviderName(providerType)}</>,
                             )
                         }
                         

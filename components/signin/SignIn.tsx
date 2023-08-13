@@ -80,9 +80,9 @@ export interface SignInProps<TElement extends Element = HTMLElement>
         TabResetProps
 {
     // components:
-    buttonGotoHomeComponent    ?: Required<ButtonComponentProps>['buttonComponent']
-    buttonGotoSignInComponent  ?: Required<ButtonComponentProps>['buttonComponent']
-    buttonGotoRecoverComponent ?: Required<ButtonComponentProps>['buttonComponent']
+    gotoHomeButtonComponent    ?: Required<ButtonComponentProps>['buttonComponent']
+    gotoSignInButtonComponent  ?: Required<ButtonComponentProps>['buttonComponent']
+    gotoRecoverButtonComponent ?: Required<ButtonComponentProps>['buttonComponent']
 }
 const SignIn         = <TElement extends Element = HTMLElement>(props: SignInProps<TElement>) => {
     return (
@@ -105,20 +105,20 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         
         
         // components:
-        buttonGotoHomeComponent    = (<ButtonIcon icon='home'        buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
-        buttonGotoSignInComponent  = (<ButtonIcon icon='arrow_back'  buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
-        buttonGotoRecoverComponent = (<ButtonIcon icon='help_center' buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
+        gotoHomeButtonComponent    = (<ButtonIcon icon='home'        buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
+        gotoSignInButtonComponent  = (<ButtonIcon icon='arrow_back'  buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
+        gotoRecoverButtonComponent = (<ButtonIcon icon='help_center' buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
         
-        inputUsernameComponent,
-        inputPasswordComponent,
-        buttonSignInComponent,
-        buttonSignInWithComponent,
+        usernameInputComponent,
+        passwordInputComponent,
+        signInButtonComponent,
+        signInWithButtonComponent,
         
-        buttonSendRecoverLinkComponent,
+        sendRecoverLinkButtonComponent,
         
-        inputEmailComponent,
-        inputPassword2Component,
-        buttonResetPasswordComponent,
+        emailInputComponent,
+        password2InputComponent,
+        resetPasswordButtonComponent,
     ...restContentProps} = props;
     // type T1 = typeof restContentProps
     // type T2 = Omit<T1, keyof ContentProps>
@@ -141,56 +141,56 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     
     
     // jsx:
-    const ButtonGotoHome    = () => React.cloneElement<ButtonProps>(buttonGotoHomeComponent,
+    const GotoHomeButton    = () => React.cloneElement<ButtonProps>(gotoHomeButtonComponent,
         // props:
         {
             // classes:
-            className : buttonGotoHomeComponent.props.className ?? 'gotoHome',
+            className : gotoHomeButtonComponent.props.className ?? 'gotoHome',
             
             
             
             // handlers:
-            onClick   : buttonGotoHomeComponent.props.onClick   ?? gotoHome,
+            onClick   : gotoHomeButtonComponent.props.onClick   ?? gotoHome,
         },
         
         
         
         // children:
-        buttonGotoHomeComponent.props.children ?? 'Back to Home',
+        gotoHomeButtonComponent.props.children ?? 'Back to Home',
     );
-    const ButtonGotoSignIn  = () => React.cloneElement<ButtonProps>(buttonGotoSignInComponent,
+    const GotoSignInButton  = () => React.cloneElement<ButtonProps>(gotoSignInButtonComponent,
         // props:
         {
             // classes:
-            className : buttonGotoSignInComponent.props.className ?? 'gotoSignIn',
+            className : gotoSignInButtonComponent.props.className ?? 'gotoSignIn',
             
             
             
             // handlers:
-            onClick   : buttonGotoSignInComponent.props.onClick   ?? gotoSignIn,
+            onClick   : gotoSignInButtonComponent.props.onClick   ?? gotoSignIn,
         },
         
         
         
         // children:
-        buttonGotoSignInComponent.props.children ?? 'Back to Sign In',
+        gotoSignInButtonComponent.props.children ?? 'Back to Sign In',
     );
-    const ButtonGotoRecover = () => React.cloneElement<ButtonProps>(buttonGotoRecoverComponent,
+    const GotoRecoverButton = () => React.cloneElement<ButtonProps>(gotoRecoverButtonComponent,
         // props:
         {
             // classes:
-            className : buttonGotoRecoverComponent.props.className ?? 'gotoRecover',
+            className : gotoRecoverButtonComponent.props.className ?? 'gotoRecover',
             
             
             
             // handlers:
-            onClick   : buttonGotoRecoverComponent.props.onClick   ?? gotoRecover,
+            onClick   : gotoRecoverButtonComponent.props.onClick   ?? gotoRecover,
         },
         
         
         
         // children:
-        buttonGotoRecoverComponent.props.children ?? 'Forgot Password?',
+        gotoRecoverButtonComponent.props.children ?? 'Forgot Password?',
     );
     return (
         <Tab
@@ -237,31 +237,31 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     
                     
                     // components:
-                    inputUsernameComponent={inputUsernameComponent}
-                    inputPasswordComponent={inputPasswordComponent}
-                    buttonSignInComponent={buttonSignInComponent}
-                    buttonSignInWithComponent={buttonSignInWithComponent}
+                    usernameInputComponent={usernameInputComponent}
+                    passwordInputComponent={passwordInputComponent}
+                    signInButtonComponent={signInButtonComponent}
+                    signInWithButtonComponent={signInWithButtonComponent}
                 />
-                <ButtonGotoHome />
-                <ButtonGotoRecover />
+                <GotoHomeButton />
+                <GotoRecoverButton />
             </TabPanel>
             <TabPanel className='recover'>
                 <TabRecover
                     // components:
-                    inputUsernameComponent={inputUsernameComponent}
-                    buttonSendRecoverLinkComponent={buttonSendRecoverLinkComponent}
+                    usernameInputComponent={usernameInputComponent}
+                    sendRecoverLinkButtonComponent={sendRecoverLinkButtonComponent}
                 />
-                <ButtonGotoSignIn />
+                <GotoSignInButton />
             </TabPanel>
             <TabPanel className='reset'>
                 <TabReset
                     // components:
-                    inputEmailComponent={inputEmailComponent}
-                    inputPasswordComponent={inputPasswordComponent}
-                    inputPassword2Component={inputPassword2Component}
-                    buttonResetPasswordComponent={buttonResetPasswordComponent}
+                    emailInputComponent={emailInputComponent}
+                    passwordInputComponent={passwordInputComponent}
+                    password2InputComponent={password2InputComponent}
+                    resetPasswordButtonComponent={resetPasswordButtonComponent}
                 />
-                <ButtonGotoSignIn />
+                <GotoSignInButton />
             </TabPanel>
         </Tab>
     );

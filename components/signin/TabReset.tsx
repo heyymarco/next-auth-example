@@ -68,19 +68,19 @@ import {
 // react components:
 export interface TabResetProps {
     // components:
-    inputEmailComponent          ?: React.ReactComponentElement<any, InputProps<Element>>
-    inputPasswordComponent       ?: React.ReactComponentElement<any, InputProps<Element>>
-    inputPassword2Component      ?: React.ReactComponentElement<any, InputProps<Element>>
-    buttonResetPasswordComponent ?: Required<ButtonComponentProps>['buttonComponent']
+    emailInputComponent          ?: React.ReactComponentElement<any, InputProps<Element>>
+    passwordInputComponent       ?: React.ReactComponentElement<any, InputProps<Element>>
+    password2InputComponent      ?: React.ReactComponentElement<any, InputProps<Element>>
+    resetPasswordButtonComponent ?: Required<ButtonComponentProps>['buttonComponent']
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:
     const {
         // components:
-        inputEmailComponent          = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        inputPasswordComponent       = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        inputPassword2Component      = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        buttonResetPasswordComponent = (<ButtonWithBusy busyType='recover' buttonComponent={<ButtonIcon icon='save' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        emailInputComponent          = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        passwordInputComponent       = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        password2InputComponent      = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        resetPasswordButtonComponent = (<ButtonWithBusy busyType='recover' buttonComponent={<ButtonIcon icon='save' />} /> as React.ReactComponentElement<any, ButtonProps>),
     } = props;
     
     
@@ -155,50 +155,52 @@ export const TabReset = (props: TabResetProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            {React.cloneElement<InputProps<Element>>(inputEmailComponent,
+            {/* <EmailInput> */}
+            {React.cloneElement<InputProps<Element>>(emailInputComponent,
                 // props:
                 {
                     // classes:
-                    className    : inputEmailComponent.props.className    ?? 'username',
+                    className    : emailInputComponent.props.className    ?? 'username',
                     
                     
                     
                     // accessibilities:
-                    readOnly     : inputEmailComponent.props.readOnly     ?? true,
+                    readOnly     : emailInputComponent.props.readOnly     ?? true,
                     
                     
                     
                     // values:
-                    value        : inputEmailComponent.props.value        ?? (email ?? ''),
+                    value        : emailInputComponent.props.value        ?? (email ?? ''),
                 },
             )}
-            {React.cloneElement<InputProps<Element>>(inputPasswordComponent,
+            {/* <PasswordInput> */}
+            {React.cloneElement<InputProps<Element>>(passwordInputComponent,
                 // props:
                 {
                     // refs:
-                    elmRef       : inputPasswordComponent.props.elmRef       ?? (isResetSection ? passwordRef : undefined),
+                    elmRef       : passwordInputComponent.props.elmRef       ?? (isResetSection ? passwordRef : undefined),
                     
                     
                     
                     // classes:
-                    className    : inputPasswordComponent.props.className    ?? 'password',
+                    className    : passwordInputComponent.props.className    ?? 'password',
                     
                     
                     
                     // accessibilities:
-                    placeholder  : inputPasswordComponent.props.placeholder  ?? 'New Password',
-                    autoComplete : inputPasswordComponent.props.autoComplete ?? 'new-password',
+                    placeholder  : passwordInputComponent.props.placeholder  ?? 'New Password',
+                    autoComplete : passwordInputComponent.props.autoComplete ?? 'new-password',
                     
                     
                     
                     // values:
-                    value        : inputPasswordComponent.props.value        ?? password,
+                    value        : passwordInputComponent.props.value        ?? password,
                     
                     
                     
                     // validations:
-                    isValid      : inputPasswordComponent.props.isValid      ?? passwordValid,
-                    required     : inputPasswordComponent.props.required     ?? true,
+                    isValid      : passwordInputComponent.props.isValid      ?? passwordValid,
+                    required     : passwordInputComponent.props.required     ?? true,
                     
                     
                     
@@ -207,33 +209,34 @@ export const TabReset = (props: TabResetProps) => {
                     ...passwordFocusHandlers,
                 },
             )}
-            {React.cloneElement<InputProps<Element>>(inputPassword2Component,
+            {/* <PasswordInput> */}
+            {React.cloneElement<InputProps<Element>>(password2InputComponent,
                 // props:
                 {
                     // refs:
-                    elmRef       : inputPassword2Component.props.elmRef       ?? (isResetSection ? password2Ref : undefined),
+                    elmRef       : password2InputComponent.props.elmRef       ?? (isResetSection ? password2Ref : undefined),
                     
                     
                     
                     // classes:
-                    className    : inputPassword2Component.props.className    ?? 'password2',
+                    className    : password2InputComponent.props.className    ?? 'password2',
                     
                     
                     
                     // accessibilities:
-                    placeholder  : inputPassword2Component.props.placeholder  ?? 'Confirm New Password',
-                    autoComplete : inputPassword2Component.props.autoComplete ?? 'new-password',
+                    placeholder  : password2InputComponent.props.placeholder  ?? 'Confirm New Password',
+                    autoComplete : password2InputComponent.props.autoComplete ?? 'new-password',
                     
                     
                     
                     // values:
-                    value        : inputPassword2Component.props.value        ?? password2,
+                    value        : password2InputComponent.props.value        ?? password2,
                     
                     
                     
                     // validations:
-                    isValid      : inputPassword2Component.props.isValid      ?? password2Valid,
-                    required     : inputPassword2Component.props.required     ?? true,
+                    isValid      : password2InputComponent.props.isValid      ?? password2Valid,
+                    required     : password2InputComponent.props.required     ?? true,
                     
                     
                     
@@ -375,28 +378,28 @@ export const TabReset = (props: TabResetProps) => {
                     </ListItem>
                 </List>
             </Tooltip>
-            {/* <ButtonResetPassword> */}
-            {React.cloneElement<ButtonProps>(buttonResetPasswordComponent,
+            {/* <ResetPasswordButton> */}
+            {React.cloneElement<ButtonProps>(resetPasswordButtonComponent,
                 // props:
                 {
                     // actions:
-                    type      : buttonResetPasswordComponent.props.type      ?? 'submit',
+                    type      : resetPasswordButtonComponent.props.type      ?? 'submit',
                     
                     
                     
                     // classes:
-                    className : buttonResetPasswordComponent.props.className ?? 'resetPassword',
+                    className : resetPasswordButtonComponent.props.className ?? 'resetPassword',
                     
                     
                     
                     // handlers:
-                    onClick   : buttonResetPasswordComponent.props.onClick   ?? doReset,
+                    onClick   : resetPasswordButtonComponent.props.onClick   ?? doReset,
                 },
                 
                 
                 
                 // children:
-                buttonResetPasswordComponent.props.children ?? 'Reset Password',
+                resetPasswordButtonComponent.props.children ?? 'Reset Password',
             )}
             <ModalStatus
                 // variants:

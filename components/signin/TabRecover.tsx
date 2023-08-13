@@ -41,15 +41,15 @@ import {
 // react components:
 export interface TabRecoverProps {
     // components:
-    inputUsernameComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
-    buttonSendRecoverLinkComponent ?: Required<ButtonComponentProps>['buttonComponent']
+    usernameInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
+    sendRecoverLinkButtonComponent ?: Required<ButtonComponentProps>['buttonComponent']
 }
 export const TabRecover = (props: TabRecoverProps) => {
     // rest props:
     const {
         // components:
-        inputUsernameComponent         = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />                as React.ReactComponentElement<any, InputProps<Element>>),
-        buttonSendRecoverLinkComponent = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
+        usernameInputComponent         = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />                as React.ReactComponentElement<any, InputProps<Element>>),
+        sendRecoverLinkButtonComponent = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
     } = props;
     
     
@@ -94,33 +94,34 @@ export const TabRecover = (props: TabRecoverProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            {React.cloneElement<InputProps<Element>>(inputUsernameComponent,
+            {/* <UsernameInput> */}
+            {React.cloneElement<InputProps<Element>>(usernameInputComponent,
                 // props:
                 {
                     // refs:
-                    elmRef       : inputUsernameComponent.props.elmRef       ?? (isRecoverSection ? usernameRef : undefined),
+                    elmRef       : usernameInputComponent.props.elmRef       ?? (isRecoverSection ? usernameRef : undefined),
                     
                     
                     
                     // classes:
-                    className    : inputUsernameComponent.props.className    ?? 'username',
+                    className    : usernameInputComponent.props.className    ?? 'username',
                     
                     
                     
                     // accessibilities:
-                    placeholder  : inputUsernameComponent.props.placeholder  ?? 'Username or Email',
-                    autoComplete : inputUsernameComponent.props.autoComplete ?? 'username',
+                    placeholder  : usernameInputComponent.props.placeholder  ?? 'Username or Email',
+                    autoComplete : usernameInputComponent.props.autoComplete ?? 'username',
                     
                     
                     
                     // values:
-                    value        : inputUsernameComponent.props.value        ?? username,
+                    value        : usernameInputComponent.props.value        ?? username,
                     
                     
                     
                     // validations:
-                    isValid      : inputUsernameComponent.props.isValid      ?? usernameValid,
-                    required     : inputUsernameComponent.props.required     ?? true,
+                    isValid      : usernameInputComponent.props.isValid      ?? usernameValid,
+                    required     : usernameInputComponent.props.required     ?? true,
                     
                     
                     
@@ -128,28 +129,28 @@ export const TabRecover = (props: TabRecoverProps) => {
                     ...usernameHandlers,
                 },
             )}
-            {/* <ButtonSendRecoverLink> */}
-            {React.cloneElement<ButtonProps>(buttonSendRecoverLinkComponent,
+            {/* <SendRecoverLinkButton> */}
+            {React.cloneElement<ButtonProps>(sendRecoverLinkButtonComponent,
                 // props:
                 {
                     // actions:
-                    type      : buttonSendRecoverLinkComponent.props.type      ?? 'submit',
+                    type      : sendRecoverLinkButtonComponent.props.type      ?? 'submit',
                     
                     
                     
                     // classes:
-                    className : buttonSendRecoverLinkComponent.props.className ?? 'sendRecoverLink',
+                    className : sendRecoverLinkButtonComponent.props.className ?? 'sendRecoverLink',
                     
                     
                     
                     // handlers:
-                    onClick   : buttonSendRecoverLinkComponent.props.onClick   ?? doRecover,
+                    onClick   : sendRecoverLinkButtonComponent.props.onClick   ?? doRecover,
                 },
                 
                 
                 
                 // children:
-                buttonSendRecoverLinkComponent.props.children ?? 'Send Reset Password Link',
+                sendRecoverLinkButtonComponent.props.children ?? 'Send Reset Password Link',
             )}
         </form>
     );
