@@ -10,10 +10,10 @@ import {
 import {
     // simple-components:
     Icon,
-    Label,
     ButtonProps,
     ButtonComponentProps,
     ButtonIcon,
+    InputProps,
     PasswordInput,
     EmailInput,
     
@@ -33,11 +33,6 @@ import {
     
     // notification-components:
     Tooltip,
-    
-    
-    
-    // composite-components:
-    Group,
 }                           from '@reusable-ui/components'
 
 // internal components:
@@ -45,6 +40,10 @@ import {
     // dialog-components:
     ModalStatus,
 }                           from '@/components/ModalStatus'
+import {
+    // react components:
+    InputWithLabel,
+}                           from './InputWithLabel'
 import {
     // react components:
     ButtonWithBusy,
@@ -69,12 +68,18 @@ import {
 // react components:
 export interface TabResetProps {
     // components:
+    inputEmailComponent          ?: React.ReactComponentElement<any, InputProps<Element>>
+    inputPasswordComponent       ?: React.ReactComponentElement<any, InputProps<Element>>
+    inputPassword2Component      ?: React.ReactComponentElement<any, InputProps<Element>>
     buttonResetPasswordComponent ?: Required<ButtonComponentProps>['buttonComponent']
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:
     const {
         // components:
+        inputEmailComponent          = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        inputPasswordComponent       = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        inputPassword2Component      = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
         buttonResetPasswordComponent = (<ButtonWithBusy busyType='recover' buttonComponent={<ButtonIcon icon='save' />} /> as React.ReactComponentElement<any, ButtonProps>),
     } = props;
     
@@ -150,106 +155,93 @@ export const TabReset = (props: TabResetProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            <Group className='username'>
-                <Label
+            {React.cloneElement<InputProps<Element>>(inputEmailComponent,
+                // props:
+                {
                     // classes:
-                    className='solid'
-                >
-                    <Icon
-                        // appearances:
-                        icon='supervisor_account'
-                    />
-                </Label>
-                <EmailInput
+                    className    : inputEmailComponent.props.className    ?? 'username',
+                    
+                    
+                    
                     // accessibilities:
-                    readOnly={true}
+                    readOnly     : inputEmailComponent.props.readOnly     ?? true,
                     
                     
                     
                     // values:
-                    value={email ?? ''}
-                />
-            </Group>
-            <Group className='password'>
-                <Label
-                    // classes:
-                    className='solid'
-                >
-                    <Icon
-                        // appearances:
-                        icon='lock'
-                    />
-                </Label>
-                <PasswordInput
+                    value        : inputEmailComponent.props.value        ?? (email ?? ''),
+                },
+            )}
+            {React.cloneElement<InputProps<Element>>(inputPasswordComponent,
+                // props:
+                {
                     // refs:
-                    elmRef={isResetSection ? passwordRef : undefined}
+                    elmRef       : inputPasswordComponent.props.elmRef       ?? (isResetSection ? passwordRef : undefined),
+                    
+                    
+                    
+                    // classes:
+                    className    : inputPasswordComponent.props.className    ?? 'password',
                     
                     
                     
                     // accessibilities:
-                    placeholder='New Password'
-                    autoComplete='new-password'
+                    placeholder  : inputPasswordComponent.props.placeholder  ?? 'New Password',
+                    autoComplete : inputPasswordComponent.props.autoComplete ?? 'new-password',
                     
                     
                     
                     // values:
-                    value={password}
+                    value        : inputPasswordComponent.props.value        ?? password,
                     
                     
                     
                     // validations:
-                    isValid={passwordValid}
-                    required={true}
-                    // minLength={passwordMinLength} // validate on JS level
-                    // maxLength={passwordMaxLength} // validate on JS level
+                    isValid      : inputPasswordComponent.props.isValid      ?? passwordValid,
+                    required     : inputPasswordComponent.props.required     ?? true,
                     
                     
                     
                     // handlers:
-                    {...passwordHandlers}
-                    {...passwordFocusHandlers}
-                />
-            </Group>
-            <Group className='password2'>
-                <Label
-                    // classes:
-                    className='solid'
-                >
-                    <Icon
-                        // appearances:
-                        icon='lock'
-                    />
-                </Label>
-                <PasswordInput
+                    ...passwordHandlers,
+                    ...passwordFocusHandlers,
+                },
+            )}
+            {React.cloneElement<InputProps<Element>>(inputPassword2Component,
+                // props:
+                {
                     // refs:
-                    elmRef={isResetSection ? password2Ref : undefined}
+                    elmRef       : inputPassword2Component.props.elmRef       ?? (isResetSection ? password2Ref : undefined),
+                    
+                    
+                    
+                    // classes:
+                    className    : inputPassword2Component.props.className    ?? 'password2',
                     
                     
                     
                     // accessibilities:
-                    placeholder='Confirm New Password'
-                    autoComplete='new-password'
+                    placeholder  : inputPassword2Component.props.placeholder  ?? 'Confirm New Password',
+                    autoComplete : inputPassword2Component.props.autoComplete ?? 'new-password',
                     
                     
                     
                     // values:
-                    value={password2}
+                    value        : inputPassword2Component.props.value        ?? password2,
                     
                     
                     
                     // validations:
-                    isValid={password2Valid}
-                    required={true}
-                    // minLength={passwordMinLength} // validate on JS level
-                    // maxLength={passwordMaxLength} // validate on JS level
+                    isValid      : inputPassword2Component.props.isValid      ?? password2Valid,
+                    required     : inputPassword2Component.props.required     ?? true,
                     
                     
                     
                     // handlers:
-                    {...password2Handlers}
-                    {...password2FocusHandlers}
-                />
-            </Group>
+                    ...password2Handlers,
+                    ...password2FocusHandlers,
+                },
+            )}
             <Tooltip
                 // variants:
                 theme='warning'
