@@ -109,6 +109,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         buttonGotoSignInComponent  = (<ButtonIcon icon='arrow_back'  buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
         buttonGotoRecoverComponent = (<ButtonIcon icon='help_center' buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
         
+        inputUsernameComponent,
         buttonSignInComponent,
         buttonSignInWithComponent,
         
@@ -233,6 +234,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     
                     
                     // components:
+                    inputUsernameComponent={inputUsernameComponent}
                     buttonSignInComponent={buttonSignInComponent}
                     buttonSignInWithComponent={buttonSignInWithComponent}
                 />

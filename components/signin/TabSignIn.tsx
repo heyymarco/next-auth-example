@@ -20,6 +20,7 @@ import {
     ButtonProps,
     ButtonComponentProps,
     ButtonIcon,
+    InputProps,
     TextInput,
     PasswordInput,
     
@@ -30,6 +31,10 @@ import {
 }                           from '@reusable-ui/components'
 
 // internal components:
+import {
+    // react components:
+    InputWithLabel,
+}                           from './InputWithLabel'
 import {
     // react components:
     ButtonWithBusy,
@@ -59,6 +64,7 @@ export interface TabSignInProps {
     
     
     // components:
+    inputUsernameComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
     buttonSignInComponent     ?: Required<ButtonComponentProps>['buttonComponent']
     buttonSignInWithComponent ?: Required<ButtonComponentProps>['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
 }
@@ -71,6 +77,7 @@ export const TabSignIn = (props: TabSignInProps) => {
         
         
         // components:
+        inputUsernameComponent    = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput />} /> as React.ReactComponentElement<any, InputProps<Element>>),
         buttonSignInComponent     = (<ButtonWithBusy busyType='credentials' buttonComponent={<ButtonIcon icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
         buttonSignInWithComponent = (((oAuthProvider: BuiltInProviderType) => <ButtonWithBusy busyType={oAuthProvider} buttonComponent={<ButtonIcon icon={oAuthProvider} />} />) as Required<TabSignInProps>['buttonSignInWithComponent']),
     } = props;
@@ -128,43 +135,40 @@ export const TabSignIn = (props: TabSignInProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
-            <Group className='username'>
-                <Label
-                    // classes:
-                    className='solid'
-                >
-                    <Icon
-                        // appearances:
-                        icon='supervisor_account'
-                    />
-                </Label>
-                <TextInput
+            {React.cloneElement<InputProps<Element>>(inputUsernameComponent,
+                // props:
+                {
                     // refs:
-                    elmRef={isSignInSection ? usernameRef : undefined}
+                    elmRef       : inputUsernameComponent.props.elmRef       ?? (isSignInSection ? usernameRef : undefined),
+                    
+                    
+                    
+                    // classes:
+                    className    : inputUsernameComponent.props.className    ?? 'username',
                     
                     
                     
                     // accessibilities:
-                    placeholder='Username or Email'
-                    autoComplete='username'
+                    placeholder  : inputUsernameComponent.props.placeholder  ?? 'Username or Email',
+                    autoComplete : inputUsernameComponent.props.autoComplete ?? 'username',
                     
                     
                     
                     // values:
-                    value={username}
+                    value        : inputUsernameComponent.props.value        ?? username,
                     
                     
                     
                     // validations:
-                    isValid={usernameValid}
-                    required={true}
+                    isValid      : inputUsernameComponent.props.isValid      ?? usernameValid,
+                    required     : inputUsernameComponent.props.required     ?? true,
                     
                     
                     
                     // handlers:
-                    {...usernameHandlers}
-                />
-            </Group>
+                    ...usernameHandlers,
+                },
+            )}
             <Group className='password'>
                 <Label
                     // classes:
