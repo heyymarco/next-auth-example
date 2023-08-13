@@ -41,6 +41,11 @@ import {
     
     
     
+    // an accessibility management system:
+    AccessibilityProvider,
+    
+    
+    
     // a validation management system:
     ValidationProvider,
 }                           from '@reusable-ui/core'
@@ -103,6 +108,8 @@ export interface SignInState {
     isSignInSection         : boolean
     isRecoverSection        : boolean
     isResetSection          : boolean
+    isRecoverSent           : boolean
+    isResetApplied          : boolean
     isBusy                  : BusyState
     setIsBusy               : (isBusy: BusyState) => void
     
@@ -175,6 +182,8 @@ const SignInStateContext = createContext<SignInState>({
     isSignInSection         : false,
     isRecoverSection        : false,
     isResetSection          : false,
+    isRecoverSent           : false,
+    isResetApplied          : false,
     isBusy                  : false,
     setIsBusy               : () => {},
     
@@ -261,12 +270,14 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     
     
     // states:
-    const [section      , setSection       ] = useState<SignInSection>(!!resetPasswordTokenRef.current ? 'reset' : 'signIn');
-    const isSignInSection                    = (section === 'signIn');
-    const isRecoverSection                   = (section === 'recover');
-    const isResetSection                     = (section === 'reset');
-    const [tokenVerified, setTokenVerified ] = useState<undefined|{ email: string, username: string|null }|false>(!resetPasswordToken ? false : undefined);
-    const [isBusy       , setIsBusyInternal] = useState<BusyState>(false);
+    const [section       , setSection       ] = useState<SignInSection>(!!resetPasswordTokenRef.current ? 'reset' : 'signIn');
+    const isSignInSection                     = (section === 'signIn');
+    const isRecoverSection                    = (section === 'recover');
+    const isResetSection                      = (section === 'reset');
+    const [tokenVerified , setTokenVerified ] = useState<undefined|{ email: string, username: string|null }|false>(!resetPasswordToken ? false : undefined);
+    const [isRecoverSent , setIsRecoverSent ] = useState<boolean>(false);
+    const [isResetApplied, setIsResetApplied] = useState<boolean>(false);
+    const [isBusy        , setIsBusyInternal] = useState<BusyState>(false);
     const isMounted                    = useMountedFlag();
     
     
@@ -454,6 +465,12 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         
         
+        // reset request states:
+        setIsRecoverSent(false);
+        setIsResetApplied(false);
+        
+        
+        
         // reset fields & validations:
         setEnableValidation(false);
         setUsername('');
@@ -609,6 +626,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             
             
             
+            setIsRecoverSent(true); // mark recoverRequest as sent
             setIsBusy(false); // unmark as busy
             
             
@@ -683,6 +701,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             
             
             
+            setIsResetApplied(true); // mark resetPassword as applied
             setIsBusy(false); // unmark as busy
             
             
@@ -760,6 +779,8 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         isSignInSection,
         isRecoverSection,
         isResetSection,
+        isRecoverSent,
+        isResetApplied,
         isBusy,
         setIsBusy,           // stable ref
         
@@ -814,6 +835,11 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     }), [
         // states:
         section,
+        isSignInSection,
+        isRecoverSection,
+        isResetSection,
+        isRecoverSent,
+        isResetApplied,
         isBusy,
         
         
@@ -849,12 +875,27 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     // jsx:
     return (
         <SignInStateContext.Provider value={signInState}>
-            <ValidationProvider
-                // validations:
-                enableValidation={enableValidation}
+            <AccessibilityProvider
+                 // accessibilities:
+                enabled={
+                    !isBusy // disabled if busy
+                    &&
+                    (
+                        isSignInSection // always enabled on 'signIn' section
+                        ||
+                        (isRecoverSection && !isRecoverSent) // on 'recover' section => enabled if recoverRequest was NOT sent
+                        ||
+                        (isResetSection   && !isResetApplied  && !!tokenVerified) // on 'reset' section => enabled if resetPassword was NOT applied and token verified
+                    )
+                }
             >
-                {children}
-            </ValidationProvider>
+                <ValidationProvider
+                    // validations:
+                    enableValidation={enableValidation}
+                >
+                    {children}
+                </ValidationProvider>
+            </AccessibilityProvider>
         </SignInStateContext.Provider>
     );
 }

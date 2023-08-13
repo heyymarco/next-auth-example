@@ -466,17 +466,17 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
     } // try
 };
 const handleValidatePasswordReset = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
+    // filters the request type:
+    if (req.method !== 'GET')             return false; // ignore
+    if (req.query.nextauth?.[0] !== path) return false; // ignore
+    
+    
+    
     await new Promise<void>((resolve) => {
         setTimeout(() => {
             resolve();
         }, 10000);
     });
-    
-    
-    
-    // filters the request type:
-    if (req.method !== 'GET')             return false; // ignore
-    if (req.query.nextauth?.[0] !== path) return false; // ignore
     
     
     

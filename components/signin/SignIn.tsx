@@ -12,12 +12,6 @@ import {
     dynamicStyleSheet,
 }                           from '@cssfn/cssfn-react'           // writes css in react hook
 
-// reusable-ui core:
-import {
-    // an accessibility management system:
-    AccessibilityProvider,
-}                           from '@reusable-ui/core'
-
 // reusable-ui components:
 import {
     // base-content-components:
@@ -131,7 +125,6 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     const {
         // states:
         section,
-        isBusy,
         
         
         
@@ -196,76 +189,71 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         buttonGotoRecoverComponent.props.children ?? 'Forgot Password?',
     );
     return (
-        <AccessibilityProvider
-            // accessibilities:
-            enabled={!isBusy} // disabled if busy
+        <Tab
+            // identifiers:
+            id='tabSignIn'
+            
+            
+            
+            // states:
+            expandedTabIndex={
+                (section === 'recover')
+                ? 1
+                :   (section === 'reset')
+                    ? 2
+                    : 0
+            }
+            
+            
+            
+            // components:
+            headerComponent={null}
+            bodyComponent={
+                <Content
+                    // other props:
+                    {...restContentProps}
+                    
+                    
+                    
+                    // variants:
+                    mild={props.mild ?? true}
+                    
+                    
+                    
+                    // classes:
+                    mainClass={props.mainClass ?? styleSheet.main}
+                />
+            }
         >
-            <Tab
-                // identifiers:
-                id='tabSignIn'
-                
-                
-                
-                // states:
-                expandedTabIndex={
-                    (section === 'recover')
-                    ? 1
-                    :   (section === 'reset')
-                        ? 2
-                        : 0
-                }
-                
-                
-                
-                // components:
-                headerComponent={null}
-                bodyComponent={
-                    <Content
-                        // other props:
-                        {...restContentProps}
-                        
-                        
-                        
-                        // variants:
-                        mild={props.mild ?? true}
-                        
-                        
-                        
-                        // classes:
-                        mainClass={props.mainClass ?? styleSheet.main}
-                    />
-                }
-            >
-                <TabPanel className='signIn'>
-                    <TabSignIn
-                        // auths:
-                        providers={providers}
-                        
-                        
-                        
-                        // components:
-                        buttonSignInComponent={buttonSignInComponent}
-                        buttonSignInWithComponent={buttonSignInWithComponent}
-                    />
-                    <ButtonGotoHome />
-                    <ButtonGotoRecover />
-                </TabPanel>
-                <TabPanel className='recover'>
-                    <TabRecover
-                        // components:
-                        buttonSendRecoverLinkComponent={buttonSendRecoverLinkComponent}
-                    />
-                    <ButtonGotoSignIn />
-                </TabPanel>
-                <TabPanel className='reset'>
-                    <TabReset
-                        // components:
-                        buttonResetPasswordComponent={buttonResetPasswordComponent}
-                    />
-                    <ButtonGotoSignIn />
-                </TabPanel>
-            </Tab>
-        </AccessibilityProvider>
+            <TabPanel className='signIn'>
+                <TabSignIn
+                    // auths:
+                    providers={providers}
+                    
+                    
+                    
+                    // components:
+                    buttonSignInComponent={buttonSignInComponent}
+                    buttonSignInWithComponent={buttonSignInWithComponent}
+                />
+                <ButtonGotoHome />
+                <ButtonGotoRecover />
+            </TabPanel>
+            <TabPanel className='recover'>
+                <TabRecover
+                    // components:
+                    buttonSendRecoverLinkComponent={buttonSendRecoverLinkComponent}
+                />
+                <ButtonGotoSignIn />
+            </TabPanel>
+            <TabPanel className='reset'>
+                <TabReset
+                    // components:
+                    buttonResetPasswordComponent={buttonResetPasswordComponent}
+                />
+                <ButtonGotoSignIn />
+            </TabPanel>
+        </Tab>
     );
 };
 export {

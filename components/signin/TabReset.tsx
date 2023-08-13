@@ -93,6 +93,7 @@ export const TabReset = (props: TabResetProps) => {
         
         // states:
         isResetSection,
+        isResetApplied,
         isBusy,
         
         
@@ -256,7 +257,7 @@ export const TabReset = (props: TabResetProps) => {
                 
                 
                 // states:
-                expanded={passwordFocused && !isBusy}
+                expanded={passwordFocused && !isBusy && isResetSection && !isResetApplied}
                 
                 
                 
@@ -316,7 +317,7 @@ export const TabReset = (props: TabResetProps) => {
                 
                 
                 // states:
-                expanded={password2Focused && !isBusy}
+                expanded={password2Focused && !isBusy && isResetSection && !isResetApplied}
                 
                 
                 
@@ -408,6 +409,11 @@ export const TabReset = (props: TabResetProps) => {
             <ModalStatus
                 // variants:
                 theme='primary'
+                
+                
+                
+                // accessibilities:
+                inheritEnabled={false}
                 
                 
                 
