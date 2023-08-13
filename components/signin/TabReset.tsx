@@ -9,6 +9,7 @@ import {
 // reusable-ui components:
 import {
     // simple-components:
+    IconProps,
     Icon,
     ButtonProps,
     ButtonComponentProps,
@@ -20,7 +21,9 @@ import {
     
     
     // layout-components:
+    ListItemProps,
     ListItem,
+    ListProps,
     List,
     CardBody,
     
@@ -70,25 +73,41 @@ import {
 // react components:
 export interface TabResetProps {
     // components:
-    emailInputComponent            ?: React.ReactComponentElement<any, InputProps<Element>>
-    passwordInputComponent         ?: React.ReactComponentElement<any, InputProps<Element>>
-    password2InputComponent        ?: React.ReactComponentElement<any, InputProps<Element>>
-    resetPasswordButtonComponent   ?: ButtonComponentProps['buttonComponent']
-    tooltipComponent               ?: React.ReactComponentElement<any, TooltipProps<Element>>|null
-    tooltipComponent2              ?: React.ReactComponentElement<any, TooltipProps<Element>>|null
-    validatingModalStatusComponent ?: React.ReactComponentElement<any, ModalStatusProps<Element>>|null
+    emailInputComponent                  ?: React.ReactComponentElement<any, InputProps<Element>>
+    passwordInputComponent               ?: React.ReactComponentElement<any, InputProps<Element>>
+    password2InputComponent              ?: React.ReactComponentElement<any, InputProps<Element>>
+    resetPasswordButtonComponent         ?: ButtonComponentProps['buttonComponent']
+    
+    passwordTooltipComponent             ?: React.ReactComponentElement<any, TooltipProps<Element>>|null
+    password2TooltipComponent            ?: React.ReactComponentElement<any, TooltipProps<Element>>|null
+    passwordValidationListComponent      ?: React.ReactComponentElement<any, ListProps<Element>>
+    password2ValidationListComponent     ?: React.ReactComponentElement<any, ListProps<Element>>
+    passwordValidationListItemComponent  ?: React.ReactComponentElement<any, ListItemProps<Element>>
+    password2ValidationListItemComponent ?: React.ReactComponentElement<any, ListItemProps<Element>>
+    passwordValidationIconComponent      ?: React.ReactComponentElement<any, IconProps<Element>>
+    password2ValidationIconComponent     ?: React.ReactComponentElement<any, IconProps<Element>>
+    
+    tokenValidationModalStatusComponent  ?: React.ReactComponentElement<any, ModalStatusProps<Element>>|null
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:
     const {
         // components:
-        emailInputComponent            = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        passwordInputComponent         = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        password2InputComponent        = passwordInputComponent,
-        resetPasswordButtonComponent   = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='save' />} />  as React.ReactComponentElement<any, ButtonProps>),
-        tooltipComponent               = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
-        tooltipComponent2              = tooltipComponent,
-        validatingModalStatusComponent = (<ModalStatus<Element> theme='primary' />                                                   as React.ReactComponentElement<any, ModalStatusProps<Element>>),
+        emailInputComponent                  = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        passwordInputComponent               = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        password2InputComponent              = passwordInputComponent,
+        resetPasswordButtonComponent         = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='save' />} />  as React.ReactComponentElement<any, ButtonProps>),
+        
+        passwordTooltipComponent             = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                       as React.ReactComponentElement<any, TooltipProps<Element>>),
+        password2TooltipComponent            = passwordTooltipComponent,
+        passwordValidationListComponent      = (<List<Element> listStyle='flat' />                                                         as React.ReactComponentElement<any, ListProps<Element>>),
+        password2ValidationListComponent     = passwordValidationListComponent,
+        passwordValidationListItemComponent  = (<ListItem<Element> size='sm' outlined={true} />                                            as React.ReactComponentElement<any, ListItemProps<Element>>),
+        password2ValidationListItemComponent = passwordValidationListItemComponent,
+        passwordValidationIconComponent      = (<Icon<Element> size='sm' icon={undefined as any} />                                        as React.ReactComponentElement<any, IconProps<Element>>),
+        password2ValidationIconComponent     = passwordValidationIconComponent,
+        
+        tokenValidationModalStatusComponent  = (<ModalStatus<Element> theme='primary' />                                                   as React.ReactComponentElement<any, ModalStatusProps<Element>>),
     } = props;
     
     
@@ -138,12 +157,32 @@ export const TabReset = (props: TabResetProps) => {
         // actions:
         doReset,
     } = signInState;
+    const validation = {
+        passwordValidLength,
+        passwordValidUppercase,
+        passwordValidLowercase,
+        
+        password2ValidLength,
+        password2ValidUppercase,
+        password2ValidLowercase,
+        password2ValidMatch,
+    };
     
     
     
     // states:
     const [passwordFocused , passwordFocusHandlers ] = useFocusState<HTMLSpanElement>();
     const [password2Focused, password2FocusHandlers] = useFocusState<HTMLSpanElement>();
+    
+    
+    
+    // validations:
+    const validationMap = {
+        Length    : <>{passwordMinLength}-{passwordMaxLength} characters</>,
+        Uppercase : !!passwordHasUppercase && <>At least one capital letter</>,
+        Lowercase : !!passwordHasLowercase && <>At least one non-capital letter</>,
+        Match     : <>Exact match to previous password</>,
+    };
     
     
     
@@ -254,139 +293,138 @@ export const TabReset = (props: TabResetProps) => {
                 },
             )}
             {/* <Tooltip> */}
-            {!!tooltipComponent && React.cloneElement<TooltipProps<Element>>(tooltipComponent,
+            {!!passwordTooltipComponent && React.cloneElement<TooltipProps<Element>>(passwordTooltipComponent,
                 // props:
                 {
                     // states:
-                    expanded   : tooltipComponent.props.expanded   ?? (passwordFocused && !isBusy && isResetSection && !isResetApplied),
+                    expanded   : passwordTooltipComponent.props.expanded   ?? (passwordFocused && !isBusy && isResetSection && !isResetApplied),
                     
                     
                     
                     // floatable:
-                    floatingOn : tooltipComponent.props.floatingOn ?? passwordRef,
+                    floatingOn : passwordTooltipComponent.props.floatingOn ?? passwordRef,
                 },
                 
                 
                 
                 // children:
-                <List
-                    // variants:
-                    listStyle='flat'
-                >
-                    <ListItem
-                        // variants:
-                        size='sm'
-                        theme={passwordValidLength ? 'success' : 'danger'}
-                        outlined={true}
-                    >
-                        <Icon
-                            // appearances:
-                            icon={passwordValidLength ? 'check' : 'error_outline'}
-                        />
-                        &nbsp;
-                        {passwordMinLength}-{passwordMaxLength} characters
-                    </ListItem>
-                    {passwordHasUppercase && <ListItem
-                        // variants:
-                        size='sm'
-                        theme={passwordValidUppercase ? 'success' : 'danger'}
-                        outlined={true}
-                    >
-                        <Icon
-                            // appearances:
-                            icon={passwordValidUppercase ? 'check' : 'error_outline'}
-                        />
-                        &nbsp;
-                        At least one capital letter
-                    </ListItem>}
-                    {passwordHasLowercase && <ListItem
-                        // variants:
-                        size='sm'
-                        theme={passwordValidLowercase ? 'success' : 'danger'}
-                        outlined={true}
-                    >
-                        <Icon
-                            // appearances:
-                            icon={passwordValidLowercase ? 'check' : 'error_outline'}
-                        />
-                        &nbsp;
-                        At least one non-capital letter
-                    </ListItem>}
-                </List>,
+                /* <List> */
+                React.cloneElement<ListProps<Element>>(passwordValidationListComponent,
+                    // props:
+                    undefined,
+                    
+                    
+                    
+                    // children:
+                    (passwordValidationListComponent.props.children ?? Object.entries(validationMap).map(([validationType, text], index) => {
+                        // conditions:
+                        if (!text) return null; // disabled => ignore
+                        
+                        
+                        
+                        // fn props:
+                        const isValid = (validation as any)?.[`passwordValid${validationType}`] as (boolean|undefined);
+                        if (isValid === undefined) return null;
+                        
+                        
+                        
+                        // jsx:
+                        return React.cloneElement<ListItemProps<Element>>(passwordValidationListItemComponent,
+                            // props:
+                            {
+                                // identifiers:
+                                key   : passwordValidationListItemComponent.key         ?? index,
+                                
+                                
+                                
+                                // variants:
+                                theme : passwordValidationListItemComponent.props.theme ?? (isValid ? 'success' : 'danger'),
+                            },
+                            
+                            
+                            
+                            // children:
+                            passwordValidationListItemComponent.props.children ?? <>
+                                {React.cloneElement<IconProps<Element>>(passwordValidationIconComponent,
+                                    // props:
+                                    {
+                                        // appearances:
+                                        icon : passwordValidationIconComponent.props.icon ?? (isValid ? 'check' : 'error_outline'),
+                                    },
+                                )}
+                                &nbsp;
+                                {text}
+                            </>,
+                        )
+                    })),
+                ),
             )}
             {/* <Tooltip> */}
-            {!!tooltipComponent2 && React.cloneElement<TooltipProps<Element>>(tooltipComponent2,
+            {!!password2TooltipComponent && React.cloneElement<TooltipProps<Element>>(password2TooltipComponent,
                 // props:
                 {
                     // states:
-                    expanded   : tooltipComponent2.props.expanded   ?? (password2Focused && !isBusy && isResetSection && !isResetApplied),
+                    expanded   : password2TooltipComponent.props.expanded   ?? (password2Focused && !isBusy && isResetSection && !isResetApplied),
                     
                     
                     
                     // floatable:
-                    floatingOn : tooltipComponent2.props.floatingOn ?? password2Ref,
+                    floatingOn : password2TooltipComponent.props.floatingOn ?? password2Ref,
                 },
                 
                 
                 
                 // children:
-                <List
-                    // variants:
-                    listStyle='flat'
-                >
-                    <ListItem
-                        // variants:
-                        size='sm'
-                        theme={password2ValidLength ? 'success' : 'danger'}
-                        outlined={true}
-                    >
-                        <Icon
-                            // appearances:
-                            icon={password2ValidLength ? 'check' : 'error_outline'}
-                        />
-                        &nbsp;
-                        {passwordMinLength}-{passwordMaxLength} characters
-                    </ListItem>
-                    {passwordHasUppercase && <ListItem
-                        // variants:
-                        size='sm'
-                        theme={password2ValidUppercase ? 'success' : 'danger'}
-                        outlined={true}
-                    >
-                        <Icon
-                            // appearances:
-                            icon={password2ValidUppercase ? 'check' : 'error_outline'}
-                        />
-                        &nbsp;
-                        At least one capital letter
-                    </ListItem>}
-                    {passwordHasLowercase && <ListItem
-                        // variants:
-                        size='sm'
-                        theme={password2ValidLowercase ? 'success' : 'danger'}
-                        outlined={true}
-                    >
-                        <Icon
-                            // appearances:
-                            icon={password2ValidLowercase ? 'check' : 'error_outline'}
-                        />
-                        &nbsp;
-                        At least one non-capital letter
-                    </ListItem>}
-                    <ListItem
-                        // variants:
-                        size='sm'
-                        theme={password2ValidMatch ? 'success' : 'danger'}
-                        outlined={true}
-                    >
-                        <Icon
-                            // appearances:
-                            icon={password2ValidMatch ? 'check' : 'error_outline'}
-                        />
-                        &nbsp;
-                        Exact match to previous password
-                    </ListItem>
-                </List>,
+                /* <List> */
+                React.cloneElement<ListProps<Element>>(password2ValidationListComponent,
+                    // props:
+                    undefined,
+                    
+                    
+                    
+                    // children:
+                    (password2ValidationListComponent.props.children ?? Object.entries(validationMap).map(([validationType, text], index) => {
+                        // conditions:
+                        if (!text) return null; // disabled => ignore
+                        
+                        
+                        
+                        // fn props:
+                        const isValid = (validation as any)?.[`password2Valid${validationType}`] as (boolean|undefined);
+                        if (isValid === undefined) return null;
+                        
+                        
+                        
+                        // jsx:
+                        return React.cloneElement<ListItemProps<Element>>(password2ValidationListItemComponent,
+                            // props:
+                            {
+                                // identifiers:
+                                key   : password2ValidationListItemComponent.key         ?? index,
+                                
+                                
+                                
+                                // variants:
+                                theme : password2ValidationListItemComponent.props.theme ?? (isValid ? 'success' : 'danger'),
+                            },
+                            
+                            
+                            
+                            // children:
+                            password2ValidationListItemComponent.props.children ?? <>
+                                {React.cloneElement<IconProps<Element>>(password2ValidationIconComponent,
+                                    // props:
+                                    {
+                                        // appearances:
+                                        icon : password2ValidationIconComponent.props.icon ?? (isValid ? 'check' : 'error_outline'),
+                                    },
+                                )}
+                                &nbsp;
+                                {text}
+                            </>,
+                        )
+                    })),
+                ),
             )}
             {/* <ResetPasswordButton> */}
             {React.cloneElement<ButtonProps>(resetPasswordButtonComponent,
@@ -412,22 +450,22 @@ export const TabReset = (props: TabResetProps) => {
                 resetPasswordButtonComponent.props.children ?? 'Reset Password',
             )}
             {/* <ModalStatus> */}
-            {!!validatingModalStatusComponent && React.cloneElement<ModalStatusProps<Element>>(validatingModalStatusComponent,
+            {!!tokenValidationModalStatusComponent && React.cloneElement<ModalStatusProps<Element>>(tokenValidationModalStatusComponent,
                 // props:
                 {
                     // accessibilities:
-                    inheritEnabled : validatingModalStatusComponent.props.inheritEnabled ?? false,
+                    inheritEnabled : tokenValidationModalStatusComponent.props.inheritEnabled ?? false,
                     
                     
                     
                     // global stackable:
-                    viewport       : validatingModalStatusComponent.props.viewport       ?? formRef,
+                    viewport       : tokenValidationModalStatusComponent.props.viewport       ?? formRef,
                 },
                 
                 
                 
                 // children:
-                (validatingModalStatusComponent.props.children ?? ((email === null) && <CardBody>
+                (tokenValidationModalStatusComponent.props.children ?? ((email === null) && <CardBody>
                     <p>
                         <Busy />&nbsp;Validating reset password token...
                     </p>

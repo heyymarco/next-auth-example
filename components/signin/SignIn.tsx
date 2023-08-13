@@ -119,12 +119,18 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         emailInputComponent,
         password2InputComponent,
         resetPasswordButtonComponent,
-        tooltipComponent,
-        tooltipComponent2,
-        validatingModalStatusComponent,
+        
+        passwordTooltipComponent,
+        password2TooltipComponent,
+        passwordValidationListComponent,
+        password2ValidationListComponent,
+        passwordValidationListItemComponent,
+        password2ValidationListItemComponent,
+        passwordValidationIconComponent,
+        password2ValidationIconComponent,
+        
+        tokenValidationModalStatusComponent,
     ...restContentProps} = props;
-    // type T1 = typeof restContentProps
-    // type T2 = Omit<T1, keyof ContentProps>
     
     
     
@@ -263,9 +269,17 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     passwordInputComponent={passwordInputComponent}
                     password2InputComponent={password2InputComponent}
                     resetPasswordButtonComponent={resetPasswordButtonComponent}
-                    tooltipComponent={tooltipComponent}
-                    tooltipComponent2={tooltipComponent2}
-                    validatingModalStatusComponent={validatingModalStatusComponent}
+                    
+                    passwordTooltipComponent={passwordTooltipComponent}
+                    password2TooltipComponent={password2TooltipComponent}
+                    passwordValidationListComponent={passwordValidationListComponent}
+                    password2ValidationListComponent={password2ValidationListComponent}
+                    passwordValidationListItemComponent={passwordValidationListItemComponent}
+                    password2ValidationListItemComponent={password2ValidationListItemComponent}
+                    passwordValidationIconComponent={passwordValidationIconComponent}
+                    password2ValidationIconComponent={password2ValidationIconComponent}
+                    
+                    tokenValidationModalStatusComponent={tokenValidationModalStatusComponent}
                 />
                 <GotoSignInButton />
             </TabPanel>
