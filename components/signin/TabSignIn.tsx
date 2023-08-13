@@ -59,8 +59,8 @@ export interface TabSignInProps {
     // components:
     usernameInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
     passwordInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
-    signInButtonComponent     ?: Required<ButtonComponentProps>['buttonComponent']
-    signInWithButtonComponent ?: Required<ButtonComponentProps>['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
+    signInButtonComponent     ?: ButtonComponentProps['buttonComponent']
+    signInWithButtonComponent ?: ButtonComponentProps['buttonComponent'] | ((oAuthProvider: BuiltInProviderType) => Required<ButtonComponentProps>['buttonComponent'])
 }
 export const TabSignIn = (props: TabSignInProps) => {
     // rest props:

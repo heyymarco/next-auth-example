@@ -71,7 +71,7 @@ export interface TabResetProps {
     emailInputComponent          ?: React.ReactComponentElement<any, InputProps<Element>>
     passwordInputComponent       ?: React.ReactComponentElement<any, InputProps<Element>>
     password2InputComponent      ?: React.ReactComponentElement<any, InputProps<Element>>
-    resetPasswordButtonComponent ?: Required<ButtonComponentProps>['buttonComponent']
+    resetPasswordButtonComponent ?: ButtonComponentProps['buttonComponent']
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:

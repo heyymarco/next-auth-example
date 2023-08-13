@@ -41,8 +41,8 @@ import {
 // react components:
 export interface TabRecoverProps {
     // components:
-    usernameInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
-    sendRecoverLinkButtonComponent ?: Required<ButtonComponentProps>['buttonComponent']
+    usernameInputComponent         ?: React.ReactComponentElement<any, InputProps<Element>>
+    sendRecoverLinkButtonComponent ?: ButtonComponentProps['buttonComponent']
 }
 export const TabRecover = (props: TabRecoverProps) => {
     // rest props:

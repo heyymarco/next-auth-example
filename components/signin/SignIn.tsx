@@ -80,9 +80,9 @@ export interface SignInProps<TElement extends Element = HTMLElement>
         TabResetProps
 {
     // components:
-    gotoHomeButtonComponent    ?: Required<ButtonComponentProps>['buttonComponent']
-    gotoSignInButtonComponent  ?: Required<ButtonComponentProps>['buttonComponent']
-    gotoRecoverButtonComponent ?: Required<ButtonComponentProps>['buttonComponent']
+    gotoHomeButtonComponent    ?: ButtonComponentProps['buttonComponent']
+    gotoSignInButtonComponent  ?: ButtonComponentProps['buttonComponent']
+    gotoRecoverButtonComponent ?: ButtonComponentProps['buttonComponent']
 }
 const SignIn         = <TElement extends Element = HTMLElement>(props: SignInProps<TElement>) => {
     return (
