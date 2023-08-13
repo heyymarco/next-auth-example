@@ -39,6 +39,7 @@ import {
 // internal components:
 import {
     // dialog-components:
+    ModalStatusProps,
     ModalStatus,
 }                           from '@/components/ModalStatus'
 import {
@@ -75,6 +76,7 @@ export interface TabResetProps {
     resetPasswordButtonComponent ?: ButtonComponentProps['buttonComponent']
     tooltipComponent             ?: React.ReactComponentElement<any, TooltipProps<Element>>
     tooltipComponent2            ?: React.ReactComponentElement<any, TooltipProps<Element>>
+    modalStatusComponent         ?: React.ReactComponentElement<any, ModalStatusProps<Element>>
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:
@@ -86,6 +88,7 @@ export const TabReset = (props: TabResetProps) => {
         resetPasswordButtonComponent = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='save' />} />  as React.ReactComponentElement<any, ButtonProps>),
         tooltipComponent             = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
         tooltipComponent2            = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
+        modalStatusComponent         = (<ModalStatus<Element> theme='primary' />                                                   as React.ReactComponentElement<any, ModalStatusProps<Element>>),
     } = props;
     
     
@@ -408,26 +411,28 @@ export const TabReset = (props: TabResetProps) => {
                 // children:
                 resetPasswordButtonComponent.props.children ?? 'Reset Password',
             )}
-            <ModalStatus
-                // variants:
-                theme='primary'
+            {/* <ModalStatus> */}
+            {React.cloneElement<ModalStatusProps<Element>>(modalStatusComponent,
+                // props:
+                {
+                    // accessibilities:
+                    inheritEnabled : modalStatusComponent.props.inheritEnabled ?? false,
+                    
+                    
+                    
+                    // global stackable:
+                    viewport       : modalStatusComponent.props.viewport       ?? formRef,
+                },
                 
                 
                 
-                // accessibilities:
-                inheritEnabled={false}
-                
-                
-                
-                // global stackable:
-                viewport={formRef}
-            >
-                {(email === null) && <CardBody>
+                // children:
+                ((email === null) && <CardBody>
                     <p>
                         <Busy />&nbsp;Validating reset password token...
                     </p>
-                </CardBody>}
-            </ModalStatus>
+                </CardBody>),
+            )}
         </form>
     );
 };

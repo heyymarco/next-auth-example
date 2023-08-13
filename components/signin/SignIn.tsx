@@ -121,6 +121,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         resetPasswordButtonComponent,
         tooltipComponent,
         tooltipComponent2,
+        modalStatusComponent,
     ...restContentProps} = props;
     // type T1 = typeof restContentProps
     // type T2 = Omit<T1, keyof ContentProps>
@@ -264,6 +265,7 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     resetPasswordButtonComponent={resetPasswordButtonComponent}
                     tooltipComponent={tooltipComponent}
                     tooltipComponent2={tooltipComponent2}
+                    modalStatusComponent={modalStatusComponent}
                 />
                 <GotoSignInButton />
             </TabPanel>
