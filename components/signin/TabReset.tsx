@@ -70,25 +70,25 @@ import {
 // react components:
 export interface TabResetProps {
     // components:
-    emailInputComponent          ?: React.ReactComponentElement<any, InputProps<Element>>
-    passwordInputComponent       ?: React.ReactComponentElement<any, InputProps<Element>>
-    password2InputComponent      ?: React.ReactComponentElement<any, InputProps<Element>>
-    resetPasswordButtonComponent ?: ButtonComponentProps['buttonComponent']
-    tooltipComponent             ?: React.ReactComponentElement<any, TooltipProps<Element>>
-    tooltipComponent2            ?: React.ReactComponentElement<any, TooltipProps<Element>>
-    modalStatusComponent         ?: React.ReactComponentElement<any, ModalStatusProps<Element>>
+    emailInputComponent            ?: React.ReactComponentElement<any, InputProps<Element>>
+    passwordInputComponent         ?: React.ReactComponentElement<any, InputProps<Element>>
+    password2InputComponent        ?: React.ReactComponentElement<any, InputProps<Element>>
+    resetPasswordButtonComponent   ?: ButtonComponentProps['buttonComponent']
+    tooltipComponent               ?: React.ReactComponentElement<any, TooltipProps<Element>>
+    tooltipComponent2              ?: React.ReactComponentElement<any, TooltipProps<Element>>
+    validatingModalStatusComponent ?: React.ReactComponentElement<any, ModalStatusProps<Element>>
 }
 export const TabReset = (props: TabResetProps) => {
     // rest props:
     const {
         // components:
-        emailInputComponent          = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        passwordInputComponent       = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        password2InputComponent      = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
-        resetPasswordButtonComponent = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='save' />} />  as React.ReactComponentElement<any, ButtonProps>),
-        tooltipComponent             = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
-        tooltipComponent2            = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
-        modalStatusComponent         = (<ModalStatus<Element> theme='primary' />                                                   as React.ReactComponentElement<any, ModalStatusProps<Element>>),
+        emailInputComponent            = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        passwordInputComponent         = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        password2InputComponent        = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
+        resetPasswordButtonComponent   = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='save' />} />  as React.ReactComponentElement<any, ButtonProps>),
+        tooltipComponent               = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
+        tooltipComponent2              = (<Tooltip<Element> theme='warning' floatingPlacement='top' />                               as React.ReactComponentElement<any, TooltipProps<Element>>),
+        validatingModalStatusComponent = (<ModalStatus<Element> theme='primary' />                                                   as React.ReactComponentElement<any, ModalStatusProps<Element>>),
     } = props;
     
     
@@ -412,16 +412,16 @@ export const TabReset = (props: TabResetProps) => {
                 resetPasswordButtonComponent.props.children ?? 'Reset Password',
             )}
             {/* <ModalStatus> */}
-            {React.cloneElement<ModalStatusProps<Element>>(modalStatusComponent,
+            {React.cloneElement<ModalStatusProps<Element>>(validatingModalStatusComponent,
                 // props:
                 {
                     // accessibilities:
-                    inheritEnabled : modalStatusComponent.props.inheritEnabled ?? false,
+                    inheritEnabled : validatingModalStatusComponent.props.inheritEnabled ?? false,
                     
                     
                     
                     // global stackable:
-                    viewport       : modalStatusComponent.props.viewport       ?? formRef,
+                    viewport       : validatingModalStatusComponent.props.viewport       ?? formRef,
                 },
                 
                 
