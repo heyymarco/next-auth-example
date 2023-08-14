@@ -177,7 +177,7 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
         await showMessageError(
             // axios' human_readable server error   response:
             // axios' human_readable server message response:
-            ((): string|undefined => {
+            ((): React.ReactElement|undefined => {
                 const data = error?.response?.data;
                 
                 
@@ -185,14 +185,14 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                 // response as json:
                 if (typeof(data) === 'object') {
                     const error   = data?.error;
-                    if ((typeof(error)   === 'string') && !!error  ) return error;
+                    if ((typeof(error)   === 'string') && !!error  ) return <p>{error}</p>;   // not an empty string => a valid error message
                     
                     const message = data?.message;
-                    if ((typeof(message) === 'string') && !!message) return message;
+                    if ((typeof(message) === 'string') && !!message) return <p>{message}</p>; // not an empty string => a valid error message
                 }
-                // response as text/**:
+                // response as text:
                 else if (typeof(data) === 'string') {
-                    if (!!data) return data;
+                    if (!!data) return <p>data</p>; // not an empty string => a valid error message
                 } // if
                 
                 
@@ -202,7 +202,7 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
             ??
             // fetch's human_readable server error   response:
             // fetch's human_readable server message response:
-            (await (async (): Promise<string|undefined> => {
+            (await (async (): Promise<React.ReactElement|undefined> => {
                 // conditions:
                 const response = error?.cause;
                 if (!(response instanceof Response)) return undefined; // not a `Response` object => skip
@@ -217,10 +217,10 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                         const data    = await response.json();
                         
                         const error   = data?.error;
-                        if ((typeof(error)   === 'string') && !!error  ) return error;   // not an empty string => a valid error message
+                        if ((typeof(error)   === 'string') && !!error  ) return <p>{error}</p>;   // not an empty string => a valid error message
                         
                         const message = data?.message;
-                        if ((typeof(message) === 'string') && !!message) return message; // not an empty string => a valid error message
+                        if ((typeof(message) === 'string') && !!message) return <p>{message}</p>; // not an empty string => a valid error message
                     }
                     catch {
                         return undefined; // parse failed => skip
@@ -231,7 +231,7 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                     try {
                         const text = await response.text();
                         
-                        if (!!text) return text; // not an empty string => a valid error message
+                        if (!!text) return <p>{text}</p>; // not an empty string => a valid error message
                     }
                     catch {
                         return undefined; // parse failed => skip
@@ -243,11 +243,11 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                 return undefined; // unknown response format => skip
             })())
             ??
-            // if there is http client/server error => assumes as connection problem:
-            ((): React.ReactNode => {
-                const isRequestError = (
+            // if there is a request/client/server error => assumes as a connection problem:
+            ((): React.ReactElement => {
+                const isRequestError = ( // the request was made but no response was received
                     // axios'  error request:
-                    !!error.request
+                    !!error?.request
                     ||
                     // fetch's error request:
                     (error instanceof TypeError)
@@ -258,7 +258,9 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                     error?.response?.status
                     ??
                     // fetch's error status code:
-                    error?.cause
+                    error?.cause?.status // passing a `Response` object
+                    ??
+                    error?.cause         // passing a `Response`'s status code
                 );
                 if (typeof(errorCode) !== 'number') errorCode = 0;
              // const isClientError  = (errorCode >= 400) && (errorCode <= 499);
