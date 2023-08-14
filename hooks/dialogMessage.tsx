@@ -245,14 +245,6 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
             ??
             // if there is http client/server error => assumes as connection problem:
             ((): React.ReactNode => {
-                let errorCode = (
-                    // axios'  error status code:
-                    error?.response?.status
-                    ??
-                    // generic error status code:
-                    error?.cause
-                );
-                if (typeof(errorCode) !== 'number') errorCode = 0;
                 const isRequestError = (
                     // axios'  error request:
                     !!error.request
@@ -260,32 +252,35 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                     // fetch's error request:
                     (error instanceof TypeError)
                 );
-                const isClientError  = (errorCode >= 400) && (errorCode <= 499);
+                
+                let errorCode = (
+                    // axios'  error status code:
+                    error?.response?.status
+                    ??
+                    // fetch's error status code:
+                    error?.cause
+                );
+                if (typeof(errorCode) !== 'number') errorCode = 0;
+             // const isClientError  = (errorCode >= 400) && (errorCode <= 499);
                 const isServerError  = (errorCode >= 500) && (errorCode <= 599);
-                if (isRequestError || isClientError || isServerError) return <>
-                    <p>
-                        Oops, there was an error processing the command.
-                    </p>
-                    <p>
-                        There was a <strong>problem contacting our server</strong>.
-                        {isRequestError && <>
+                
+                return (
+                    <>
+                        <p>
+                            Oops, there was an error processing the command.
+                        </p>
+                        {isRequestError && <p>
+                            There was a <strong>problem contacting our server</strong>.
                             <br />
                             Make sure your internet connection is available.
-                        </>}
-                    </p>
-                    <p>
-                        Please try again in a few minutes.<br />
-                        If the problem still persists, please contact our technical support.
-                    </p>
-                </>;
-                return null;
+                        </p>}
+                        {isServerError && <p>
+                            Please try again in a few minutes.<br />
+                            If the problem still persists, please contact our technical support.
+                        </p>}
+                    </>
+                );
             })()
-            ??
-            // general error message:
-            (error?.message || undefined)
-            ??
-            // generic error:
-            `${error}`
         );
     });
     const showMessageSuccess      = useEvent(async (success       : React.ReactNode                          ): Promise<void> => {
