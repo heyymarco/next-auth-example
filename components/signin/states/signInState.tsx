@@ -85,6 +85,10 @@ import axios                from 'axios'
 
 
 
+// const endpointUrl  = getApiEndpoint();
+
+
+
 // contexts:
 export type SignInSection =
     | 'signIn'
@@ -246,18 +250,21 @@ const SignInStateContext = createContext<SignInState>({
 export interface SignInStateProps {
     // auths:
     resolveProviderName ?: (oAuthProvider: BuiltInProviderType) => string
+    basePath            ?: string
 }
 export const SignInStateProvider = (props: React.PropsWithChildren<SignInStateProps>) => {
     // rest props:
     const {
         // auths:
         resolveProviderName = defaultResolveProviderName,
+        basePath            = '/api/auth',
         
         
         
         // children:
         children,
     } = props;
+    const resetPath = `${basePath}/reset`;
     
     
     
@@ -401,7 +408,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         (async () => {
             // attempts validate password reset:
             try {
-                const result = await axios.get(`/api/auth/reset?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
+                const result = await axios.get(`${resetPath}?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
                 if (!isMounted.current) return; // unmounted => abort
                 
                 
@@ -645,7 +652,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // attempts request recover password:
         setIsBusy('recover'); // mark as busy
         try {
-            const result = await axios.post('/api/auth/reset', { username });
+            const result = await axios.post(resetPath, { username });
             if (!isMounted.current) return; // unmounted => abort
             
             
@@ -720,7 +727,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // attempts apply password reset:
         setIsBusy('reset'); // mark as busy
         try {
-            const result = await axios.patch('/api/auth/reset', { resetPasswordToken, password });
+            const result = await axios.patch(resetPath, { resetPasswordToken, password });
             if (!isMounted.current) return; // unmounted => abort
             
             
