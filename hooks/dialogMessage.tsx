@@ -205,7 +205,7 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
             (await (async (): Promise<string|undefined> => {
                 // conditions:
                 const response = error?.cause;
-                if ((typeof(response) !== 'object') || !(response instanceof Response)) return undefined; // not a `Response` object => skip
+                if (!(response instanceof Response)) return undefined; // not a `Response` object => skip
                 const contentType = response.headers.get('Content-Type');
                 if (!contentType) return undefined; // no 'Content-Type' defined => skip
                 
@@ -217,21 +217,21 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                         const data    = await response.json();
                         
                         const error   = data?.error;
-                        if ((typeof(error)   === 'string') && !!error  ) return error;
+                        if ((typeof(error)   === 'string') && !!error  ) return error;   // not an empty string => a valid error message
                         
                         const message = data?.message;
-                        if ((typeof(message) === 'string') && !!message) return message;
+                        if ((typeof(message) === 'string') && !!message) return message; // not an empty string => a valid error message
                     }
                     catch {
                         return undefined; // parse failed => skip
                     } // try
                 }
-                // response as text/**:
+                // response as text:
                 else if ((/^text/i).test(contentType)) {
                     try {
                         const text = await response.text();
                         
-                        if (!!text) return text;
+                        if (!!text) return text; // not an empty string => a valid error message
                     }
                     catch {
                         return undefined; // parse failed => skip
