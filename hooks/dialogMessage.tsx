@@ -175,8 +175,8 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
     });
     const showMessageFetchError   = useEvent(async (error         : any                                      ): Promise<void> => {
         await showMessageError(
-            // axio's human_readable server error   response:
-            // axio's human_readable server message response:
+            // axios' human_readable server error   response:
+            // axios' human_readable server message response:
             ((): string|undefined => {
                 const data = error?.response?.data;
                 
@@ -245,23 +245,30 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
             ??
             // if there is http client/server error => assumes as connection problem:
             ((): React.ReactNode => {
-                const errorCode = (
-                    // axio's  error status code:
+                let errorCode = (
+                    // axios'  error status code:
                     error?.response?.status
                     ??
                     // generic error status code:
                     error?.cause
                 );
-                if (typeof(errorCode) !== 'number') return null;
-                const isClientError = (errorCode >= 400) && (errorCode <= 499);
-                const isServerError = (errorCode >= 500) && (errorCode <= 599);
-                if (isClientError || isServerError) return <>
+                if (typeof(errorCode) !== 'number') errorCode = 0;
+                const isRequestError = (
+                    // axios'  error request:
+                    !!error.request
+                    ||
+                    // fetch's error request:
+                    (error instanceof TypeError)
+                );
+                const isClientError  = (errorCode >= 400) && (errorCode <= 499);
+                const isServerError  = (errorCode >= 500) && (errorCode <= 599);
+                if (isRequestError || isClientError || isServerError) return <>
                     <p>
                         Oops, there was an error processing the command.
                     </p>
                     <p>
                         There was a <strong>problem contacting our server</strong>.
-                        {isClientError && <>
+                        {isRequestError && <>
                             <br />
                             Make sure your internet connection is available.
                         </>}
