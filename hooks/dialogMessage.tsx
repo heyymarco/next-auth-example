@@ -175,33 +175,75 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
     });
     const showMessageFetchError   = useEvent(async (error         : any                                      ): Promise<void> => {
         await showMessageError(
-            // axio's  server error    message:
-            (error?.response?.data?.error || undefined)
-            ??
-            // axio's  server response message:
-            error?.response?.data
-            ??
-            // fetch's server error    message:
-            // fetch's server response message:
-            (await (async (): Promise<string|undefined> => {
-                const response = error?.cause;
-                if ((typeof(response) !== 'object') || !(response instanceof Response)) return undefined;
-                try {
-                    const data = await response.json();
-                    
-                    const error = data?.error;
-                    if ((typeof(error) === 'string') && !!error) return error;
+            // axio's human_readable server error   response:
+            // axio's human_readable server message response:
+            ((): string|undefined => {
+                const data = error?.response?.data;
+                
+                
+                
+                // response as json:
+                if (typeof(data) === 'object') {
+                    const error   = data?.error;
+                    if ((typeof(error)   === 'string') && !!error  ) return error;
                     
                     const message = data?.message;
                     if ((typeof(message) === 'string') && !!message) return message;
                 }
-                catch {
-                    /* ignore any error */
-                } // try
+                // response as text/**:
+                else if (typeof(data) === 'string') {
+                    if (!!data) return data;
+                } // if
                 
-                return undefined;
+                
+                
+                return undefined; // unknown response format => skip
+            })()
+            ??
+            // fetch's human_readable server error   response:
+            // fetch's human_readable server message response:
+            (await (async (): Promise<string|undefined> => {
+                // conditions:
+                const response = error?.cause;
+                if ((typeof(response) !== 'object') || !(response instanceof Response)) return undefined; // not a `Response` object => skip
+                const contentType = response.headers.get('Content-Type');
+                if (!contentType) return undefined; // no 'Content-Type' defined => skip
+                
+                
+                
+                // response as json:
+                if ((/^application\/json/i).test(contentType)) {
+                    try {
+                        const data    = await response.json();
+                        
+                        const error   = data?.error;
+                        if ((typeof(error)   === 'string') && !!error  ) return error;
+                        
+                        const message = data?.message;
+                        if ((typeof(message) === 'string') && !!message) return message;
+                    }
+                    catch {
+                        return undefined; // parse failed => skip
+                    } // try
+                }
+                // response as text/**:
+                else if ((/^text/i).test(contentType)) {
+                    try {
+                        const text = await response.text();
+                        
+                        if (!!text) return text;
+                    }
+                    catch {
+                        return undefined; // parse failed => skip
+                    } // try
+                } // if
+                
+                
+                
+                return undefined; // unknown response format => skip
             })())
             ??
+            // if there is http client/server error => assumes as connection problem:
             ((): React.ReactNode => {
                 const errorCode = (
                     // axio's  error status code:
