@@ -459,6 +459,7 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
     }
     catch (error: any) {
         // report the failure:
+        console.log('send email failed: ', error);
         res.status(500).json({
             error: 'An unexpected error occured.',
         });
