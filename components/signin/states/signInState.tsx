@@ -80,9 +80,6 @@ import {
     default as credentialsConfig,
 }                           from '@/credentials.config'
 
-// other libs:
-import axios                from 'axios'
-
 
 
 // const endpointUrl  = getApiEndpoint();
@@ -408,7 +405,11 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         (async () => {
             // attempts validate password reset:
             try {
-                const result = await axios.get(`${resetPath}?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`);
+                const response = await fetch(`${resetPath}?resetPasswordToken=${encodeURIComponent(resetPasswordToken)}`, {
+                    method : 'GET',
+                });
+                if (!response.ok) throw Error(response.statusText, { cause: response });
+                const data = await response.json();
                 if (!isMounted.current) return; // unmounted => abort
                 
                 
@@ -418,7 +419,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
                 
                 
                 // save the success:
-                setTokenVerified(result.data);
+                setTokenVerified(data);
             }
             catch (error: any) { // error
                 // save the failure:
@@ -652,7 +653,15 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // attempts request recover password:
         setIsBusy('recover'); // mark as busy
         try {
-            const result = await axios.post(resetPath, { username });
+            const response = await fetch(resetPath, {
+                method  : 'POST',
+                headers : {
+                    'Content-Type' : 'application/json',
+                },
+                body    : JSON.stringify({ username }),
+            });
+            if (!response.ok) throw Error(response.statusText, { cause: response });
+            const data = await response.json();
             if (!isMounted.current) return; // unmounted => abort
             
             
@@ -669,7 +678,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             // report the success:
             await showMessageSuccess(
                 <p>
-                    {result.data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
+                    {data.message ?? 'A password reset link sent to your email. Please check your inbox in a moment.'}
                 </p>
             );
             if (!isMounted.current) return; // unmounted => abort
@@ -727,7 +736,15 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // attempts apply password reset:
         setIsBusy('reset'); // mark as busy
         try {
-            const result = await axios.patch(resetPath, { resetPasswordToken, password });
+            const response = await fetch(resetPath, {
+                method  : 'PATCH',
+                headers : {
+                    'Content-Type' : 'application/json',
+                },
+                body    : JSON.stringify({ resetPasswordToken, password }),
+            });
+            if (!response.ok) throw Error(response.statusText, { cause: response });
+            const data = await response.json();
             if (!isMounted.current) return; // unmounted => abort
             
             
@@ -751,7 +768,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             // report the success:
             await showMessageSuccess(
                 <p>
-                    {result.data.message ?? 'The password has been successfully changed. Now you can sign in with the new password.'}
+                    {data.message ?? 'The password has been successfully changed. Now you can sign in with the new password.'}
                 </p>
             );
             if (!isMounted.current) return; // unmounted => abort

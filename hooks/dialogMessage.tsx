@@ -175,10 +175,41 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
     });
     const showMessageFetchError   = useEvent(async (error         : any                                      ): Promise<void> => {
         await showMessageError(
-            error?.response?.data?.error
+            // axio's  server error    message:
+            (error?.response?.data?.error || undefined)
+            ??
+            // axio's  server response message:
+            error?.response?.data
+            ??
+            // fetch's server error    message:
+            // fetch's server response message:
+            (await (async (): Promise<string|undefined> => {
+                const response = error?.cause;
+                if ((typeof(response) !== 'object') || !(response instanceof Response)) return undefined;
+                try {
+                    const data = await response.json();
+                    
+                    const error = data?.error;
+                    if ((typeof(error) === 'string') && !!error) return error;
+                    
+                    const message = data?.message;
+                    if ((typeof(message) === 'string') && !!message) return message;
+                }
+                catch {
+                    /* ignore any error */
+                } // try
+                
+                return undefined;
+            })())
             ??
             ((): React.ReactNode => {
-                const errorCode = error?.response?.status;
+                const errorCode = (
+                    // axio's  error status code:
+                    error?.response?.status
+                    ??
+                    // generic error status code:
+                    error?.cause
+                );
                 if (typeof(errorCode) !== 'number') return null;
                 const isClientError = (errorCode >= 400) && (errorCode <= 499);
                 const isServerError = (errorCode >= 500) && (errorCode <= 599);
@@ -201,10 +232,10 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                 return null;
             })()
             ??
-            error?.response?.data
+            // general error message:
+            (error?.message || undefined)
             ??
-            error?.message
-            ??
+            // generic error:
             `${error}`
         );
     });
