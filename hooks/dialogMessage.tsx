@@ -60,6 +60,21 @@ import {
 
 
 
+// utilities:
+const paragraphify = (text: string): React.ReactElement => {
+    return (
+        <>
+            {
+                text
+                .split(/(?:\r?\n){2,}/) // double/triple/many new_line(s)
+                .map((para, index) => <p key={index}>{para}</p>)
+            }
+        </>
+    );
+};
+
+
+
 // types:
 export interface DialogMessage {
     theme   ?: ThemeName
@@ -185,14 +200,14 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                 // response as json:
                 if (typeof(data) === 'object') {
                     const error   = data?.error;
-                    if ((typeof(error)   === 'string') && !!error  ) return <p>{error}</p>;   // not an empty string => a valid error message
+                    if ((typeof(error)   === 'string') && !!error  ) return paragraphify(error);   // not an empty string => a valid error message
                     
                     const message = data?.message;
-                    if ((typeof(message) === 'string') && !!message) return <p>{message}</p>; // not an empty string => a valid error message
+                    if ((typeof(message) === 'string') && !!message) return paragraphify(message); // not an empty string => a valid error message
                 }
                 // response as text:
                 else if (typeof(data) === 'string') {
-                    if (!!data) return <p>data</p>; // not an empty string => a valid error message
+                    if (!!data) return paragraphify(data); // not an empty string => a valid error message
                 } // if
                 
                 
@@ -217,10 +232,10 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                         const data    = await response.json();
                         
                         const error   = data?.error;
-                        if ((typeof(error)   === 'string') && !!error  ) return <p>{error}</p>;   // not an empty string => a valid error message
+                        if ((typeof(error)   === 'string') && !!error  ) return paragraphify(error);   // not an empty string => a valid error message
                         
                         const message = data?.message;
-                        if ((typeof(message) === 'string') && !!message) return <p>{message}</p>; // not an empty string => a valid error message
+                        if ((typeof(message) === 'string') && !!message) return paragraphify(message); // not an empty string => a valid error message
                     }
                     catch {
                         return undefined; // parse failed => skip
@@ -231,7 +246,7 @@ export const DialogMessageProvider = (props: React.PropsWithChildren<DialogMessa
                     try {
                         const text = await response.text();
                         
-                        if (!!text) return <p>{text}</p>; // not an empty string => a valid error message
+                        if (!!text) return paragraphify(text); // not an empty string => a valid error message
                     }
                     catch {
                         return undefined; // parse failed => skip
