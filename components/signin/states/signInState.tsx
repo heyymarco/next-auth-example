@@ -433,9 +433,14 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
                 
                 
                 
-                const errorCode     = error?.response?.status;
-                const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
-                if (isClientError) {
+                const isRequestError = (
+                    // axios'  error request:
+                    !!error.request
+                    ||
+                    // fetch's error request:
+                    (error instanceof TypeError)
+                );
+                if (!isRequestError) {
                     // redirect to sign in tab:
                     gotoSignIn();
                 } // if
@@ -794,9 +799,14 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
             
             
             
-            const errorCode     = error?.response?.status;
-            const isClientError = (typeof(errorCode) === 'number') && ((errorCode >= 400) && (errorCode <= 499));
-            if (isClientError) {
+            const isRequestError = (
+                // axios'  error request:
+                !!error.request
+                ||
+                // fetch's error request:
+                (error instanceof TypeError)
+            );
+            if (!isRequestError) {
                 // redirect to sign in tab:
                 gotoSignIn();
             }
