@@ -1,7 +1,11 @@
 // elements:
-export const signInTabElm       = ':where(.signIn)'   // zero degree specificity to be easily overwritten
+export const signInTabElm       = ':where(.signIn)'  // zero degree specificity to be easily overwritten
 export const recoverTabElm      = ':where(.recover)' // zero degree specificity to be easily overwritten
-export const resetTabElm        = ':where(.reset)'    // zero degree specificity to be easily overwritten
+export const resetTabElm        = ':where(.reset)'   // zero degree specificity to be easily overwritten
+
+export const signInTitleElm     = ':where(.signInTitle)' 
+export const recoverTitleElm    = ':where(.recoverTitle)'
+export const resetTitleElm      = ':where(.resetTitle)'  
 
 export const usernameElm        = ':where(.username)'
 export const passwordElm        = ':where(.password)'

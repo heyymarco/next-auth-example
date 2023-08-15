@@ -57,6 +57,8 @@ export interface TabSignInProps {
     
     
     // components:
+    signInTitleComponent      ?: React.ReactComponentElement<any, Pick<React.HTMLAttributes<Element>, 'className'>>
+    
     usernameInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
     passwordInputComponent    ?: React.ReactComponentElement<any, InputProps<Element>>
     signInButtonComponent     ?: ButtonComponentProps['buttonComponent']
@@ -71,6 +73,8 @@ export const TabSignIn = (props: TabSignInProps) => {
         
         
         // components:
+        signInTitleComponent      = (<h1>Sign In</h1> as React.ReactComponentElement<any, Pick<React.HTMLAttributes<Element>, 'className'>>),
+        
         usernameInputComponent    = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />            as React.ReactComponentElement<any, InputProps<Element>>),
         passwordInputComponent    = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
         signInButtonComponent     = (<ButtonWithBusy busyType='credentials'    buttonComponent={<ButtonIcon icon='login' />} /> as React.ReactComponentElement<any, ButtonProps>),
@@ -130,6 +134,14 @@ export const TabSignIn = (props: TabSignInProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
+            {/* <SignInTitle> */}
+            {React.cloneElement<Pick<React.HTMLAttributes<Element>, 'className'>>(signInTitleComponent,
+                // props:
+                {
+                    // classes:
+                    className : signInTitleComponent.props.className ?? 'signInTitle',
+                },
+            )}
             {/* <UsernameInput> */}
             {React.cloneElement<InputProps<Element>>(usernameInputComponent,
                 // props:

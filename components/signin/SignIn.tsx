@@ -145,6 +145,10 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         gotoSignInButtonComponent  = (<ButtonIcon icon='arrow_back'  buttonStyle='link' />  as React.ReactComponentElement<any, ButtonProps>),
         gotoRecoverButtonComponent = (<ButtonIcon icon='help_center' buttonStyle='link' />  as React.ReactComponentElement<any, ButtonProps>),
         
+        signInTitleComponent,
+        recoverTitleComponent,
+        resetTitleComponent,
+        
         usernameInputComponent,
         passwordInputComponent,
         signInButtonComponent,
@@ -307,6 +311,8 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     
                     
                     // components:
+                    signInTitleComponent={signInTitleComponent}
+                    
                     usernameInputComponent={usernameInputComponent}
                     passwordInputComponent={passwordInputComponent}
                     signInButtonComponent={signInButtonComponent}
@@ -332,6 +338,8 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                 // children:
                 <TabRecover
                     // components:
+                    recoverTitleComponent={recoverTitleComponent}
+                    
                     usernameInputComponent={usernameInputComponent}
                     sendRecoverLinkButtonComponent={sendRecoverLinkButtonComponent}
                 />,
@@ -354,6 +362,8 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                 // children:
                 <TabReset
                     // components:
+                    resetTitleComponent={resetTitleComponent}
+                    
                     emailInputComponent={emailInputComponent}
                     passwordInputComponent={passwordInputComponent}
                     password2InputComponent={password2InputComponent}

@@ -73,6 +73,7 @@ import {
 // react components:
 export interface TabResetProps {
     // components:
+    resetTitleComponent                  ?: React.ReactComponentElement<any, Pick<React.HTMLAttributes<Element>, 'className'>>
     emailInputComponent                  ?: React.ReactComponentElement<any, InputProps<Element>>
     passwordInputComponent               ?: React.ReactComponentElement<any, InputProps<Element>>
     password2InputComponent              ?: React.ReactComponentElement<any, InputProps<Element>>
@@ -93,6 +94,8 @@ export const TabReset = (props: TabResetProps) => {
     // rest props:
     const {
         // components:
+        resetTitleComponent                  = (<h1>Password Reset</h1> as React.ReactComponentElement<any, Pick<React.HTMLAttributes<Element>, 'className'>>),
+        
         emailInputComponent                  = (<InputWithLabel icon='supervisor_account' inputComponent={<EmailInput    />} />            as React.ReactComponentElement<any, InputProps<Element>>),
         passwordInputComponent               = (<InputWithLabel icon='lock'               inputComponent={<PasswordInput />} />            as React.ReactComponentElement<any, InputProps<Element>>),
         password2InputComponent              = passwordInputComponent,
@@ -202,6 +205,14 @@ export const TabReset = (props: TabResetProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
+            {/* <SignInTitle> */}
+            {React.cloneElement<Pick<React.HTMLAttributes<Element>, 'className'>>(resetTitleComponent,
+                // props:
+                {
+                    // classes:
+                    className : resetTitleComponent.props.className ?? 'resetTitle',
+                },
+            )}
             {/* <EmailInput> */}
             {React.cloneElement<InputProps<Element>>(emailInputComponent,
                 // props:

@@ -41,6 +41,8 @@ import {
 // react components:
 export interface TabRecoverProps {
     // components:
+    recoverTitleComponent          ?: React.ReactComponentElement<any, Pick<React.HTMLAttributes<Element>, 'className'>>
+    
     usernameInputComponent         ?: React.ReactComponentElement<any, InputProps<Element>>
     sendRecoverLinkButtonComponent ?: ButtonComponentProps['buttonComponent']
 }
@@ -48,6 +50,8 @@ export const TabRecover = (props: TabRecoverProps) => {
     // rest props:
     const {
         // components:
+        recoverTitleComponent          = (<h1>Forgot Password?</h1> as React.ReactComponentElement<any, Pick<React.HTMLAttributes<Element>, 'className'>>),
+        
         usernameInputComponent         = (<InputWithLabel icon='supervisor_account' inputComponent={<TextInput     />} />                as React.ReactComponentElement<any, InputProps<Element>>),
         sendRecoverLinkButtonComponent = (<ButtonWithBusy busyType='recover'        buttonComponent={<ButtonIcon icon='lock_open' />} /> as React.ReactComponentElement<any, ButtonProps>),
     } = props;
@@ -94,6 +98,14 @@ export const TabRecover = (props: TabRecoverProps) => {
             // handlers:
             onSubmit={handlePreventSubmit}
         >
+            {/* <RecoverTitle> */}
+            {React.cloneElement<Pick<React.HTMLAttributes<Element>, 'className'>>(recoverTitleComponent,
+                // props:
+                {
+                    // classes:
+                    className : recoverTitleComponent.props.className ?? 'recoverTitle',
+                },
+            )}
             {/* <UsernameInput> */}
             {React.cloneElement<InputProps<Element>>(usernameInputComponent,
                 // props:
