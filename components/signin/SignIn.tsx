@@ -63,6 +63,7 @@ import {
 // internals:
 import {
     SignInState,
+    SignInStateProps,
     SignInStateProvider,
     useSignInState,
 }                           from './states/signInState'
@@ -86,6 +87,11 @@ export interface SignInProps<TElement extends Element = HTMLElement>
             // children:
             |'children' // not supported
         >,
+        
+        // states:
+        SignInStateProps,
+        
+        // tabs:
         TabSignInProps,
         TabRecoverProps,
         TabResetProps
@@ -103,7 +109,7 @@ export interface SignInProps<TElement extends Element = HTMLElement>
 }
 const SignIn         = <TElement extends Element = HTMLElement>(props: SignInProps<TElement>) => {
     return (
-        <SignInStateProvider>
+        <SignInStateProvider {...props}>
             <SignInInternal {...props} />
         </SignInStateProvider>
     );
@@ -118,15 +124,22 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     const {
         // auths:
         providers,
+        resolveProviderName : _resolveProviderName, // remove
+        basePath            : _basePath,            // remove
+        
+        
+        
+        // pages:
+        homepagePath        : _homepagePath,        // remove
         
         
         
         // components:
-        bodyComponent            = (<Content mild={true} />                                 as React.ReactComponentElement<any, BasicProps<TElement>>),
-        tabComponent             = (<Tab headerComponent={null}>{undefined}</Tab>           as React.ReactComponentElement<any, TabProps<Element>>),
-        signInTabPanelComponent  = (<TabPanel />                                            as React.ReactComponentElement<any, TabPanelProps<Element>>),
-        recoverTabPanelComponent = (<TabPanel />                                            as React.ReactComponentElement<any, TabPanelProps<Element>>),
-        resetTabPanelComponent   = (<TabPanel />                                            as React.ReactComponentElement<any, TabPanelProps<Element>>),
+        bodyComponent              = (<Content mild={true} />                               as React.ReactComponentElement<any, BasicProps<TElement>>),
+        tabComponent               = (<Tab headerComponent={null}>{undefined}</Tab>         as React.ReactComponentElement<any, TabProps<Element>>),
+        signInTabPanelComponent    = (<TabPanel />                                          as React.ReactComponentElement<any, TabPanelProps<Element>>),
+        recoverTabPanelComponent   = (<TabPanel />                                          as React.ReactComponentElement<any, TabPanelProps<Element>>),
+        resetTabPanelComponent     = (<TabPanel />                                          as React.ReactComponentElement<any, TabPanelProps<Element>>),
         
         gotoHomeButtonComponent    = (<ButtonIcon icon='home'        buttonStyle='link' />  as React.ReactComponentElement<any, ButtonProps>),
         gotoSignInButtonComponent  = (<ButtonIcon icon='arrow_back'  buttonStyle='link' />  as React.ReactComponentElement<any, ButtonProps>),

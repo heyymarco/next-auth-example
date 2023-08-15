@@ -248,6 +248,11 @@ export interface SignInStateProps {
     // auths:
     resolveProviderName ?: (oAuthProvider: BuiltInProviderType) => string
     basePath            ?: string
+    
+    
+    
+    // pages:
+    homepagePath        ?: string
 }
 export const SignInStateProvider = (props: React.PropsWithChildren<SignInStateProps>) => {
     // rest props:
@@ -258,25 +263,30 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         
         
+        // pages:
+        homepagePath        = '/',
+        
+        
+        
         // children:
         children,
     } = props;
-    const resetPath = `${basePath}/reset`;
+    const resetPath         = `${basePath}/reset`;
     
     
     
     // navigations:
     const router       = useRouter();
-    const pathName     = usePathname() ?? '/'
+    const pathName     = usePathname();
     const searchParams = useSearchParams();
     
     
     
     // data:
-    const callbackUrlRef               = useRef<string|null>(searchParams?.get('callbackUrl'       ) || null);
-    const callbackUrl                  = callbackUrlRef.current;
-    const resetPasswordTokenRef        = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
-    const resetPasswordToken           = resetPasswordTokenRef.current;
+    const callbackUrlRef        = useRef<string|null>(searchParams?.get('callbackUrl'       ) || null);
+    const callbackUrl           = callbackUrlRef.current;
+    const resetPasswordTokenRef = useRef<string|null>(searchParams?.get('resetPasswordToken') || null);
+    const resetPasswordToken    = resetPasswordTokenRef.current;
     
     
     
@@ -359,6 +369,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     // remove passed queryString(s):
     useEffect(() => {
         // conditions:
+        if (!pathName) return; // the router is not ready => ignore
         if (
             !searchParams?.get('error')
             &&
@@ -388,7 +399,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         catch {
             // ignore any error
         } // if
-    }, []);
+    }, [pathName]);
     
     // validate password reset token at startup:
     const hasInitialized = useRef(false); // make sure the validation is never performed twice
@@ -507,7 +518,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     });
     
     const gotoHome     = useEvent(() => {
-        router.push('/');
+        router.push(homepagePath);
     });
     const gotoSignIn   = useEvent(() => {
         setSection('signIn');
