@@ -4,6 +4,11 @@
 import {
     // react:
     default as React,
+    
+    
+    
+    // hooks:
+    useId,
 }                           from 'react'
 
 // cssfn:
@@ -14,8 +19,12 @@ import {
 
 // reusable-ui components:
 import {
+    // base-components:
+    BasicProps,
+    
+    
+    
     // base-content-components:
-    ContentProps,
     Content,
     
     
@@ -28,7 +37,9 @@ import {
     
     
     // composite-components:
+    TabPanelProps,
     TabPanel,
+    TabProps,
     Tab,
 }                           from '@reusable-ui/components'
 
@@ -71,7 +82,7 @@ export type SignInChildrenWithState = (signInState: SignInState) => React.ReactN
 export interface SignInProps<TElement extends Element = HTMLElement>
     extends
         // bases:
-        Omit<ContentProps<TElement>,
+        Omit<BasicProps<TElement>,
             // children:
             |'children' // not supported
         >,
@@ -80,6 +91,12 @@ export interface SignInProps<TElement extends Element = HTMLElement>
         TabResetProps
 {
     // components:
+    bodyComponent              ?: React.ReactComponentElement<any, BasicProps<TElement>>
+    tabComponent               ?: React.ReactComponentElement<any, TabProps<Element>>
+    signInTabPanelComponent    ?: React.ReactComponentElement<any, TabPanelProps<Element>>
+    recoverTabPanelComponent   ?: React.ReactComponentElement<any, TabPanelProps<Element>>
+    resetTabPanelComponent     ?: React.ReactComponentElement<any, TabPanelProps<Element>>
+    
     gotoHomeButtonComponent    ?: ButtonComponentProps['buttonComponent']
     gotoSignInButtonComponent  ?: ButtonComponentProps['buttonComponent']
     gotoRecoverButtonComponent ?: ButtonComponentProps['buttonComponent']
@@ -105,9 +122,15 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         
         
         // components:
-        gotoHomeButtonComponent    = (<ButtonIcon icon='home'        buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
-        gotoSignInButtonComponent  = (<ButtonIcon icon='arrow_back'  buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
-        gotoRecoverButtonComponent = (<ButtonIcon icon='help_center' buttonStyle='link' /> as React.ReactComponentElement<any, ButtonProps>),
+        bodyComponent            = (<Content mild={true} />                                 as React.ReactComponentElement<any, BasicProps<TElement>>),
+        tabComponent             = (<Tab headerComponent={null}>{undefined}</Tab>           as React.ReactComponentElement<any, TabProps<Element>>),
+        signInTabPanelComponent  = (<TabPanel />                                            as React.ReactComponentElement<any, TabPanelProps<Element>>),
+        recoverTabPanelComponent = (<TabPanel />                                            as React.ReactComponentElement<any, TabPanelProps<Element>>),
+        resetTabPanelComponent   = (<TabPanel />                                            as React.ReactComponentElement<any, TabPanelProps<Element>>),
+        
+        gotoHomeButtonComponent    = (<ButtonIcon icon='home'        buttonStyle='link' />  as React.ReactComponentElement<any, ButtonProps>),
+        gotoSignInButtonComponent  = (<ButtonIcon icon='arrow_back'  buttonStyle='link' />  as React.ReactComponentElement<any, ButtonProps>),
+        gotoRecoverButtonComponent = (<ButtonIcon icon='help_center' buttonStyle='link' />  as React.ReactComponentElement<any, ButtonProps>),
         
         usernameInputComponent,
         passwordInputComponent,
@@ -130,7 +153,12 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         password2ValidationIconComponent,
         
         tokenValidationModalStatusComponent,
-    ...restContentProps} = props;
+    ...restBasicProps} = props;
+    
+    
+    
+    // identifiers:
+    const defaultId = useId();
     
     
     
@@ -201,44 +229,64 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
         // children:
         gotoRecoverButtonComponent.props.children ?? 'Forgot Password?',
     );
-    return (
-        <Tab
+    /* <Tab> */
+    return React.cloneElement<TabProps<Element>>(tabComponent,
+        // props:
+        {
             // identifiers:
-            id='tabSignIn'
+            id               : tabComponent.props.id               ?? defaultId,
             
             
             
             // states:
-            expandedTabIndex={
+            expandedTabIndex : tabComponent.props.expandedTabIndex ?? (
                 (section === 'recover')
                 ? 1
                 :   (section === 'reset')
                     ? 2
                     : 0
-            }
+            ),
             
             
             
             // components:
-            headerComponent={null}
-            bodyComponent={
-                <Content
-                    // other props:
-                    {...restContentProps}
-                    
-                    
-                    
-                    // variants:
-                    mild={props.mild ?? true}
+            bodyComponent    : tabComponent.props.bodyComponent    ?? (
+                /* <Content> */
+                React.cloneElement<BasicProps<TElement>>(bodyComponent,
+                    // props:
+                    {
+                        // other props:
+                        ...restBasicProps,
+                        ...bodyComponent.props, // overwrites restBasicProps (if any conflics)
+                        
+                        
+                        
+                        // classes:
+                        mainClass : bodyComponent.props.mainClass ?? props.mainClass ?? styleSheet.main
+                    },
+                )
+            ),
+        },
+        
+        
+        
+        // children:
+        tabComponent.props.children ?? [
+            React.cloneElement<TabPanelProps<Element>>(signInTabPanelComponent,
+                // props:
+                {
+                    // identifiers:
+                    key       : signInTabPanelComponent.key              ?? 'signIn',
                     
                     
                     
                     // classes:
-                    mainClass={props.mainClass ?? styleSheet.main}
-                />
-            }
-        >
-            <TabPanel className='signIn'>
+                    className : signInTabPanelComponent.props.className  ?? 'signIn',
+                },
+                
+                
+                
+                // children:
                 <TabSignIn
                     // auths:
                     providers={providers}
@@ -250,19 +298,47 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     passwordInputComponent={passwordInputComponent}
                     signInButtonComponent={signInButtonComponent}
                     signInWithButtonComponent={signInWithButtonComponent}
-                />
-                <GotoHomeButton />
-                <GotoRecoverButton />
-            </TabPanel>
-            <TabPanel className='recover'>
+                />,
+                <GotoHomeButton />,
+                <GotoRecoverButton />,
+            ),
+            React.cloneElement<TabPanelProps<Element>>(recoverTabPanelComponent,
+                // props:
+                {
+                    // identifiers:
+                    key       : recoverTabPanelComponent.key             ?? 'recover',
+                    
+                    
+                    
+                    // classes:
+                    className : recoverTabPanelComponent.props.className ?? 'recover',
+                },
+                
+                
+                
+                // children:
                 <TabRecover
                     // components:
                     usernameInputComponent={usernameInputComponent}
                     sendRecoverLinkButtonComponent={sendRecoverLinkButtonComponent}
-                />
-                <GotoSignInButton />
-            </TabPanel>
-            <TabPanel className='reset'>
+                />,
+                <GotoSignInButton />,
+            ),
+            React.cloneElement<TabPanelProps<Element>>(resetTabPanelComponent,
+                // props:
+                {
+                    // identifiers:
+                    key       : resetTabPanelComponent.key               ?? 'reset',
+                    
+                    
+                    
+                    // classes:
+                    className : resetTabPanelComponent.props.className   ?? 'reset',
+                },
+                
+                
+                
+                // children:
                 <TabReset
                     // components:
                     emailInputComponent={emailInputComponent}
@@ -280,10 +356,10 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
                     password2ValidationIconComponent={password2ValidationIconComponent}
                     
                     tokenValidationModalStatusComponent={tokenValidationModalStatusComponent}
-                />
-                <GotoSignInButton />
-            </TabPanel>
-        </Tab>
+                />,
+                <GotoSignInButton />,
+            ),
+        ],
     );
 };
 export {
