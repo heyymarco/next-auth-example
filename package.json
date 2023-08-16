@@ -25,7 +25,6 @@
     "@reusable-ui/components": "^6.1.0",
     "@reusable-ui/core": "^6.1.0",
     "bcrypt": "^5.1.0",
-    "cookies": "^0.8.0",
     "moment": "^2.29.4",
     "nanoid": "^4.0.2",
     "next": "latest",
