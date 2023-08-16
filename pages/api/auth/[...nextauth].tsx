@@ -10,6 +10,9 @@ import {
     type NextApiRequest,
     type NextApiResponse,
 }                           from 'next'
+import {
+    NextResponse,
+}                           from 'next/server'
 
 // next auth:
 import {
@@ -294,37 +297,38 @@ export const authOptions: NextAuthOptions = {
     },
 };
 
-const handlePasswordReset         = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
+export interface NextAuthRouteContext {
+    params : { nextauth: string[] }
+}
+const passwordResetRouteHandler         = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
     return (
-        await handleRequestPasswordReset(path, req, res)
+        await requestPasswordResetRouteHandler(req, context, path)
         ||
-        await handleValidatePasswordReset(path, req, res)
+        await validatePasswordResetRouteHandler(req, context, path)
         ||
-        await handleApplyPasswordReset(path, req, res)
+        await applyPasswordResetRouteHandler(req, context, path)
     );
 };
-const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
+const requestPasswordResetRouteHandler  = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
     // filters the request type:
-    if (req.method !== 'POST')            return false; // ignore
-    if (req.query.nextauth?.[0] !== path) return false; // ignore
+    if (req.method !== 'POST')                 return false; // ignore
+    if (context.params.nextauth?.[0] !== path) return false; // ignore
     
     
     
     // validate the request parameter(s):
     const {
         username,
-    } = req.body;
+    } = await req.json();
     if ((typeof(username) !== 'string') || !username) {
-        res.status(400).json({
+        return NextResponse.json({
             error: 'The required username or email is not provided.',
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     if (username.length > 50) { // prevents of DDOS attack
-        res.status(400).json({
+        return NextResponse.json({
             error: 'The username or email is too long.',
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     
     
@@ -411,10 +415,9 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
         return user;
     });
     if (user instanceof Error) {
-        res.status(Number.parseInt(user.cause as any) || 400).json({
+        return NextResponse.json({
             error: user.message,
-        });
-        return true; // handled with error
+        }, { status: Number.parseInt(user.cause as any) || 400 }); // handled with error
     } // if
     
     
@@ -451,51 +454,47 @@ const handleRequestPasswordReset  = async (path: string, req: NextApiRequest, re
         
         
         // report the success:
-        res.json({
+        return NextResponse.json({
             ok      : true,
             message : 'A password reset link sent to your email. Please check your inbox in a moment.',
-        });
-        return true; // handled with success
+        }); // handled with success
     }
     catch (error: any) {
         // report the failure:
         console.log('send email failed: ', error);
-        res.status(500).json({
+        return NextResponse.json({
             error: 'An unexpected error occured.',
-        });
-        return true; // handled with error
+        }, { status: 500 }); // handled with error
     } // try
 };
-const handleValidatePasswordReset = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
+const validatePasswordResetRouteHandler = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
     // filters the request type:
-    if (req.method !== 'GET')             return false; // ignore
-    if (req.query.nextauth?.[0] !== path) return false; // ignore
+    if (req.method !== 'GET')                  return false; // ignore
+    if (context.params.nextauth?.[0] !== path) return false; // ignore
     
     
     
-    await new Promise<void>((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, 10000);
-    });
+    // await new Promise<void>((resolve) => {
+    //     setTimeout(() => {
+    //         resolve();
+    //     }, 10000);
+    // });
     
     
     
     // validate the request parameter(s):
     const {
         resetPasswordToken,
-    } = req.query;
+    } = Object.fromEntries(new URL(req.url, 'https://localhost/').searchParams.entries());
     if ((typeof(resetPasswordToken) !== 'string') || !resetPasswordToken) {
-        res.status(400).json({
+        return NextResponse.json({
             error: 'The required reset password token is not provided.',
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     if (resetPasswordToken.length > 50) { // prevents of DDOS attack
-        res.status(400).json({
+        return NextResponse.json({
             error: 'The reset password token is too long.',
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     
     
@@ -521,34 +520,31 @@ const handleValidatePasswordReset = async (path: string, req: NextApiRequest, re
             },
         });
         if (!user) {
-            res.status(404).json({
+            return NextResponse.json({
                 error: 'The reset password token is invalid or expired.',
-            });
-            return true; // handled with error
+            }, { status: 404 }); // handled with error
         } // if
         
         
         
         // report the success:
-        res.json({
+        return NextResponse.json({
             ok       : true,
             email    : user.email,
             username : user.credentials?.username ?? null,
-        });
-        return true; // handled with success
+        }); // handled with success
     }
     catch (error: any) {
         // report the failure:
-        res.status(500).json({
+        return NextResponse.json({
             error: 'An unexpected error occured.',
-        });
-        return true; // handled with error
+        }, { status: 500 }); // handled with error
     } // try
 };
-const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, res: NextApiResponse): Promise<boolean> => {
+const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
     // filters the request type:
-    if (req.method !== 'PATCH')           return false; // ignore
-    if (req.query.nextauth?.[0] !== path) return false; // ignore
+    if (req.method !== 'PATCH')                return false; // ignore
+    if (context.params.nextauth?.[0] !== path) return false; // ignore
     
     
     
@@ -556,52 +552,45 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
     const {
         resetPasswordToken,
         password,
-    } = req.body;
+    } = await req.json();
     if ((typeof(resetPasswordToken) !== 'string') || !resetPasswordToken) {
-        res.status(400).json({
+        return NextResponse.json({
             error: 'The required reset password token is not provided.',
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     if (resetPasswordToken.length > 50) { // prevents of DDOS attack
-        res.status(400).json({
+        return NextResponse.json({
             error: 'The reset password token is too long.',
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     if ((typeof(password) !== 'string') || !password) {
-        res.status(400).json({
+        return NextResponse.json({
             error: 'The required password is not provided.',
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     const passwordMinLength = credentialsConfig.PASSWORD_MIN_LENGTH;
     if ((typeof(passwordMinLength) === 'number') && Number.isFinite(passwordMinLength) && (password.length < passwordMinLength)) {
-        res.status(400).json({
+        return NextResponse.json({
             error: `The password is too short. Minimum is ${passwordMinLength} characters.`,
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     const passwordMaxLength = credentialsConfig.PASSWORD_MAX_LENGTH;
     if ((typeof(passwordMaxLength) === 'number') && Number.isFinite(passwordMaxLength) && (password.length > passwordMaxLength)) {
-        res.status(400).json({
+        return NextResponse.json({
             error: `The password is too long. Maximum is ${passwordMaxLength} characters.`,
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     const passwordHasUppercase = credentialsConfig.PASSWORD_HAS_UPPERCASE;
     if (passwordHasUppercase && !password.match(/[A-Z]/)) {
-        res.status(400).json({
+        return NextResponse.json({
             error: `The password must have at least one capital letter.`,
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     const passwordHasLowercase = credentialsConfig.PASSWORD_HAS_LOWERCASE;
     if (passwordHasLowercase && !password.match(/[a-z]/)) {
-        res.status(400).json({
+        return NextResponse.json({
             error: `The password must have at least one non-capital letter.`,
-        });
-        return true; // handled with error
+        }, { status: 400 }); // handled with error
     } // if
     
     
@@ -613,7 +602,7 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
     
     try {
         // an atomic transaction of [`find user id by resetPasswordToken`, `delete current resetPasswordToken record`, `create/update user's credentials`]:
-        return await prisma.$transaction(async (prismaTransaction): Promise<boolean> => {
+        return await prisma.$transaction(async (prismaTransaction): Promise<false|Response> => {
             // find the related user id by given resetPasswordToken:
             const {id: userId} = await prismaTransaction.user.findFirst({
                 where  : {
@@ -629,10 +618,9 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
                 },
             }) ?? {};
             if (userId === undefined) {
-                res.status(404).json({
+                return NextResponse.json({
                     error: 'The reset password token is invalid or expired.',
-                });
-                return true; // handled with error
+                }, { status: 404 }); // handled with error
             } // if
             
             
@@ -669,18 +657,16 @@ const handleApplyPasswordReset    = async (path: string, req: NextApiRequest, re
             
             
             // report the success:
-            res.json({
+            return NextResponse.json({
                 ok       : true,
                 message  : 'The password has been successfully changed. Now you can sign in with the new password.',
-            });
-            return true; // handled with success
+            }); // handled with success
         });
     }
     catch (error: any) {
-        res.status(500).json({
+        return NextResponse.json({
             error: 'An unexpected error occured.',
-        });
-        return true; // handled with error
+        }, { status: 500 }); // handled with error
     } // try
 };
 
@@ -699,7 +685,13 @@ const auth = async (req: NextApiRequest, res: NextApiResponse) => {
     
     
     // custom handlers:
-    if (await handlePasswordReset('reset', req, res)) return;
+    const passwordResetRouteResponse = await passwordResetRouteHandler(req as unknown as Request, { params: { nextauth : req.query.nextauth as string[] } }, 'reset');
+    if (passwordResetRouteResponse) {
+        for (const [headerKey, headerValue] of passwordResetRouteResponse.headers.entries()) {
+            res.setHeader(headerKey, headerValue);
+        } // for
+        return res.status(passwordResetRouteResponse.status).send(await passwordResetRouteResponse.text());
+    } // if
     
     
     
