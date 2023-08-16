@@ -297,6 +297,31 @@ export const authOptions: NextAuthOptions = {
     },
 };
 
+
+
+const passwordResetApiHandler           = async (req: NextApiRequest, res: NextApiResponse, path: string): Promise<boolean> => {
+    const passwordResetRouteResponse = await passwordResetRouteHandler(
+        new Request(new URL(req.url ?? '/', 'https://localhost').href,
+        {
+            method : req.method,
+            body   : /^(POST|PUT|PATCH)$/i.test(req.method ?? '') ? JSON.stringify(req.body) : null,
+        }),
+        {
+            params : {
+                nextauth : req.query.nextauth as string[],
+            },
+        },
+        'reset'
+    );
+    if (!passwordResetRouteResponse) return false;
+    
+    for (const [headerKey, headerValue] of passwordResetRouteResponse.headers.entries()) {
+        res.setHeader(headerKey, headerValue);
+    } // for
+    res.status(passwordResetRouteResponse.status).send(await passwordResetRouteResponse.text());
+    return true;
+};
+
 export interface NextAuthRouteContext {
     params : { nextauth: string[] }
 }
@@ -471,14 +496,6 @@ const validatePasswordResetRouteHandler = async (req: Request, context: NextAuth
     // filters the request type:
     if (req.method !== 'GET')                  return false; // ignore
     if (context.params.nextauth?.[0] !== path) return false; // ignore
-    
-    
-    
-    // await new Promise<void>((resolve) => {
-    //     setTimeout(() => {
-    //         resolve();
-    //     }, 10000);
-    // });
     
     
     
@@ -670,28 +687,16 @@ const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuth
     } // try
 };
 
+
+
 const auth = async (req: NextApiRequest, res: NextApiResponse) => {
-    // await new Promise<void>((resolve) => {
-    //     setTimeout(() => {
-    //         resolve();
-    //     }, 10000);
-    // });
-    
-    
-    
     // responses HEAD request as success:
     if(req.method === 'HEAD') return res.status(200);
     
     
     
     // custom handlers:
-    const passwordResetRouteResponse = await passwordResetRouteHandler(new Request(new URL(req.url ?? '/', 'https://localhost').href, { method: req.method, body: JSON.stringify(req.body) }), { params: { nextauth : req.query.nextauth as string[] } }, 'reset');
-    if (passwordResetRouteResponse) {
-        for (const [headerKey, headerValue] of passwordResetRouteResponse.headers.entries()) {
-            res.setHeader(headerKey, headerValue);
-        } // for
-        return res.status(passwordResetRouteResponse.status).send(await passwordResetRouteResponse.text());
-    } // if
+    if (!await passwordResetApiHandler(req, res, 'reset')) return;
     
     
     
