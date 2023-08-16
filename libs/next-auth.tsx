@@ -687,7 +687,7 @@ const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuth
 
 
 
-const authApiHandler   = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+export const authApiHandler   = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     // responses HEAD request as success:
     if(req.method === 'HEAD') return res.status(200).send(null);
     
@@ -713,7 +713,7 @@ const authApiHandler   = async (req: NextApiRequest, res: NextApiResponse): Prom
     
     await nextAuthHandler(req, res, isCredentialsCallback);
 };
-const authRouteHandler = async (req: NextRequest, context: NextAuthRouteContext): Promise<Response> => {
+export const authRouteHandler = async (req: NextRequest, context: NextAuthRouteContext): Promise<Response> => {
     // responses HEAD request as success:
     if(req.method === 'HEAD') return new Response(null, { status: 200 });
     
