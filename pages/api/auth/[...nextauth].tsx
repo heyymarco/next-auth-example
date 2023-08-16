@@ -701,10 +701,10 @@ const authApiHandler = async (req: NextApiRequest, res: NextApiResponse): Promis
     
     
     // tests:
-    const isCredentialsCallback = () => (
+    const isCredentialsCallback = (): boolean => (
         (req.method === 'POST')
         &&
-        req.query.nextauth
+        !!req.query.nextauth
         &&
         req.query.nextauth.includes('callback')
         &&
@@ -713,6 +713,9 @@ const authApiHandler = async (req: NextApiRequest, res: NextApiResponse): Promis
     
     
     
+    await nextAuthHandler(req, res, isCredentialsCallback);
+};
+const nextAuthHandler = async (req: NextApiRequest, res: NextApiResponse, isCredentialsCallback: (() => boolean)): Promise<void> => {
     // next-auth's built in handlers:
     await NextAuth(req, res, {
         ...authOptions,
