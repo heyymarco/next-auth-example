@@ -11,6 +11,7 @@ import {
     type NextApiResponse,
 }                           from 'next'
 import {
+    type NextRequest,
     NextResponse,
 }                           from 'next/server'
 
@@ -686,7 +687,7 @@ const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuth
 
 
 
-const authApiHandler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+const authApiHandler   = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     // responses HEAD request as success:
     if(req.method === 'HEAD') return res.status(200).send(null);
     
@@ -711,6 +712,33 @@ const authApiHandler = async (req: NextApiRequest, res: NextApiResponse): Promis
     
     
     await nextAuthHandler(req, res, isCredentialsCallback);
+};
+const authRouteHandler = async (req: NextRequest, context: NextAuthRouteContext): Promise<Response> => {
+    // responses HEAD request as success:
+    if(req.method === 'HEAD') return new Response(null, { status: 200 });
+    
+    
+    
+    // custom handlers:
+    const passwordResetRouteResponse = await passwordResetRouteHandler(req, context, 'reset');
+    if (passwordResetRouteResponse) return passwordResetRouteResponse;
+    
+    
+    
+    // tests:
+    const isCredentialsCallback = (): boolean => (
+        (req.method === 'POST')
+        &&
+        !!context.params.nextauth
+        &&
+        context.params.nextauth.includes('callback')
+        &&
+        context.params.nextauth.includes('credentials')
+    );
+    
+    
+    
+    return await nextAuthHandler(req, context, isCredentialsCallback);
 };
 const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAuthRouteContext|NextApiResponse, isCredentialsCallback: (() => boolean)): Promise<any> => {
     // next-auth's built in handlers:
