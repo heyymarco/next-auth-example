@@ -689,7 +689,7 @@ const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuth
 
 
 
-const auth = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+const authApiHandler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     // responses HEAD request as success:
     if(/^HEAD$/i.test(req.method ?? '')) return res.status(200).send(null);
     
@@ -775,4 +775,4 @@ const auth = async (req: NextApiRequest, res: NextApiResponse): Promise<void> =>
         },
     });
 };
-export default auth;
+export default authApiHandler;
