@@ -1,8 +1,8 @@
 // react:
-import {
-    // utilities:
-    renderToStaticMarkup,
-}                           from 'react-dom/server'
+// import {
+//     // utilities:
+//     renderToStaticMarkup,
+// }                           from 'react-dom/server'
 
 // nextJS:
 import {
@@ -451,6 +451,11 @@ const requestPasswordResetRouteHandler  = async (req: Request, context: NextAuth
         const resetLinkUrl = `${process.env.WEBSITE_URL}${authConfig.PAGE_SIGNIN_PATH}?resetPasswordToken=${encodeURIComponent(resetToken)}`
         
         // sending an email:
+        const { renderToStaticMarkup } = await import('react-dom/server');
+        // const { UserContextProvider } = await import('@/templates/UserContextProvider');
+        // const { ResetPasswordContextProvider } = await import('@/templates/ResetPasswordContextProvider');
+        // const { User : TemplateUser } = await import('@/templates/User');
+        // const { ResetPassword } = await import('@/templates/ResetPassword');
         await transporter.sendMail({
             from    : process.env.EMAIL_RESET_FROM, // sender address
             to      : user.email, // list of receivers
@@ -741,6 +746,8 @@ export const authRouteHandler = async (req: NextRequest, context: NextAuthRouteC
     return await nextAuthHandler(req, context, isCredentialsCallback);
 };
 const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAuthRouteContext|NextApiResponse, isCredentialsCallback: (() => boolean)): Promise<any> => {
+    let sessionCookie : string|null = null;
+    
     // next-auth's built in handlers:
     const response = await NextAuth(req as any, contextOrRes as any, {
         ...authOptions,
@@ -778,13 +785,7 @@ const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAu
                     //     httpOnly     : true,
                     //     sameSite     : 'lax',
                     // });
-                    const cookieValue = `next-auth.session-token=${sessionToken}; Path=/; Expires=${sessionExpiry.toUTCString()}; HttpOnly; SameSite=Lax`;
-                    if (!(contextOrRes as any).params) {
-                        (contextOrRes as NextApiResponse).appendHeader('Set-Cookie', cookieValue);
-                    }
-                    else {
-                        console.log('TODO: implement cookie for Response');
-                    } // if
+                    sessionCookie = `next-auth.session-token=${sessionToken}; Path=/; Expires=${sessionExpiry.toUTCString()}; HttpOnly; SameSite=Lax`;
                 } // if
                 
                 
@@ -812,5 +813,14 @@ const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAu
             },
         },
     });
+    if (!!sessionCookie) {
+        if (!(contextOrRes as any).params) {
+            (contextOrRes as NextApiResponse).appendHeader('Set-Cookie', sessionCookie);
+        }
+        else if (response instanceof Response) {
+            response.headers.append('Set-Cookie', sessionCookie);
+        } // if
+    } // if
+    return response;
 };
 export default authApiHandler;
