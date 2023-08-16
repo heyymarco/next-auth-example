@@ -689,9 +689,9 @@ const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuth
 
 
 
-const auth = async (req: NextApiRequest, res: NextApiResponse) => {
+const auth = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     // responses HEAD request as success:
-    if(req.method === 'HEAD') return res.status(200);
+    if(/^HEAD$/i.test(req.method ?? '')) return res.status(200).send(null);
     
     
     
