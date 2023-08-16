@@ -696,7 +696,7 @@ const authApiHandler = async (req: NextApiRequest, res: NextApiResponse): Promis
     
     
     // custom handlers:
-    if (!await passwordResetApiHandler(req, res, 'reset')) return;
+    if (await passwordResetApiHandler(req, res, 'reset')) return;
     
     
     
@@ -715,9 +715,9 @@ const authApiHandler = async (req: NextApiRequest, res: NextApiResponse): Promis
     
     await nextAuthHandler(req, res, isCredentialsCallback);
 };
-const nextAuthHandler = async (req: NextApiRequest, res: NextApiResponse, isCredentialsCallback: (() => boolean)): Promise<void> => {
+const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAuthRouteContext|NextApiResponse, isCredentialsCallback: (() => boolean)): Promise<void> => {
     // next-auth's built in handlers:
-    await NextAuth(req, res, {
+    await NextAuth(req as any, contextOrRes as any, {
         ...authOptions,
         callbacks : {
             ...authOptions.callbacks,
@@ -746,10 +746,14 @@ const nextAuthHandler = async (req: NextApiRequest, res: NextApiResponse, isCred
                     
                     
                     // create the sessionToken record into cookie:
-                    const cookies = new Cookies(req, res);
+                    const cookies = new Cookies(req as any, contextOrRes as any);
                     cookies.set('next-auth.session-token', sessionToken, {
+                        path         : '/',
                         expires      : sessionExpiry,
+                        httpOnly     : true,
+                        sameSite     : 'lax',
                     });
+                    // req.headers.append?.('Set-Cookie', `next-auth.session-token=${sessionToken}`);
                 } // if
                 
                 
