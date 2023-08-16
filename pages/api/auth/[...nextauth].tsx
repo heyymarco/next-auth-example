@@ -685,7 +685,7 @@ const auth = async (req: NextApiRequest, res: NextApiResponse) => {
     
     
     // custom handlers:
-    const passwordResetRouteResponse = await passwordResetRouteHandler(req as unknown as Request, { params: { nextauth : req.query.nextauth as string[] } }, 'reset');
+    const passwordResetRouteResponse = await passwordResetRouteHandler(new Request(new URL(req.url ?? '/', 'https://localhost').href, { method: req.method, body: JSON.stringify(req.body) }), { params: { nextauth : req.query.nextauth as string[] } }, 'reset');
     if (passwordResetRouteResponse) {
         for (const [headerKey, headerValue] of passwordResetRouteResponse.headers.entries()) {
             res.setHeader(headerKey, headerValue);
