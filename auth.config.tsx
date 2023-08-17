@@ -1,3 +1,13 @@
+// OAuth providers:
+import type {
+    OAuthConfig,
+}                           from 'next-auth/providers'
+import GoogleProvider       from 'next-auth/providers/google'
+import FacebookProvider     from 'next-auth/providers/facebook'
+import InstagramProvider    from 'next-auth/providers/instagram'
+import TwitterProvider      from 'next-auth/providers/twitter'
+import GithubProvider       from 'next-auth/providers/github'
+
 // templates:
 import {
     // react:
@@ -34,4 +44,35 @@ export default {
     </>,
     EMAIL_RESET_LIMITS  : 0.25 /* hours */,
     EMAIL_RESET_MAX_AGE : 24   /* hours */,
+    
+    
+    
+    oAuthProviders : ([
+        GoogleProvider({
+            clientId     : process.env.GOOGLE_ID,
+            clientSecret : process.env.GOOGLE_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+        FacebookProvider({
+            clientId     : process.env.FACEBOOK_ID,
+            clientSecret : process.env.FACEBOOK_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+        InstagramProvider({
+            clientId     : process.env.INSTAGRAM_ID,
+            clientSecret : process.env.INSTAGRAM_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+        TwitterProvider({
+            clientId     : process.env.TWITTER_ID,
+            clientSecret : process.env.TWITTER_SECRET,
+            version      : '2.0',
+            allowDangerousEmailAccountLinking: true,
+        }),
+        GithubProvider({
+            clientId     : process.env.GITHUB_ID,
+            clientSecret : process.env.GITHUB_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+    ] as OAuthConfig<any>[]),
 };
