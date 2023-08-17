@@ -2,23 +2,11 @@
 import {
     // react:
     default as React,
-    
-    
-    
-    // hooks:
-    useContext,
 }                           from 'react'
 import {
-    // contexts:
-    ResetPasswordContext,
+    // hooks:
+    useResetPasswordContext,
 }                           from './ResetPasswordContextProvider'
-
-
-
-// hooks:
-const useResetPasswordContext = () => {
-    return useContext(ResetPasswordContext);
-};
 
 
 

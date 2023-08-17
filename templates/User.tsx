@@ -2,23 +2,11 @@
 import {
     // react:
     default as React,
-    
-    
-    
-    // hooks:
-    useContext,
 }                           from 'react'
 import {
-    // contexts:
-    UserContext,
+    // hooks:
+    useUserContext,
 }                           from './UserContextProvider'
-
-
-
-// hooks:
-const useUserContext = () => {
-    return useContext(UserContext);
-};
 
 
 

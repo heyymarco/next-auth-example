@@ -1,7 +1,3 @@
-'use client'
-
-
-
 // react:
 import {
     // react:
@@ -10,7 +6,12 @@ import {
     
     
     // contexts:
-    createContext,
+    createServerContext,
+    
+    
+    
+    // hooks:
+    useContext,
 }                           from 'react'
 
 // models:
@@ -21,8 +22,15 @@ import type {
 
 
 // contexts:
-export const UserContext = createContext<Partial<User>>({
+const UserContext = createServerContext<Partial<Omit<User, 'createdAt'|'updatedAt'|'emailVerified'>>>('UserContext', {
 });
+
+
+
+// hooks:
+export const useUserContext = () => {
+    return useContext(UserContext);
+};
 
 
 

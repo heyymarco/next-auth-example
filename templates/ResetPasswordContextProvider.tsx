@@ -1,7 +1,3 @@
-'use client'
-
-
-
 // react:
 import {
     // react:
@@ -10,12 +6,12 @@ import {
     
     
     // contexts:
-    createContext,
+    createServerContext,
     
     
     
     // hooks:
-    useMemo,
+    useContext,
 }                           from 'react'
 
 
@@ -25,8 +21,15 @@ export interface ResetPasswordApi {
     // data:
     url : string
 }
-export const ResetPasswordContext = createContext<Partial<ResetPasswordApi>>({
+const ResetPasswordContext = createServerContext<Partial<ResetPasswordApi>>('ResetPasswordContext', {
 });
+
+
+
+// hooks:
+export const useResetPasswordContext = () => {
+    return useContext(ResetPasswordContext);
+};
 
 
 
@@ -38,7 +41,7 @@ export interface ResetPasswordContextProviderProps {
 export const ResetPasswordContextProvider = (props: React.PropsWithChildren<ResetPasswordContextProviderProps>): React.ReactNode => {
     // jsx:
     return (
-        <ResetPasswordContext.Provider value={useMemo<Partial<ResetPasswordApi>>(() => ({ url: props.url }), [props.url])}>
+        <ResetPasswordContext.Provider value={{ url: props.url }}>
             {props.children}
         </ResetPasswordContext.Provider>
     );
