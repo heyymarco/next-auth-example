@@ -2,16 +2,6 @@
 import {
     // react:
     default as React,
-    
-    
-    
-    // contexts:
-    createServerContext,
-    
-    
-    
-    // hooks:
-    useContext,
 }                           from 'react'
 
 // models:
@@ -19,10 +9,21 @@ import type {
     User,
 }                           from '@prisma/client'
 
+// internals:
+import {
+    // contexts:
+    createContext,
+    
+    
+    
+    // hooks:
+    useContext,
+}                           from '@/libs/mock-context'
+
 
 
 // contexts:
-const UserContext = createServerContext<Partial<Omit<User, 'createdAt'|'updatedAt'|'emailVerified'>>>('UserContext', {
+const UserContext = createContext<Partial<Omit<User, 'createdAt'|'updatedAt'|'emailVerified'>>>({
 });
 
 

@@ -3,10 +3,12 @@ import {
     // react:
     default as React,
 }                           from 'react'
+
+// internals:
 import {
     // hooks:
     useResetPasswordContext,
-}                           from './ResetPasswordContextProvider'
+}                           from './resetPasswordContext'
 
 
 

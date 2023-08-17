@@ -85,11 +85,11 @@ import {
 import {
     // react components:
     UserContextProvider,
-}                           from '@/templates/UserContextProvider'
+}                           from '@/templates/userContext'
 import {
     // react components:
     ResetPasswordContextProvider,
-}                           from '@/templates/ResetPasswordContextProvider'
+}                           from '@/templates/resetPasswordContext'
 import {
     // react components:
     User as TemplateUser,
@@ -452,10 +452,23 @@ const requestPasswordResetRouteHandler  = async (req: Request, context: NextAuth
         
         // sending an email:
         const { renderToStaticMarkup } = await import('react-dom/server');
-        // const { UserContextProvider } = await import('@/templates/UserContextProvider');
-        // const { ResetPasswordContextProvider } = await import('@/templates/ResetPasswordContextProvider');
-        // const { User : TemplateUser } = await import('@/templates/User');
-        // const { ResetPassword } = await import('@/templates/ResetPassword');
+        // const rendered = renderToStaticMarkup(
+        //     <ResetPasswordContextProvider url={resetLinkUrl}>
+        //         <UserContextProvider model={user}>
+        //             {
+        //                 authConfig.EMAIL_RESET_MESSAGE
+        //                 ??
+        //                 <>
+        //                     <p>Hi <TemplateUser.Name />.</p>
+        //                     <p><strong>Forgot your password?</strong><br />We received a request to reset the password for your account.</p>
+        //                     <p>To reset your password, click on the link below:<br /><ResetPassword.Link>Reset Password</ResetPassword.Link></p>
+        //                     <p>Or copy and paste the URL into your browser:<br /><u><ResetPassword.Url /></u></p>
+        //                     <p>If you did not make this request then please ignore this email.</p>
+        //                 </>
+        //             }
+        //         </UserContextProvider>
+        //     </ResetPasswordContextProvider>
+        // );
         await transporter.sendMail({
             from    : process.env.EMAIL_RESET_FROM, // sender address
             to      : user.email, // list of receivers

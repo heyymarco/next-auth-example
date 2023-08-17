@@ -2,17 +2,18 @@
 import {
     // react:
     default as React,
-    
-    
-    
+}                           from 'react'
+
+// internals:
+import {
     // contexts:
-    createServerContext,
+    createContext,
     
     
     
     // hooks:
     useContext,
-}                           from 'react'
+}                           from '@/libs/mock-context'
 
 
 
@@ -21,7 +22,7 @@ export interface ResetPasswordApi {
     // data:
     url : string
 }
-const ResetPasswordContext = createServerContext<Partial<ResetPasswordApi>>('ResetPasswordContext', {
+const ResetPasswordContext = createContext<Partial<ResetPasswordApi>>({
 });
 
 
