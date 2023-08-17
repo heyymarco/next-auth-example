@@ -16,7 +16,9 @@ import {
     
     ModalCardProps,
     ModalCard,
-}                           from '@reusable-ui/components'              // a set of official Reusable-UI components
+    
+    ModalSideProps,
+}                           from '@reusable-ui/components'      // a set of official Reusable-UI components
 
 // hooks:
 import {
@@ -29,16 +31,23 @@ import {
 export interface ModalStatusProps<TElement extends Element = HTMLElement, TModalExpandedChangeEvent extends ModalExpandedChangeEvent = ModalExpandedChangeEvent>
     extends
         // bases:
-        ModalCardProps<TElement, TModalExpandedChangeEvent>
+        Omit<Partial<ModalCardProps<TElement, TModalExpandedChangeEvent>>,
+            // components:
+            |'modalComponent' // we redefined `modalComponent` prop
+        >,
+        Omit<Partial<ModalSideProps<TElement, TModalExpandedChangeEvent>>,
+            // components:
+            |'modalComponent' // we redefined `modalComponent` prop
+        >
 {
     // components:
-    modalCardComponent ?: React.ReactComponentElement<any, ModalCardProps<TElement, TModalExpandedChangeEvent>>
+    modalComponent ?: React.ReactComponentElement<any, ModalCardProps<TElement, TModalExpandedChangeEvent>>
 }
 const ModalStatus = <TElement extends Element = HTMLElement, TModalExpandedChangeEvent extends ModalExpandedChangeEvent = ModalExpandedChangeEvent>(props: ModalStatusProps<TElement, TModalExpandedChangeEvent>): JSX.Element|null => {
     // rest props:
     const {
         // components:
-        modalCardComponent = (<ModalCard /> as React.ReactComponentElement<any, ModalCardProps<TElement, TModalExpandedChangeEvent>>),
+        modalComponent = (<ModalCard /> as React.ReactComponentElement<any, ModalCardProps<TElement, TModalExpandedChangeEvent>>),
         
         
         
@@ -54,8 +63,8 @@ const ModalStatus = <TElement extends Element = HTMLElement, TModalExpandedChang
     
     // handlers:
     const handleCollapseEnd = useMergeEvents(
-        // preserves the original `onCollapseEnd` from `modalCardComponent`:
-        modalCardComponent.props.onCollapseEnd,
+        // preserves the original `onCollapseEnd` from `modalComponent`:
+        modalComponent.props.onCollapseEnd,
         
         
         
@@ -71,17 +80,17 @@ const ModalStatus = <TElement extends Element = HTMLElement, TModalExpandedChang
     
     
     // jsx:
-    return React.cloneElement<ModalCardProps<TElement, TModalExpandedChangeEvent>>(modalCardComponent,
+    return React.cloneElement<ModalCardProps<TElement, TModalExpandedChangeEvent>>(modalComponent,
         // props:
         {
             // other props:
             ...restModalProps,
-            ...modalCardComponent.props, // overwrites restModalProps (if any conflics)
+            ...modalComponent.props, // overwrites restModalProps (if any conflics)
             
             
             
             // states:
-            expanded      : modalCardComponent.props.expanded ?? (props.expanded ?? hasChildren),
+            expanded      : modalComponent.props.expanded ?? (props.expanded ?? hasChildren),
             
             
             
@@ -92,7 +101,7 @@ const ModalStatus = <TElement extends Element = HTMLElement, TModalExpandedChang
         
         
         // children:
-        (modalCardComponent.props.children ?? lastExistingChildren),
+        (modalComponent.props.children ?? lastExistingChildren),
     );
 }
 export {

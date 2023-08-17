@@ -481,7 +481,11 @@ const validatePasswordResetRouteHandler = async (req: Request, context: NextAuth
     if (req.method !== 'GET')                  return false; // ignore
     if (context.params.nextauth?.[0] !== path) return false; // ignore
     
-    
+    await new Promise<void>((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, 2000);
+    });
     
     // validate the request parameter(s):
     const {
