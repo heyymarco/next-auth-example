@@ -560,7 +560,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         
         // verify the sign in status:
-        if (!result?.ok) { // error
+        if (!!result?.error) { // error
             setIsBusy(false); // unmark as busy
             
             
@@ -630,7 +630,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         
         
         // verify the sign in status:
-        if ((result !== undefined) && !result?.ok) { // error
+        if (!!result?.error) { // error
             setIsBusy(false); // unmark as busy
             
             
