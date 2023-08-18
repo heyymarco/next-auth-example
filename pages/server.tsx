@@ -1,9 +1,10 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "./api/auth/[...nextauth]"
-import Layout from "../components/layout"
+import { getServerSession } from 'next-auth/next'
+// import { authOptions } from './api/auth/[...nextauth]'
+import { authOptions } from '@/libs/next-auth'
+import Layout from '../components/layout'
 
-import type { GetServerSidePropsContext } from "next"
-import { useSession } from "next-auth/react"
+import type { GetServerSidePropsContext } from 'next'
+import { useSession } from 'next-auth/react'
 
 export default function ServerSidePage() {
   const { data: session } = useSession()

@@ -39,12 +39,14 @@ import {
     Tooltip,
 }                           from '@reusable-ui/components'
 
-// internal components:
+// heymarco components:
 import {
     // dialog-components:
     ModalStatusProps,
     ModalStatus,
-}                           from '@/components/ModalStatus'
+}                           from '@heymarco/modal-status'
+
+// internal components:
 import {
     // react components:
     InputWithLabel,

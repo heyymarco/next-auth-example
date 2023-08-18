@@ -16,11 +16,11 @@ import './layoutStyles.css'
 
 // import { WEBSITE_LANGUAGE } from '@/website.config'
 
-// internal components:
+// heymarco components:
 import {
     // dialogs:
     DialogMessageProvider,
-}                           from '@/hooks/dialogMessage'
+}                           from '@heymarco/dialog-message'
 
 
 

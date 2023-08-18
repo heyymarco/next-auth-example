@@ -56,11 +56,11 @@ import {
     Busy,
 }                           from '@reusable-ui/components'
 
-// internal components:
+// heymarco components:
 import {
     // dialogs:
     useDialogMessage,
-}                           from '@/hooks/dialogMessage'
+}                           from '@heymarco/dialog-message'
 
 // internals:
 import {
