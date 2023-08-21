@@ -26,7 +26,7 @@ import {
 
 
 // react components:
-export interface ButtonWithBusyProps
+export interface ButtonWithSignInProps
     extends
         // bases:
         ButtonProps,
@@ -44,7 +44,7 @@ export interface ButtonWithBusyProps
     // handlers:
     onSignInWith : (providerType: BuiltInProviderType) => void
 }
-const ButtonWithSignIn = (props: ButtonWithBusyProps): JSX.Element|null => {
+const ButtonWithSignIn = (props: ButtonWithSignInProps): JSX.Element|null => {
     // rest props:
     const {
         // auths:
