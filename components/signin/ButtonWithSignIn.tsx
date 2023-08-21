@@ -14,6 +14,7 @@ import {
 import {
     // react helper hooks:
     useEvent,
+    useMergeEvents,
 }                           from '@reusable-ui/core'
 
 // reusable-ui components:
@@ -64,9 +65,23 @@ const ButtonWithSignIn = (props: ButtonWithSignInProps): JSX.Element|null => {
     
     
     // handlers:
-    const handleClick = useEvent(() => {
+    const handleClickInternal = useEvent(() => {
         onSignInWith(providerType);
     });
+    const handleClick          = useMergeEvents(
+        // preserves the original `onClick` from `buttonComponent`:
+        buttonComponent.props.onClick,
+        
+        
+        
+        // preserves the original `onClick` from `props`:
+        props.onClick,
+        
+        
+        
+        // actions:
+        handleClickInternal,
+    );
     
     
     
@@ -82,7 +97,7 @@ const ButtonWithSignIn = (props: ButtonWithSignInProps): JSX.Element|null => {
             
             
             // handlers:
-            onClick : buttonComponent.props.onClick ?? handleClick,
+            onClick : handleClick,
         },
     );
 };
