@@ -65,7 +65,14 @@ const ButtonWithSignIn = (props: ButtonWithSignInProps): JSX.Element|null => {
     
     
     // handlers:
-    const handleClickInternal = useEvent(() => {
+    const handleClickInternal = useEvent<React.MouseEventHandler<HTMLButtonElement>>((event) => {
+        // conditions:
+        if (event.defaultPrevented) return; // already handled => ignore
+        event.preventDefault(); // handled
+        
+        
+        
+        // actions:
         onSignInWith(providerType);
     });
     const handleClick          = useMergeEvents(
