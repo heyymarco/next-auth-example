@@ -258,7 +258,7 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     // rest props:
     const {
         // auths:
-        resolveProviderName = defaultResolveProviderName,
+        resolveProviderName : resolveProviderNameUnstable,
         basePath            = '/api/auth',
         
         
@@ -271,7 +271,10 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         // children:
         children,
     } = props;
-    const resetPath         = `${basePath}/reset`;
+    const resolveProviderName = useEvent<Required<SignInStateProps>['resolveProviderName']>((oAuthProvider) => { // make a stable ref
+        return (resolveProviderNameUnstable ?? defaultResolveProviderName)(oAuthProvider);
+    });
+    const resetPath           = `${basePath}/reset`;
     
     
     
@@ -838,78 +841,84 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
     // apis:
     const signInState = useMemo<SignInState>(() => ({
         // constraints:
-        passwordMinLength,
-        passwordMaxLength,
-        passwordHasUppercase,
-        passwordHasLowercase,
+        passwordMinLength,       // stable value
+        passwordMaxLength,       // stable value
+        passwordHasUppercase,    // stable value
+        passwordHasLowercase,    // stable value
         
         
         
+        // data:
+        callbackUrl,             // mutable value
+        resetPasswordToken,      // mutable value
+        
+        
+        
+        // states:
+        section,                 // mutable value
+        isSignInSection,         // mutable value
+        isRecoverSection,        // mutable value
+        isResetSection,          // mutable value
+        isRecoverSent,           // mutable value
+        isResetApplied,          // mutable value
+        isBusy,                  // mutable value
+        setIsBusy,               // stable ref
+        
+        
+        
+        // fields & validations:
+        formRef,                 // stable ref
+        
+        email : (tokenVerified === false) ? '' : (tokenVerified?.email ?? null), // mutable value
+        
+        usernameRef,             // stable ref
+        username,                // mutable value
+        usernameHandlers,        // stable ref
+        usernameValid,           // mutable value
+        
+        passwordRef,             // stable ref
+        password,                // mutable value
+        passwordHandlers,        // stable ref
+        passwordValid,           // mutable value
+        passwordValidLength,     // mutable value
+        passwordValidUppercase,  // mutable value
+        passwordValidLowercase,  // mutable value
+        
+        password2Ref,            // stable ref
+        password2,               // mutable value
+        password2Handlers,       // stable ref
+        password2Valid,          // mutable value
+        password2ValidLength,    // mutable value
+        password2ValidUppercase, // mutable value
+        password2ValidLowercase, // mutable value
+        password2ValidMatch,     // mutable value
+        
+        
+        
+        // navigations:
+        gotoHome,                // stable ref
+        gotoSignIn,              // stable ref
+        gotoRecover,             // stable ref
+        
+        
+        
+        // actions:
+        doSignIn,                // stable ref
+        doSignInWith,            // stable ref
+        doRecover,               // stable ref
+        doReset,                 // stable ref
+        
+        
+        
+        // utilities:
+        resolveProviderName,     // stable ref
+    }), [
         // data:
         callbackUrl,
         resetPasswordToken,
         
         
         
-        // states:
-        section,
-        isSignInSection,
-        isRecoverSection,
-        isResetSection,
-        isRecoverSent,
-        isResetApplied,
-        isBusy,
-        setIsBusy,           // stable ref
-        
-        
-        
-        // fields & validations:
-        formRef,             // stable ref
-        
-        email : (tokenVerified === false) ? '' : (tokenVerified?.email ?? null),
-        
-        usernameRef,         // stable ref
-        username,
-        usernameHandlers,    // stable ref
-        usernameValid,
-        
-        passwordRef,         // stable ref
-        password,
-        passwordHandlers,    // stable ref
-        passwordValid,
-        passwordValidLength,
-        passwordValidUppercase,
-        passwordValidLowercase,
-        
-        password2Ref,        // stable ref
-        password2,
-        password2Handlers,   // stable ref
-        password2Valid,
-        password2ValidLength,
-        password2ValidUppercase,
-        password2ValidLowercase,
-        password2ValidMatch,
-        
-        
-        
-        // navigations:
-        gotoHome,            // stable ref
-        gotoSignIn,          // stable ref
-        gotoRecover,         // stable ref
-        
-        
-        
-        // actions:
-        doSignIn,            // stable ref
-        doSignInWith,        // stable ref
-        doRecover,           // stable ref
-        doReset,             // stable ref
-        
-        
-        
-        // utilities:
-        resolveProviderName, // stable ref
-    }), [
         // states:
         section,
         isSignInSection,
@@ -939,12 +948,6 @@ export const SignInStateProvider = (props: React.PropsWithChildren<SignInStatePr
         password2ValidUppercase,
         password2ValidLowercase,
         password2ValidMatch,
-        
-        
-        
-        // data:
-        callbackUrl,
-        resetPasswordToken,
     ]);
     
     
