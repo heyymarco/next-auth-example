@@ -17,6 +17,13 @@ import {
     dynamicStyleSheet,
 }                           from '@cssfn/cssfn-react'           // writes css in react hook
 
+// reusable-ui core:
+import {
+    // react helper hooks:
+    useEvent,
+    useMergeEvents,
+}                           from '@reusable-ui/core'            // a set of reusable-ui packages which are responsible for building any component
+
 // reusable-ui components:
 import {
     // base-components:
@@ -194,40 +201,101 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
     
     
     
-    // jsx:
+    // handlers:
+    const gotoHomeButtonHandleClickInternal    = useEvent<React.MouseEventHandler<HTMLButtonElement>>((event) => {
+        // conditions:
+        if (event.defaultPrevented) return; // the event was already handled by user => nothing to do
+        event.preventDefault();
+        
+        
+        
+        // actions:
+        gotoHome();
+    });
+    const gotoHomeButtonHandleClick            = useMergeEvents(
+        // preserves the original `onClick` from `gotoHomeButtonComponent`:
+        gotoHomeButtonComponent.props.onClick,
+        
+        
+        
+        // actions:
+        gotoHomeButtonHandleClickInternal,
+    );
+    const gotoSignInButtonHandleClickInternal  = useEvent<React.MouseEventHandler<HTMLButtonElement>>((event) => {
+        // conditions:
+        if (event.defaultPrevented) return; // the event was already handled by user => nothing to do
+        event.preventDefault();
+        
+        
+        
+        // actions:
+        gotoSignIn();
+    });
+    const gotoSignInButtonHandleClick          = useMergeEvents(
+        // preserves the original `onClick` from `gotoSignInButtonComponent`:
+        gotoSignInButtonComponent.props.onClick,
+        
+        
+        
+        // actions:
+        gotoSignInButtonHandleClickInternal,
+    );
+    const gotoRecoverButtonHandleClickInternal = useEvent<React.MouseEventHandler<HTMLButtonElement>>((event) => {
+        // conditions:
+        if (event.defaultPrevented) return; // the event was already handled by user => nothing to do
+        event.preventDefault();
+        
+        
+        
+        // actions:
+        gotoRecover();
+    });
+    const gotoRecoverButtonHandleClick         = useMergeEvents(
+        // preserves the original `onClick` from `gotoRecoverButtonComponent`:
+        gotoRecoverButtonComponent.props.onClick,
+        
+        
+        
+        // actions:
+        gotoRecoverButtonHandleClickInternal,
+    );
+    
+    
+    
+    // nested components:
     const GotoHomeButton    = () => React.cloneElement<ButtonProps>(gotoHomeButtonComponent,
         // props:
         {
             // classes:
-            className : gotoHomeButtonComponent.props.className ?? 'gotoHome',
+            className : gotoHomeButtonComponent.props.className    ?? 'gotoHome',
             
             
             
             // handlers:
-            onClick   : gotoHomeButtonComponent.props.onClick   ?? gotoHome,
+            onClick   : gotoHomeButtonHandleClick,
         },
         
         
         
         // children:
-        gotoHomeButtonComponent.props.children ?? 'Back to Home',
+        gotoHomeButtonComponent.props.children                     ?? 'Back to Home',
     );
     const GotoSignInButton  = () => React.cloneElement<ButtonProps>(gotoSignInButtonComponent,
         // props:
         {
             // classes:
-            className : gotoSignInButtonComponent.props.className ?? 'gotoSignIn',
+            className : gotoSignInButtonComponent.props.className  ?? 'gotoSignIn',
             
             
             
             // handlers:
-            onClick   : gotoSignInButtonComponent.props.onClick   ?? gotoSignIn,
+            onClick   : gotoSignInButtonHandleClick,
         },
         
         
         
         // children:
-        gotoSignInButtonComponent.props.children ?? 'Back to Sign In',
+        gotoSignInButtonComponent.props.children                   ?? 'Back to Sign In',
     );
     const GotoRecoverButton = () => React.cloneElement<ButtonProps>(gotoRecoverButtonComponent,
         // props:
@@ -238,14 +306,18 @@ const SignInInternal = <TElement extends Element = HTMLElement>(props: SignInPro
             
             
             // handlers:
-            onClick   : gotoRecoverButtonComponent.props.onClick   ?? gotoRecover,
+            onClick   : gotoRecoverButtonHandleClick,
         },
         
         
         
         // children:
-        gotoRecoverButtonComponent.props.children ?? 'Forgot Password?',
+        gotoRecoverButtonComponent.props.children                  ?? 'Forgot Password?',
     );
+    
+    
+    
+    // jsx:
     /* <Tab> */
     return React.cloneElement<TabProps<Element>>(tabComponent,
         // props:
