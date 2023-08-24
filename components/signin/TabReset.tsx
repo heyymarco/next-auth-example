@@ -9,6 +9,8 @@ import {
 // reusable-ui core:
 import {
     // react helper hooks:
+    useEvent,
+    useMergeEvents,
     useMergeRefs,
 }                           from '@reusable-ui/core'            // a set of reusable-ui packages which are responsible for building any component
 
@@ -213,6 +215,29 @@ export const TabReset = (props: TabResetProps) => {
         
         
         (isResetSection ? password2Ref : undefined),
+    );
+    
+    
+    
+    // handlers:
+    const resetPasswordButtonHandleClickInternal = useEvent<React.MouseEventHandler<HTMLButtonElement>>((event) => {
+        // conditions:
+        if (event.defaultPrevented) return; // the event was already handled by user => nothing to do
+        event.preventDefault();
+        
+        
+        
+        // actions:
+        doReset();
+    });
+    const resetPasswordButtonHandleClick         = useMergeEvents(
+        // preserves the original `onClick` from `resetPasswordButtonComponent`:
+        resetPasswordButtonComponent.props.onClick,
+        
+        
+        
+        // actions:
+        resetPasswordButtonHandleClickInternal,
     );
     
     
@@ -480,7 +505,7 @@ export const TabReset = (props: TabResetProps) => {
                     
                     
                     // handlers:
-                    onClick   : resetPasswordButtonComponent.props.onClick   ?? doReset,
+                    onClick   : resetPasswordButtonHandleClick,
                 },
                 
                 

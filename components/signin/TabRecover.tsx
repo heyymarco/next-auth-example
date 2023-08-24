@@ -9,6 +9,8 @@ import {
 // reusable-ui core:
 import {
     // react helper hooks:
+    useEvent,
+    useMergeEvents,
     useMergeRefs,
 }                           from '@reusable-ui/core'            // a set of reusable-ui packages which are responsible for building any component
 
@@ -100,6 +102,29 @@ export const TabRecover = (props: TabRecoverProps) => {
     
     
     
+    // handlers:
+    const sendRecoverLinkButtonHandleClickInternal = useEvent<React.MouseEventHandler<HTMLButtonElement>>((event) => {
+        // conditions:
+        if (event.defaultPrevented) return; // the event was already handled by user => nothing to do
+        event.preventDefault();
+        
+        
+        
+        // actions:
+        doRecover();
+    });
+    const sendRecoverLinkButtonHandleClick         = useMergeEvents(
+        // preserves the original `onClick` from `sendRecoverLinkButtonComponent`:
+        sendRecoverLinkButtonComponent.props.onClick,
+        
+        
+        
+        // actions:
+        sendRecoverLinkButtonHandleClickInternal,
+    );
+    
+    
+    
     // jsx:
     return (
         <form
@@ -174,7 +199,7 @@ export const TabRecover = (props: TabRecoverProps) => {
                     
                     
                     // handlers:
-                    onClick   : sendRecoverLinkButtonComponent.props.onClick   ?? doRecover,
+                    onClick   : sendRecoverLinkButtonHandleClick,
                 },
                 
                 
