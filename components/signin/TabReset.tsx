@@ -6,6 +6,12 @@ import {
     default as React,
 }                           from 'react'
 
+// reusable-ui core:
+import {
+    // react helper hooks:
+    useMergeRefs,
+}                           from '@reusable-ui/core'            // a set of reusable-ui packages which are responsible for building any component
+
 // reusable-ui components:
 import {
     // simple-components:
@@ -191,6 +197,26 @@ export const TabReset = (props: TabResetProps) => {
     
     
     
+    // refs:
+    const mergedPasswordInputRef  = useMergeRefs(
+        // preserves the original `elmRef` from `passwordInputComponent`:
+        passwordInputComponent.props.elmRef,
+        
+        
+        
+        (isResetSection ? passwordRef : undefined),
+    );
+    const mergedPassword2InputRef = useMergeRefs(
+        // preserves the original `elmRef` from `password2InputComponent`:
+        password2InputComponent.props.elmRef,
+        
+        
+        
+        (isResetSection ? password2Ref : undefined),
+    );
+    
+    
+    
     // jsx:
     return (
         <form
@@ -238,7 +264,7 @@ export const TabReset = (props: TabResetProps) => {
                 // props:
                 {
                     // refs:
-                    elmRef       : passwordInputComponent.props.elmRef       ?? (isResetSection ? passwordRef : undefined),
+                    elmRef       : mergedPasswordInputRef,
                     
                     
                     
@@ -274,7 +300,7 @@ export const TabReset = (props: TabResetProps) => {
                 // props:
                 {
                     // refs:
-                    elmRef       : password2InputComponent.props.elmRef       ?? (isResetSection ? password2Ref : undefined),
+                    elmRef       : mergedPassword2InputRef,
                     
                     
                     

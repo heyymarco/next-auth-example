@@ -6,6 +6,12 @@ import {
     default as React,
 }                           from 'react'
 
+// reusable-ui core:
+import {
+    // react helper hooks:
+    useMergeRefs,
+}                           from '@reusable-ui/core'            // a set of reusable-ui packages which are responsible for building any component
+
 // reusable-ui components:
 import {
     // simple-components:
@@ -82,6 +88,18 @@ export const TabRecover = (props: TabRecoverProps) => {
     
     
     
+    // refs:
+    const mergedUsernameInputRef = useMergeRefs(
+        // preserves the original `elmRef` from `usernameInputComponent`:
+        usernameInputComponent.props.elmRef,
+        
+        
+        
+        (isRecoverSection ? usernameRef : undefined),
+    );
+    
+    
+    
     // jsx:
     return (
         <form
@@ -111,7 +129,7 @@ export const TabRecover = (props: TabRecoverProps) => {
                 // props:
                 {
                     // refs:
-                    elmRef       : usernameInputComponent.props.elmRef       ?? (isRecoverSection ? usernameRef : undefined),
+                    elmRef       : mergedUsernameInputRef,
                     
                     
                     

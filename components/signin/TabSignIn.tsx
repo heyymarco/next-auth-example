@@ -12,6 +12,12 @@ import {
     type BuiltInProviderType,
 }                           from 'next-auth/providers'
 
+// reusable-ui core:
+import {
+    // react helper hooks:
+    useMergeRefs,
+}                           from '@reusable-ui/core'            // a set of reusable-ui packages which are responsible for building any component
+
 // reusable-ui components:
 import {
     // simple-components:
@@ -118,6 +124,26 @@ export const TabSignIn = (props: TabSignInProps) => {
     
     
     
+    // refs:
+    const mergedUsernameInputRef = useMergeRefs(
+        // preserves the original `elmRef` from `usernameInputComponent`:
+        usernameInputComponent.props.elmRef,
+        
+        
+        
+        (isSignInSection ? usernameRef : undefined),
+    );
+    const mergedPasswordInputRef = useMergeRefs(
+        // preserves the original `elmRef` from `passwordInputComponent`:
+        passwordInputComponent.props.elmRef,
+        
+        
+        
+        (isSignInSection ? passwordRef : undefined),
+    );
+    
+    
+    
     // jsx:
     return (
         <form
@@ -147,7 +173,7 @@ export const TabSignIn = (props: TabSignInProps) => {
                 // props:
                 {
                     // refs:
-                    elmRef       : usernameInputComponent.props.elmRef       ?? (isSignInSection ? usernameRef : undefined),
+                    elmRef       : mergedUsernameInputRef,
                     
                     
                     
@@ -182,7 +208,7 @@ export const TabSignIn = (props: TabSignInProps) => {
                 // props:
                 {
                     // refs:
-                    elmRef       : passwordInputComponent.props.elmRef       ?? (isSignInSection ? passwordRef : undefined),
+                    elmRef       : mergedPasswordInputRef,
                     
                     
                     
