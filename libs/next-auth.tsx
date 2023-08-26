@@ -1,9 +1,3 @@
-// react:
-// import {
-//     // utilities:
-//     renderToStaticMarkup,
-// }                           from 'react-dom/server'
-
 // nextJS:
 import {
     // types:
@@ -265,40 +259,9 @@ export const authOptions: NextAuthOptions = {
 
 
 
-const passwordResetApiHandler           = async (req: NextApiRequest, res: NextApiResponse, path: string): Promise<boolean> => {
-    const passwordResetRouteResponse = await passwordResetRouteHandler(
-        new Request(new URL(req.url ?? '/', 'https://localhost').href,
-        {
-            method : req.method,
-            body   : /^(POST|PUT|PATCH)$/i.test(req.method ?? '') ? JSON.stringify(req.body) : null,
-        }),
-        {
-            params : {
-                nextauth : req.query.nextauth as string[],
-            },
-        },
-        'reset'
-    );
-    if (!passwordResetRouteResponse) return false;
-    
-    for (const [headerKey, headerValue] of passwordResetRouteResponse.headers.entries()) {
-        res.setHeader(headerKey, headerValue);
-    } // for
-    res.status(passwordResetRouteResponse.status).send(await passwordResetRouteResponse.text());
-    return true;
-};
-
+// general_implementation password_reset handlers:
 export interface NextAuthRouteContext {
     params : { nextauth: string[] }
-}
-const passwordResetRouteHandler         = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
-    return (
-        await requestPasswordResetRouteHandler(req, context, path)
-        ||
-        await validatePasswordResetRouteHandler(req, context, path)
-        ||
-        await applyPasswordResetRouteHandler(req, context, path)
-    );
 };
 const requestPasswordResetRouteHandler  = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
     // filters the request type:
@@ -675,61 +638,44 @@ const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuth
     } // try
 };
 
+// specific next-js /app handlers:
+const passwordResetRouteHandler         = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
+    return (
+        await requestPasswordResetRouteHandler(req, context, path)
+        ||
+        await validatePasswordResetRouteHandler(req, context, path)
+        ||
+        await applyPasswordResetRouteHandler(req, context, path)
+    );
+};
+
+// specific next-js /pages password_reset handlers:
+const passwordResetApiHandler           = async (req: NextApiRequest, res: NextApiResponse, path: string): Promise<boolean> => {
+    const passwordResetRouteResponse = await passwordResetRouteHandler(
+        new Request(new URL(req.url ?? '/', 'https://localhost').href,
+        {
+            method : req.method,
+            body   : /^(POST|PUT|PATCH)$/i.test(req.method ?? '') ? JSON.stringify(req.body) : null,
+        }),
+        {
+            params : {
+                nextauth : req.query.nextauth as string[],
+            },
+        },
+        'reset'
+    );
+    if (!passwordResetRouteResponse) return false;
+    
+    for (const [headerKey, headerValue] of passwordResetRouteResponse.headers.entries()) {
+        res.setHeader(headerKey, headerValue);
+    } // for
+    res.status(passwordResetRouteResponse.status).send(await passwordResetRouteResponse.text());
+    return true;
+};
 
 
-export const authApiHandler   = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    // responses HEAD request as success:
-    if(req.method === 'HEAD') return res.status(200).send(null);
-    
-    
-    
-    // custom handlers:
-    if (await passwordResetApiHandler(req, res, 'reset')) return;
-    
-    
-    
-    // tests:
-    const isCredentialsCallback = (): boolean => (
-        (req.method === 'POST')
-        &&
-        !!req.query.nextauth
-        &&
-        req.query.nextauth.includes('callback')
-        &&
-        req.query.nextauth.includes('credentials')
-    );
-    
-    
-    
-    await nextAuthHandler(req, res, isCredentialsCallback);
-};
-export const authRouteHandler = async (req: NextRequest, context: NextAuthRouteContext): Promise<Response> => {
-    // responses HEAD request as success:
-    if(req.method === 'HEAD') return new Response(null, { status: 200 });
-    
-    
-    
-    // custom handlers:
-    const passwordResetRouteResponse = await passwordResetRouteHandler(req, context, 'reset');
-    if (passwordResetRouteResponse) return passwordResetRouteResponse;
-    
-    
-    
-    // tests:
-    const isCredentialsCallback = (): boolean => (
-        (req.method === 'POST')
-        &&
-        !!context.params.nextauth
-        &&
-        context.params.nextauth.includes('callback')
-        &&
-        context.params.nextauth.includes('credentials')
-    );
-    
-    
-    
-    return await nextAuthHandler(req, context, isCredentialsCallback);
-};
+
+// general_implementation auth handlers:
 const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAuthRouteContext|NextApiResponse, isCredentialsCallback: (() => boolean)): Promise<any> => {
     let sessionCookie : string|null = null;
     
@@ -808,4 +754,60 @@ const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAu
     } // if
     return response;
 };
-export default authApiHandler;
+
+// specific next-js /app handlers:
+export const authRouteHandler = async (req: NextRequest, context: NextAuthRouteContext): Promise<Response> => {
+    // responses HEAD request as success:
+    if(req.method === 'HEAD') return new Response(null, { status: 200 });
+    
+    
+    
+    // custom handlers:
+    const passwordResetRouteResponse = await passwordResetRouteHandler(req, context, 'reset');
+    if (passwordResetRouteResponse) return passwordResetRouteResponse;
+    
+    
+    
+    // tests:
+    const isCredentialsCallback = (): boolean => (
+        (req.method === 'POST')
+        &&
+        !!context.params.nextauth
+        &&
+        context.params.nextauth.includes('callback')
+        &&
+        context.params.nextauth.includes('credentials')
+    );
+    
+    
+    
+    return await nextAuthHandler(req, context, isCredentialsCallback);
+};
+
+// specific next-js /pages handlers:
+export const authApiHandler   = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+    // responses HEAD request as success:
+    if(req.method === 'HEAD') return res.status(200).send(null);
+    
+    
+    
+    // custom handlers:
+    if (await passwordResetApiHandler(req, res, 'reset')) return;
+    
+    
+    
+    // tests:
+    const isCredentialsCallback = (): boolean => (
+        (req.method === 'POST')
+        &&
+        !!req.query.nextauth
+        &&
+        req.query.nextauth.includes('callback')
+        &&
+        req.query.nextauth.includes('credentials')
+    );
+    
+    
+    
+    await nextAuthHandler(req, res, isCredentialsCallback);
+};
