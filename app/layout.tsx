@@ -1,6 +1,6 @@
 'use client'
 
-import { Container } from '@reusable-ui/components'
+import { Container, DialogMessageProvider } from '@reusable-ui/components'
 import { StylesCSR } from './StylesCSR' // client_side_rendering CSS (required)
 import { StylesSSR } from './StylesSSR' // server_side_rendering CSS (optional)
 
@@ -15,12 +15,6 @@ import './layoutStyles.css'
 // import { Provider } from 'react-redux'
 
 // import { WEBSITE_LANGUAGE } from '@/website.config'
-
-// heymarco components:
-import {
-    // dialogs:
-    DialogMessageProvider,
-}                           from '@heymarco/dialog-message'
 
 
 
