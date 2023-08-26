@@ -638,7 +638,7 @@ const applyPasswordResetRouteHandler    = async (req: Request, context: NextAuth
     } // try
 };
 
-// specific next-js /app handlers:
+// specific next-js /app password_reset handlers:
 const passwordResetRouteHandler         = async (req: Request, context: NextAuthRouteContext, path: string): Promise<false|Response> => {
     return (
         await requestPasswordResetRouteHandler(req, context, path)
@@ -755,7 +755,7 @@ const nextAuthHandler = async (req: Request|NextApiRequest, contextOrRes: NextAu
     return response;
 };
 
-// specific next-js /app handlers:
+// specific next-js /app auth handlers:
 export const authRouteHandler = async (req: NextRequest, context: NextAuthRouteContext): Promise<Response> => {
     // responses HEAD request as success:
     if(req.method === 'HEAD') return new Response(null, { status: 200 });
@@ -784,7 +784,7 @@ export const authRouteHandler = async (req: NextRequest, context: NextAuthRouteC
     return await nextAuthHandler(req, context, isCredentialsCallback);
 };
 
-// specific next-js /pages handlers:
+// specific next-js /pages auth handlers:
 export const authApiHandler   = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     // responses HEAD request as success:
     if(req.method === 'HEAD') return res.status(200).send(null);
